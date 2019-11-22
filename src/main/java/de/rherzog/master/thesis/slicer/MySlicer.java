@@ -285,7 +285,7 @@ public class MySlicer {
 				// TODO Redundant check
 				if (myBlock == null) {
 					sliceBackwards(controlFlowGraph, sliceResult, targetBlock, blocksWII, true);
-				} else if (myBlock.getInstructionIndex() >= instruction.iindex) {
+				} else if (myBlock.getInstructionIndex() >= instruction.iIndex()) {
 					sliceBackwards(controlFlowGraph, sliceResult, targetBlock, blocksWII, true);
 				}
 			}

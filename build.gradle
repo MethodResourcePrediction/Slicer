@@ -27,7 +27,7 @@ dependencies {
 	compile group: 'commons-cli', name: 'commons-cli', version: '1.4'
 	
 	// https://mvnrepository.com/artifact/com.ibm.wala/com.ibm.wala.core
-	compile group: 'com.ibm.wala', name: 'com.ibm.wala.core', version: '1.5.0'
+	compile group: 'com.ibm.wala', name: 'com.ibm.wala.core', version: '1.5.4'
 	
 	// https://mvnrepository.com/artifact/commons-codec/commons-codec
 	compile group: 'commons-codec', name: 'commons-codec', version: '1.12'
