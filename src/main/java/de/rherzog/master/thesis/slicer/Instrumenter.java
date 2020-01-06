@@ -2,11 +2,15 @@ package de.rherzog.master.thesis.slicer;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.io.FilenameUtils;
@@ -38,6 +42,7 @@ import com.ibm.wala.shrikeCT.ClassWriter;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.generics.TypeSignature;
+import com.ibm.wala.util.collections.Iterator2Iterable;
 import com.ibm.wala.util.strings.StringStuff;
 
 import de.rherzog.master.thesis.slicer.MySlicer.ExportFormat;
@@ -51,12 +56,16 @@ public class Instrumenter {
 	private final static String ADDITIONAL_JARS_PATH = "extra_libs/";
 
 	private OfflineInstrumenter instrumenter;
+	private String inputPath;
 	private File baseDirFile;
 	private String additionalJarsPath;
 	private String methodSignature;
 	private String mainClass;
 	private String resultFilePath;
 	private ExportFormat exportFormat;
+
+	// Filter for duplicate entries.
+	private Set<String> duplicateEntrySet = new HashSet<>();
 
 	private String[] exportJars = new String[] { "SlicerExport.jar", "Utils.jar" };
 
@@ -74,18 +83,19 @@ public class Instrumenter {
 	public Instrumenter(String additionalJarsPath, String inputPath, String outputPath, String methodSignature,
 			String mainClass, String resultFilePath, ExportFormat exportFormat) throws IOException {
 		this.additionalJarsPath = additionalJarsPath;
+		this.inputPath = inputPath;
 		this.methodSignature = methodSignature;
 		this.mainClass = mainClass;
 		this.resultFilePath = resultFilePath;
 		this.exportFormat = exportFormat;
 
 		File oFile = new File(outputPath);
-		File iFile = new File(inputPath);
 
 		baseDirFile = new File("");
 
 		instrumenter = new OfflineInstrumenter();
-		instrumenter.addInputJar(iFile);
+//		instrumenter.addInputJar(new File(inputPath));
+		addJar(inputPath);
 		instrumenter.setOutputJar(oFile);
 		instrumenter.setPassUnmodifiedClasses(true);
 	}
@@ -553,25 +563,35 @@ public class Instrumenter {
 	 * @throws DecoderException
 	 */
 	public void finalize() throws IllegalStateException, IOException, DecoderException {
+		List<String> jars = new ArrayList<>();
+
 		// Add external libraries
 		File addJarLib = new File(baseDirFile.getAbsolutePath() + File.separatorChar + ADDITIONAL_JARS_PATH);
-		File[] jarFiles = addJarLib.listFiles(f -> !f.getName().endsWith(".jar"));
+		File[] jarFiles = addJarLib.listFiles(f -> f.getName().endsWith(".jar"));
 		if (jarFiles != null) {
 			for (File file : jarFiles) {
-				instrumenter.addInputDirectory(baseDirFile, file);
+				jars.add(file.getPath());
 			}
 		}
 
 //		String exportJarPath = Config.getInstance().getExport().getExportJarPath();
 		String additionalJarsBasePath = FilenameUtils.getFullPath(additionalJarsPath);
+
+		// Add additional jars to instrumented executable.
 		for (String exportJar : exportJars) {
-			String exportJarPath = FilenameUtils.concat(additionalJarsBasePath, exportJar);
-			instrumenter.addInputJar(new File(exportJarPath));
+//			String exportJarPath = FilenameUtils.concat(additionalJarsBasePath, exportJar);
+			String exportJarPath = additionalJarsBasePath + exportJar;
+
+			jars.add(exportJarPath);
+		}
+
+		for (String jar : jars) {
+			addJar(jar);
 		}
 
 		instrumenter.close();
 
-		// Correct the META-INF/ files due to instrumentalization
+		// Correct the META-INF/ files due to instrumentation
 		String outputPath = instrumenter.getOutputFile().getPath();
 		String tempOutputPath = outputPath + "_";
 		File tempOutputFile = new File(tempOutputPath);
@@ -579,6 +599,24 @@ public class Instrumenter {
 		outputFile.renameTo(tempOutputFile);
 		Utilities.correctJarManifests(tempOutputPath, outputPath, mainClass);
 		tempOutputFile.delete();
+	}
+
+	protected void addJar(String jarPath) throws IOException {
+//			System.out.println(jar);
+		JarFile jarFile = new JarFile(jarPath);
+		for (JarEntry entry : Iterator2Iterable.make(jarFile.entries().asIterator())) {
+			String entryName = entry.getName();
+			if (duplicateEntrySet.contains(entryName)) {
+				continue;
+			}
+			if (!jarPath.equals(inputPath) && entryName.startsWith("META-INF/")) {
+				continue;
+			}
+//				System.out.println(entryName);
+			duplicateEntrySet.add(entryName);
+			instrumenter.addInputJarEntry(new File(jarPath), entryName);
+		}
+		jarFile.close();
 	}
 
 	protected OfflineInstrumenter getInstrumenter() {
