@@ -57,6 +57,8 @@ public class Instrumenter {
 
 	private OfflineInstrumenter instrumenter;
 	private String inputPath;
+	private String outputPath;
+	private String tempOutputPath;
 	private File baseDirFile;
 	private String additionalJarsPath;
 	private String methodSignature;
@@ -84,19 +86,20 @@ public class Instrumenter {
 			String mainClass, String resultFilePath, ExportFormat exportFormat) throws IOException {
 		this.additionalJarsPath = additionalJarsPath;
 		this.inputPath = inputPath;
+		this.outputPath = outputPath;
 		this.methodSignature = methodSignature;
 		this.mainClass = mainClass;
 		this.resultFilePath = resultFilePath;
 		this.exportFormat = exportFormat;
-
-		File oFile = new File(outputPath);
 
 		baseDirFile = new File("");
 
 		instrumenter = new OfflineInstrumenter();
 //		instrumenter.addInputJar(new File(inputPath));
 		addJar(inputPath);
-		instrumenter.setOutputJar(oFile);
+
+		tempOutputPath = outputPath + "_";
+		instrumenter.setOutputJar(new File(tempOutputPath));
 		instrumenter.setPassUnmodifiedClasses(true);
 	}
 
@@ -592,13 +595,9 @@ public class Instrumenter {
 		instrumenter.close();
 
 		// Correct the META-INF/ files due to instrumentation
-		String outputPath = instrumenter.getOutputFile().getPath();
-		String tempOutputPath = outputPath + "_";
-		File tempOutputFile = new File(tempOutputPath);
-		File outputFile = new File(outputPath);
-		outputFile.renameTo(tempOutputFile);
+		String tempOutputPath = instrumenter.getOutputFile().getPath();
 		Utilities.correctJarManifests(tempOutputPath, outputPath, mainClass);
-		tempOutputFile.delete();
+		new File(tempOutputPath).delete();
 	}
 
 	protected void addJar(String jarPath) throws IOException {
