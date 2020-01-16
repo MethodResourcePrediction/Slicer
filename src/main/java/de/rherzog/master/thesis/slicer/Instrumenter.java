@@ -45,10 +45,10 @@ import com.ibm.wala.types.generics.TypeSignature;
 import com.ibm.wala.util.collections.Iterator2Iterable;
 import com.ibm.wala.util.strings.StringStuff;
 
-import de.rherzog.master.thesis.slicer.MySlicer.ExportFormat;
 import de.rherzog.master.thesis.slicer.instrumenter.export.FeatureLogger;
 import de.rherzog.master.thesis.slicer.instrumenter.export.Nothing;
 import de.rherzog.master.thesis.slicer.instrumenter.export.SliceWriter;
+import de.rherzog.master.thesis.slicer.instrumenter.export.SliceWriter.ExportFormat;
 import de.rherzog.master.thesis.utils.InstrumenterComparator;
 import de.rherzog.master.thesis.utils.Utilities;
 
@@ -142,7 +142,7 @@ public class Instrumenter {
 		return md.getInstructions();
 	}
 
-	public void instrument(List<Integer> instructionIndexes, Set<Integer> instructionIndexesToKeep,
+	public void instrument(Set<Integer> instructionIndexes, Set<Integer> instructionIndexesToKeep,
 			Set<Integer> instructionIndexesToIgnore)
 			throws InvalidClassFileException, IllegalStateException, IOException {
 		InstrumenterComparator comparator = InstrumenterComparator.of(methodSignature);
@@ -184,13 +184,13 @@ public class Instrumenter {
 		}
 	}
 
-	protected SliceMethod sliceMethod(MethodData methodData, List<Integer> instructionIndexes,
+	protected SliceMethod sliceMethod(MethodData methodData, Set<Integer> instructionIndexes,
 			Set<Integer> instructionIndexesToKeep, Set<Integer> instructionIndexesToIgnore) {
 		return sliceMethod(methodData, instructionIndexes, instructionIndexesToKeep, instructionIndexesToIgnore,
 				Collections.emptyMap());
 	}
 
-	protected SliceMethod sliceMethod(MethodData methodData, List<Integer> instructionIndexes,
+	protected SliceMethod sliceMethod(MethodData methodData, Set<Integer> instructionIndexes,
 			Set<Integer> instructionIndexesToKeep, Set<Integer> instructionIndexesToIgnore,
 			Map<Integer, Patch> featurePatchMap) {
 		MethodEditor methodEditor = new MethodEditor(methodData);
