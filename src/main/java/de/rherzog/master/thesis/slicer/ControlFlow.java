@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.jgrapht.Graph;
@@ -33,7 +34,6 @@ public class ControlFlow {
 	private MethodData methodData;
 
 	private Graph<Integer, DefaultEdge> graph;
-	private IInstruction[] instructions;
 	private List<List<Integer>> simpleCycles;
 
 	public ControlFlow(String inputPath, String methodSignature) {
@@ -47,7 +47,7 @@ public class ControlFlow {
 		}
 
 		MethodData methodData = getMethodData();
-		instructions = methodData.getInstructions();
+		IInstruction[] instructions = methodData.getInstructions();
 
 		graph = new DefaultDirectedGraph<>(DefaultEdge.class);
 
@@ -83,7 +83,9 @@ public class ControlFlow {
 		return simpleCycles;
 	}
 
-	public String dotPrint() {
+	public String dotPrint() throws IOException, InvalidClassFileException {
+		IInstruction[] instructions = getMethodData().getInstructions();
+
 		// use helper classes to define how vertices should be rendered,
 		// adhering to the DOT language restrictions
 		ComponentNameProvider<Integer> vertexIdProvider = new ComponentNameProvider<Integer>() {
@@ -93,13 +95,13 @@ public class ControlFlow {
 		};
 		ComponentNameProvider<Integer> vertexLabelProvider = new ComponentNameProvider<Integer>() {
 			public String getName(Integer index) {
-				return instructions[index].toString();
+				return index + ": " + instructions[index].toString();
 			}
 		};
 		GraphExporter<Integer, DefaultEdge> exporter = new DOTExporter<>(vertexIdProvider, vertexLabelProvider, null);
 		Writer writer = new StringWriter();
 		try {
-			exporter.exportGraph(graph, writer);
+			exporter.exportGraph(getGraph(), writer);
 		} catch (ExportException e) {
 			e.printStackTrace();
 		}
@@ -142,5 +144,18 @@ public class ControlFlow {
 			}
 		}
 		return methodData;
+	}
+
+	public List<List<Integer>> getCyclesForInstruction(int instructionIndex)
+			throws IOException, InvalidClassFileException {
+		List<List<Integer>> scs = getSimpleCycles();
+		List<List<Integer>> scsWithInstructionIndex = new ArrayList<>();
+
+		for (List<Integer> sc : scs) {
+			if (sc.contains(instructionIndex)) {
+				scsWithInstructionIndex.add(sc);
+			}
+		}
+		return scsWithInstructionIndex;
 	}
 }

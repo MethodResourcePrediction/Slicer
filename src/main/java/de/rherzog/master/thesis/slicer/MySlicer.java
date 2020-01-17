@@ -3,6 +3,7 @@ package de.rherzog.master.thesis.slicer;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -12,13 +13,10 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.codec.DecoderException;
-import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultEdge;
 
-import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.shrikeBT.IInstruction;
-import com.ibm.wala.shrikeBT.shrikeCT.OfflineInstrumenter;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import com.ibm.wala.util.CancelException;
 
@@ -34,32 +32,29 @@ public class MySlicer {
 	private ExportFormat exportFormat;
 	private String additionalJarsPath;
 
-	// Internal
-	private CGNode methodCGNode;
-
 	public MySlicer() {
 		this.instructionIndexes = new HashSet<>();
 	}
 
 	public static void main(String[] args)
 			throws ParseException, IOException, ClassHierarchyException, IllegalArgumentException, CancelException,
-			IllegalStateException, DecoderException, InvalidClassFileException {
+			IllegalStateException, DecoderException, InvalidClassFileException, InterruptedException {
 		MySlicer mySlicer = new MySlicer();
 		mySlicer.parseArgs(args);
 		mySlicer.makeSlicedFile();
 	}
 
 	public String makeSlicedFile() throws IOException, ClassHierarchyException, IllegalArgumentException,
-			CancelException, IllegalStateException, DecoderException, InvalidClassFileException {
+			CancelException, IllegalStateException, DecoderException, InvalidClassFileException, InterruptedException {
 		Set<Integer> instructionIndexesToKeep = getInstructionIndexesToKeep();
 //		Set<Integer> instructionIndexesToIgnore = getInstructionIndexesToIgnore();
 //		System.out.println("InstructionIndexesToKeep: " + instructionIndexesToKeep);
 
 		// Instrument a new program with a modified method which we analyze
-//		Instrumenter instrumenter = new Instrumenter(additionalJarsPath, inputJar, outputJar, methodSignature,
-//				mainClass, resultFilePath, exportFormat);
-//		instrumenter.instrument(instructionIndexes, instructionIndexesToKeep, Collections.emptySet());
-//		instrumenter.finalize();
+		Instrumenter instrumenter = new Instrumenter(additionalJarsPath, inputJar, outputJar, methodSignature,
+				mainClass, resultFilePath, exportFormat);
+		instrumenter.instrument(instructionIndexes, instructionIndexesToKeep, Collections.emptySet());
+		instrumenter.finalize();
 
 		// ###### Uncommented due to own backward-slicer #####
 //		DataDependenceOptions dOptions = DataDependenceOptions.FULL;
@@ -78,23 +73,88 @@ public class MySlicer {
 	}
 
 	public Set<Integer> getInstructionIndexesToKeep() throws ClassHierarchyException, IllegalArgumentException,
-			IOException, CancelException, InvalidClassFileException {
+			IOException, CancelException, InvalidClassFileException, InterruptedException {
 //		CGNode callerNode = getCallerNode();
 //		WALASlicer slicer = new WALASlicer(callerNode, instructionIndexes);
 //		Set<Integer> is = slicer.sliceBackwards();
 
 //		WALAControlDependencySlicer slicer = new WALAControlDependencySlicer(inputJar, methodSignature, instructionIndexes);
+//		slicer.slice();
+
+//		
+//		System.out.println(instructionIndexes);
+//
 		ControlFlow controlFlow = new ControlFlow(inputJar, methodSignature);
-		Graph<Integer, DefaultEdge> controlFlowGraph = controlFlow.getGraph();
-
-		Blocks blocks = new Blocks(controlFlow);
-		Graph<Block, DefaultEdge> blockGraph = blocks.getGraph();
-
+		ControlDependency controlDependency = new ControlDependency(controlFlow);
+		BlockDependency blocks = new BlockDependency(controlFlow);
 		DataDependency dataDependency = new DataDependency(controlFlow);
-		Graph<IInstruction, DefaultEdge> dataDependencyGraph = dataDependency.getGraph();
-//		Set<Integer> slice = slicer.slice();
+//
+//		dotShow(controlFlow.dotPrint());
+//		dotShow(controlDependency.dotPrint());
+//		dotShow(blocks.dotPrint());
+//		dotShow(dataDependency.dotPrint());
+//
+		System.out.println(instructionIndexes);
 
-		return Collections.emptySet();
+		Set<Integer> indexesToKeep = new HashSet<>();
+		for (int instructionIndex : instructionIndexes) {
+			sliceEdge(controlFlow, controlDependency, blocks, dataDependency, indexesToKeep, instructionIndex);
+		}
+		// Add last return instruction
+		IInstruction[] instructions = controlFlow.getMethodData().getInstructions();
+		indexesToKeep.add(instructions.length - 1);
+
+		System.out.println(indexesToKeep);
+
+		return indexesToKeep;
+	}
+
+	private void sliceEdge(ControlFlow controlFlow, ControlDependency controlDependency, BlockDependency blocks,
+			DataDependency dataDependency, Set<Integer> dependendInstructions, int index)
+			throws IOException, InvalidClassFileException {
+		Block block = blocks.getBlockForIndex(index);
+
+		boolean addedAny = false;
+		for (int blockInstructionIndex : block.getInstructions().keySet()) {
+			// Prevent whole block adding
+			if (blockInstructionIndex > index) {
+				continue;
+			}
+
+			// TODO Add cycle end (goto)
+			// Or just if we detect a ConditionalBranchInstruction?
+			List<List<Integer>> cycles = controlFlow.getCyclesForInstruction(blockInstructionIndex);
+			for (List<Integer> cycle : cycles) {
+				if (cycle.get(0) == blockInstructionIndex) {
+					// Starting index for loop
+					addedAny |= dependendInstructions.add(cycle.get(cycle.size() - 1));
+				}
+			}
+			addedAny |= dependendInstructions.add(blockInstructionIndex);
+		}
+		if (!addedAny) {
+			return;
+		}
+//		System.out.println(block);
+
+		for (int blockInstructionIndex : block.getInstructions().keySet()) {
+			// Consider data dependencies
+			for (DefaultEdge edge : dataDependency.getGraph().outgoingEdgesOf(blockInstructionIndex)) {
+//				System.out.println("  Data dependency: " + edge);
+
+				int edgeTarget = controlDependency.getGraph().getEdgeTarget(edge);
+				sliceEdge(controlFlow, controlDependency, blocks, dataDependency, dependendInstructions, edgeTarget);
+			}
+			// Consider control dependencies
+			for (DefaultEdge edge : controlDependency.getGraph().incomingEdgesOf(blockInstructionIndex)) {
+				int edgeSource = controlDependency.getGraph().getEdgeSource(edge);
+				if (edgeSource == -1) {
+					continue;
+				}
+//				System.out.println("  Control dependency: " + edge);
+				sliceEdge(controlFlow, controlDependency, blocks, dataDependency, dependendInstructions, edgeSource);
+			}
+		}
 	}
 
 	public void parseArgs(String[] args) throws ParseException {

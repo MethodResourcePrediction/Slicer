@@ -24,6 +24,7 @@ import com.ibm.wala.ipa.cha.ClassHierarchy;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.ipa.cha.ClassHierarchyFactory;
 import com.ibm.wala.ipa.slicer.NormalStatement;
+import com.ibm.wala.ipa.slicer.SDG;
 import com.ibm.wala.ipa.slicer.Slicer;
 import com.ibm.wala.ipa.slicer.Slicer.ControlDependenceOptions;
 import com.ibm.wala.ipa.slicer.Slicer.DataDependenceOptions;
@@ -99,9 +100,9 @@ public class WALAControlDependencySlicer {
 		AnalysisOptions options = new AnalysisOptions(scope, entrypoints);
 		AnalysisCache cache = new AnalysisCacheImpl();
 //		CallGraphBuilder<InstanceKey> builder = Util.makeRTABuilder(options, cache, cha, scope);
-		CallGraphBuilder<InstanceKey> builder = Util.makeVanillaZeroOneCFABuilder(Language.JAVA, options, cache, cha,
-				scope);
-//		CallGraphBuilder<InstanceKey> builder = Util.makeZeroOneContainerCFABuilder(options, cache, cha, scope);
+//		CallGraphBuilder<InstanceKey> builder = Util.makeVanillaZeroOneCFABuilder(Language.JAVA, options, cache, cha,
+//				scope);
+		CallGraphBuilder<InstanceKey> builder = Util.makeZeroOneContainerCFABuilder(options, cache, cha, scope);
 
 //		CallGraphBuilder builder = Util.makeZeroOneCFABuilder(options, new AnalysisCache(), cha, scope);
 		CallGraph cg = builder.makeCallGraph(options, null);
@@ -110,20 +111,25 @@ public class WALAControlDependencySlicer {
 		// find the call statement of interest
 		CGNode callerNode = findMethod(cg, methodSignature);
 
-//		Statement statement = null;
+//		List<SSAInstruction> a = new ArrayList<>();
 //		for (SSAInstruction instruction : Iterator2Iterable.make(callerNode.getIR().iterateAllInstructions())) {
-//			if (instruction.iIndex() == 30) {
-//				statement = new NormalStatement(callerNode, 30);
-//				break;
-//			}
+//			a.add(instruction);
 //		}
-//		PointerAnalysis<InstanceKey> pa = builder.getPointerAnalysis();
-//		Collection<Statement> slice = Slicer.computeBackwardSlice(statement, cg, pa,
-//				DataDependenceOptions.NONE, ControlDependenceOptions.FULL);
-//
-//		for (Statement s : slice) {
-//			System.out.println(s);
-//		}
+
+		Statement statement = null;
+		for (SSAInstruction instruction : Iterator2Iterable.make(callerNode.getIR().iterateAllInstructions())) {
+			if (instruction.iIndex() == 30) {
+				statement = new NormalStatement(callerNode, 30);
+				break;
+			}
+		}
+		PointerAnalysis<InstanceKey> pa = builder.getPointerAnalysis();
+		Collection<Statement> slice = Slicer.computeBackwardSlice(statement, cg, pa, DataDependenceOptions.NONE,
+				ControlDependenceOptions.FULL);
+
+		for (Statement s : slice) {
+			System.out.println(s);
+		}
 
 		this.methodCGNode = callerNode;
 		return methodCGNode;

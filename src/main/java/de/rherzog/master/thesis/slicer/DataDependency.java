@@ -1,200 +1,127 @@
 package de.rherzog.master.thesis.slicer;
 
 import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.jgrapht.Graph;
+import org.jgrapht.alg.cycle.JohnsonSimpleCycles;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.io.ComponentNameProvider;
+import org.jgrapht.io.DOTExporter;
+import org.jgrapht.io.ExportException;
+import org.jgrapht.io.GraphExporter;
 
 import com.ibm.wala.shrikeBT.IInstruction;
+import com.ibm.wala.shrikeBT.ILoadInstruction;
+import com.ibm.wala.shrikeBT.IStoreInstruction;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 
 public class DataDependency {
 	private ControlFlow controlFlow;
-	private Graph<IInstruction, DefaultEdge> dataDependencyGraph;
+	private Graph<Integer, DefaultEdge> dataDependencyGraph;
+	private List<List<Integer>> simpleCycles;
 
 	public DataDependency(ControlFlow controlFlowGraph) throws IOException, InvalidClassFileException {
 		this.controlFlow = controlFlowGraph;
 	}
 
-	public Graph<IInstruction, DefaultEdge> getGraph() throws IOException, InvalidClassFileException {
+	public Graph<Integer, DefaultEdge> getGraph() throws IOException, InvalidClassFileException {
 		if (dataDependencyGraph != null) {
 			return dataDependencyGraph;
 		}
-
-		dataDependencyGraph = new DefaultDirectedGraph<>(DefaultEdge.class);
-
-//		EdgeReversedGraph<Integer, DefaultEdge> reversedEdgeCFG = new EdgeReversedGraph<>(controlFlow.getGraph());
-
-		buildGraph(new HashSet<>(), controlFlow.getGraph(), 0, false, -1);
+		dataDependencyGraph = getDependencyGraph(controlFlow.getGraph());
 		return dataDependencyGraph;
 	}
 
-	private void buildGraph(Set<Integer> seenVertices, Graph<Integer, DefaultEdge> cfg, int instructionIndex,
-			boolean check, int rootInstructionIndex) throws IOException, InvalidClassFileException {
-		if (seenVertices.contains(instructionIndex) || instructionIndex == rootInstructionIndex) {
+	public List<List<Integer>> getSimpleCycles() throws IOException, InvalidClassFileException {
+		if (simpleCycles != null) {
+			return simpleCycles;
+		}
+
+		JohnsonSimpleCycles<Integer, DefaultEdge> johnsonSimpleCycles = new JohnsonSimpleCycles<>(getGraph());
+		simpleCycles = johnsonSimpleCycles.findSimpleCycles();
+		return simpleCycles;
+	}
+
+	private Graph<Integer, DefaultEdge> getDependencyGraph(Graph<Integer, DefaultEdge> cfg)
+			throws IOException, InvalidClassFileException {
+		Graph<Integer, DefaultEdge> dependencyGraph = new DefaultDirectedGraph<>(DefaultEdge.class);
+		cfg.vertexSet().forEach(v -> dependencyGraph.addVertex(v));
+
+		for (int instructionIndex : cfg.vertexSet()) {
+//			System.out.println("Focus on: " + instructionIndex);
+			buildGraphForVertex(cfg, instructionIndex, instructionIndex, new HashSet<>(), dependencyGraph);
+		}
+		return dependencyGraph;
+	}
+
+	private void buildGraphForVertex(Graph<Integer, DefaultEdge> cfg, int focusedIndex, int instructionIndex,
+			Set<Integer> visitedVertices, Graph<Integer, DefaultEdge> dependencyGraph)
+			throws IOException, InvalidClassFileException {
+		if (!visitedVertices.add(instructionIndex)) {
 			return;
 		}
-		seenVertices.add(instructionIndex);
 
-		for (DefaultEdge edge : cfg.incomingEdgesOf(instructionIndex)) {
-			int sourceInstructionIndex = cfg.getEdgeSource(edge);
-			System.out.println("Check dependency: " + edge.toString());
-			buildGraph(new HashSet<>(), cfg, sourceInstructionIndex, true, instructionIndex);
-		}
+		if (focusedIndex != instructionIndex) {
+//			System.out.println("  Check data dependency: (" + focusedIndex + ", " + instructionIndex + ")");
 
-		if (!check) {
-			for (DefaultEdge edge : cfg.outgoingEdgesOf(instructionIndex)) {
-				int targetInstructionIndex = cfg.getEdgeTarget(edge);
-				System.out.println("Focus on: " + targetInstructionIndex);
-				buildGraph(seenVertices, cfg, targetInstructionIndex, false, 0);
+			// Check dependencies for both instructions
+			IInstruction[] instructions = controlFlow.getMethodData().getInstructions();
+			IInstruction instructionA = instructions[focusedIndex];
+			IInstruction instructionB = instructions[instructionIndex];
+			if (checkDataDependency(instructionA, instructionB)) {
+				if (!dependencyGraph.containsEdge(focusedIndex, instructionIndex)) {
+					dependencyGraph.addEdge(focusedIndex, instructionIndex);
+				}
 			}
 		}
 
-//		Set<DefaultEdge> allEdges = new HashSet<>();
-//		for (int otherInstructionIndex : reversedEdgeCFG.vertexSet()) {
-//			if (otherInstructionIndex == instructionIndex) {
-//				continue;
-//			}
-//			allEdges.addAll(reversedEdgeCFG.getAllEdges(instructionIndex, otherInstructionIndex));
-//		}
-//
-//		for (DefaultEdge edge : allEdges) {
-//			int targetInstructionIndex = reversedEdgeCFG.getEdgeTarget(edge);
-//			buildGraph(seenVertices, reversedEdgeCFG, targetInstructionIndex);
-//			
-//			System.out.println(targetInstructionIndex);
-//			for (int previousInstructionIndex : reversedEdgeCFG.vertexSet()) {
-//			
-//
-//			// TODO Check for data dependency
-////			System.out.println("Check: " + instructionIndex + " <=> " + targetInstructionIndex);
-//
-////			IInstruction[] instructions = controlFlow.getMethodData().getInstructions();
-////			checkDataDependency(instructions[instructionIndex], instructions[targetInstructionIndex]);
-//		}
+		for (DefaultEdge edge : cfg.incomingEdgesOf(instructionIndex)) {
+			int sourceInstructionIndex = cfg.getEdgeSource(edge);
+			buildGraphForVertex(cfg, focusedIndex, sourceInstructionIndex, visitedVertices, dependencyGraph);
+		}
 	}
 
 	private static boolean checkDataDependency(IInstruction instructionA, IInstruction instructionB) {
-		return true;
+		if (instructionA instanceof ILoadInstruction) {
+			ILoadInstruction loadInstruction = (ILoadInstruction) instructionA;
+			if (instructionB instanceof IStoreInstruction) {
+				IStoreInstruction storeInstruction = (IStoreInstruction) instructionB;
+				if (loadInstruction.getVarIndex() == storeInstruction.getVarIndex()) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
-//	private void buildGraph(IInstruction[] instructions, IInstruction instruction, int instructionIndex,
-//			Set<Integer> indexesToKeep) throws IOException, InvalidClassFileException {
+	public String dotPrint() throws IOException, InvalidClassFileException {
+		IInstruction[] instructions = controlFlow.getMethodData().getInstructions();
 
-//	IInstruction[] instructions = methodData.getInstructions();
-//
-//	Set<Integer> indexesToKeep = new HashSet<>();
-//	for (int instructionIndex : instructionIndexes) {
-//		IInstruction instruction = instructions[instructionIndex];
-//		buildGraph(instructions, instruction, instructionIndex, indexesToKeep);
-//	}
-//
-//	List<IInstruction> keptInstructions = new ArrayList<>();
-//	List<Integer> sorted = indexesToKeep.stream().mapToInt(a -> a).sorted().boxed().collect(Collectors.toList());
-//	for (int indexToKeep : sorted) {
-//		keptInstructions.add(instructions[indexToKeep]);
-//		System.out.println(indexToKeep + ": " + instructions[indexToKeep].toString());
-//	}
-//		boolean added = indexesToKeep.add(instructionIndex);
-//		if (!added) {
-//			return;
-//		}
-//
-////		Set<DefaultEdge> edges = graph.incomingEdgesOf(instructionIndex);
-////		if (edges.isEmpty()) {
-////			return;
-////		}
-////
-////		for (DefaultEdge edge : edges) {
-////			int source = graph.getEdgeSource(edge);
-////			instruction = instructions[source];
-////			sliceBackwards(instructions, instruction, source, indexesToKeep);
-////		}
-//
-//		IndexedVisitor visitor = new IndexedVisitor(instructions) {
-//			// A LoadInstruction loads a previously stored variable. The variable must have
-//			// been stored by a StoreInstruction with the same variable index
-//			@Override
-//			public void visitLocalLoad(Set<Integer> indexes, ILoadInstruction instruction) {
-//				int varIndex = instruction.getVarIndex();
-//
-//				IndexedVisitor v = new IndexedVisitor(instructions) {
-//					@Override
-//					public void visitLocalStore(Set<Integer> indexes, IStoreInstruction instruction2) {
-//						if (instruction2.getVarIndex() == varIndex) {
-//							for (int index : Iterator2Iterable.make(indexes.iterator())) {
-//								if (index > instructionIndex) {
-//									continue;
-//								}
-//								sliceBackwards(instructions, instruction2, index, indexesToKeep);
-//							}
-//						}
-//					}
-//				};
-//				IntStream.range(0, instructionIndex).mapToObj(i -> instructions[i]).forEach(i -> i.visit(v));
-//			}
-//
-//			// A StoreInstruction stores the element previously pushed on the stack. Usually
-//			// this element was pushed by the previous instruction
-//			@Override
-//			public void visitLocalStore(Set<Integer> indexes, IStoreInstruction instruction2) {
-//				for (int index : Iterator2Iterable.make(indexes.iterator())) {
-//					if (index > instructionIndex) {
-//						continue;
-//					}
-//					int prevInstructionIndex = index - 1;
-//					IInstruction prevInstruction = instructions[prevInstructionIndex];
-//					sliceBackwards(instructions, prevInstruction, prevInstructionIndex, indexesToKeep);
-//				}
-//			}
-//
-//			// A InvokeInstruction depends on the parameters loaded as arguments
-//			// TODO Does simply access the direct previous instructions solve the
-//			// dependency? Maybe there is the need to resolve is with the WALA analysis.
-//			@Override
-//			public void visitInvoke(Set<Integer> indexes, IInvokeInstruction instruction) {
-//				// TODO Should be unique
-//				int index = indexes.iterator().next();
-//				for (int argIndex = 0; argIndex < instruction.getPoppedCount(); argIndex++) {
-//					int prevInstructionIndex = index - argIndex - 1;
-//					IInstruction prevInstruction = instructions[prevInstructionIndex];
-//					sliceBackwards(instructions, prevInstruction, prevInstructionIndex, indexesToKeep);
-//				}
-//			}
-//
-//			// An ArrayLoadInstruction depends on the index which specifies the array to be
-//			// loaded. It is usually pushed directly before this instruction.
-//			// TODO Does simply access the direct previous instruction solve the
-//			// dependency? Maybe there is the need to resolve is with the WALA analysis.
-//			@Override
-//			public void visitArrayLoad(Set<Integer> indexes, IArrayLoadInstruction instruction) {
-//				int index = choosePreferred(indexesToKeep, instructionIndex);
-//				int arrayLoadIndex = index - 1;
-//				int arrayIndex = index - 2;
-//
-//				IInstruction arrayLoadInstruction = instructions[arrayLoadIndex];
-//				IInstruction arrayIndexInstruction = instructions[arrayIndex];
-//
-//				sliceBackwards(instructions, arrayLoadInstruction, arrayLoadIndex, indexesToKeep);
-//				sliceBackwards(instructions, arrayIndexInstruction, arrayIndex, indexesToKeep);
-//			}
-//
-//			@Override
-//			public void visitBinaryOp(Set<Integer> indexes, IBinaryOpInstruction instruction) {
-//				int index = choosePreferred(indexes, instructionIndex);
-//				int prevInstructionIndexA = index - 1;
-//				int prevInstructionIndexB = index - 2;
-//
-//				IInstruction prevInstructionA = instructions[prevInstructionIndexA];
-//				IInstruction prevInstructionB = instructions[prevInstructionIndexB];
-//
-//				sliceBackwards(instructions, prevInstructionA, prevInstructionIndexA, indexesToKeep);
-//				sliceBackwards(instructions, prevInstructionB, prevInstructionIndexB, indexesToKeep);
-//			}
-//		};
-//		instruction.visit(visitor);
-//	}
+		// use helper classes to define how vertices should be rendered,
+		// adhering to the DOT language restrictions
+		ComponentNameProvider<Integer> vertexIdProvider = new ComponentNameProvider<Integer>() {
+			public String getName(Integer index) {
+				return String.valueOf(index);
+			}
+		};
+		ComponentNameProvider<Integer> vertexLabelProvider = new ComponentNameProvider<Integer>() {
+			public String getName(Integer index) {
+				return index + ": " + instructions[index].toString();
+			}
+		};
+		GraphExporter<Integer, DefaultEdge> exporter = new DOTExporter<>(vertexIdProvider, vertexLabelProvider, null);
+		Writer writer = new StringWriter();
+		try {
+			exporter.exportGraph(getGraph(), writer);
+		} catch (ExportException e) {
+			e.printStackTrace();
+		}
+		return writer.toString();
+	}
 }

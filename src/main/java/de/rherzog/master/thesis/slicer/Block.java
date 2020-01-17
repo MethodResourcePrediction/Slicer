@@ -32,4 +32,8 @@ public class Block {
 		}
 		return builder.toString();
 	}
+
+	public int getId() {
+		return id;
+	}
 }
