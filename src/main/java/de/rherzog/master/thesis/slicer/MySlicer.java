@@ -1,6 +1,10 @@
 package de.rherzog.master.thesis.slicer;
 
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -13,6 +17,7 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.codec.DecoderException;
+import org.apache.commons.io.IOUtils;
 import org.jgrapht.graph.DefaultEdge;
 
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
@@ -88,28 +93,42 @@ public class MySlicer {
 		ControlDependency controlDependency = new ControlDependency(controlFlow);
 		BlockDependency blocks = new BlockDependency(controlFlow);
 		DataDependency dataDependency = new DataDependency(controlFlow);
-//
-//		dotShow(controlFlow.dotPrint());
-//		dotShow(controlDependency.dotPrint());
-//		dotShow(blocks.dotPrint());
-//		dotShow(dataDependency.dotPrint());
-//
-		System.out.println(instructionIndexes);
+
+		final Path dir = Files.createTempDirectory("slicer-");
+		dotShow(dir, controlFlow.dotPrint());
+		dotShow(dir, controlDependency.dotPrint());
+		dotShow(dir, blocks.dotPrint());
+		dotShow(dir, dataDependency.dotPrint());
 
 		Set<Integer> indexesToKeep = new HashSet<>();
 		for (int instructionIndex : instructionIndexes) {
-			sliceEdge(controlFlow, controlDependency, blocks, dataDependency, indexesToKeep, instructionIndex);
+			slice(controlFlow, controlDependency, blocks, dataDependency, indexesToKeep, instructionIndex);
 		}
 		// Add last return instruction
 		IInstruction[] instructions = controlFlow.getMethodData().getInstructions();
 		indexesToKeep.add(instructions.length - 1);
 
-		System.out.println(indexesToKeep);
-
 		return indexesToKeep;
 	}
 
-	private void sliceEdge(ControlFlow controlFlow, ControlDependency controlDependency, BlockDependency blocks,
+	private static void dotShow(Path dir, String dotPrint) throws IOException, InterruptedException {
+		final String format = "png";
+		final String path = Files.createTempFile(dir, "slicer-", "." + format).toFile().getPath();
+
+		ProcessBuilder builder = new ProcessBuilder("dot", "-T" + format, "-o" + path);
+		Process process = builder.start();
+		OutputStream outputStream = process.getOutputStream();
+
+		IOUtils.write(dotPrint, outputStream, Charset.defaultCharset());
+		outputStream.close();
+
+		process.waitFor();
+
+		builder = new ProcessBuilder("xdg-open", path);
+		builder.start().waitFor();
+	}
+
+	private void slice(ControlFlow controlFlow, ControlDependency controlDependency, BlockDependency blocks,
 			DataDependency dataDependency, Set<Integer> dependendInstructions, int index)
 			throws IOException, InvalidClassFileException {
 		Block block = blocks.getBlockForIndex(index);
@@ -143,7 +162,7 @@ public class MySlicer {
 //				System.out.println("  Data dependency: " + edge);
 
 				int edgeTarget = controlDependency.getGraph().getEdgeTarget(edge);
-				sliceEdge(controlFlow, controlDependency, blocks, dataDependency, dependendInstructions, edgeTarget);
+				slice(controlFlow, controlDependency, blocks, dataDependency, dependendInstructions, edgeTarget);
 			}
 			// Consider control dependencies
 			for (DefaultEdge edge : controlDependency.getGraph().incomingEdgesOf(blockInstructionIndex)) {
@@ -152,7 +171,7 @@ public class MySlicer {
 					continue;
 				}
 //				System.out.println("  Control dependency: " + edge);
-				sliceEdge(controlFlow, controlDependency, blocks, dataDependency, dependendInstructions, edgeSource);
+				slice(controlFlow, controlDependency, blocks, dataDependency, dependendInstructions, edgeSource);
 			}
 		}
 	}
