@@ -52,7 +52,6 @@ public class MySlicer {
 	public String makeSlicedFile() throws IOException, ClassHierarchyException, IllegalArgumentException,
 			CancelException, IllegalStateException, DecoderException, InvalidClassFileException, InterruptedException {
 		Set<Integer> instructionIndexesToKeep = getInstructionIndexesToKeep();
-//		Set<Integer> instructionIndexesToIgnore = getInstructionIndexesToIgnore();
 //		System.out.println("InstructionIndexesToKeep: " + instructionIndexesToKeep);
 
 		// Instrument a new program with a modified method which we analyze
@@ -61,34 +60,11 @@ public class MySlicer {
 		instrumenter.instrument(instructionIndexes, instructionIndexesToKeep, Collections.emptySet());
 		instrumenter.finalize();
 
-		// ###### Uncommented due to own backward-slicer #####
-//		DataDependenceOptions dOptions = DataDependenceOptions.FULL;
-//		ControlDependenceOptions cOptions = ControlDependenceOptions.NO_EXCEPTIONAL_EDGES;
-//		
-//		// compute the slice as a collection of statements
-//		final PointerAnalysis<InstanceKey> pointerAnalysis = builder.getPointerAnalysis();
-//		Collection<Statement> slice = Slicer.computeBackwardSlice(s, cg, pointerAnalysis, dOptions, cOptions);
-//
-//		System.out.println("\nSlice:");
-//		slice.stream().filter(a -> a.getNode().equals(callerNode)).forEach(a -> System.out.println(a));
-//		System.out.println();
-		// ###### Uncommented due to own backward-slicer #####
-
 		return outputJar;
 	}
 
 	public Set<Integer> getInstructionIndexesToKeep() throws ClassHierarchyException, IllegalArgumentException,
 			IOException, CancelException, InvalidClassFileException, InterruptedException {
-//		CGNode callerNode = getCallerNode();
-//		WALASlicer slicer = new WALASlicer(callerNode, instructionIndexes);
-//		Set<Integer> is = slicer.sliceBackwards();
-
-//		WALAControlDependencySlicer slicer = new WALAControlDependencySlicer(inputJar, methodSignature, instructionIndexes);
-//		slicer.slice();
-
-//		
-//		System.out.println(instructionIndexes);
-//
 		ControlFlow controlFlow = new ControlFlow(inputJar, methodSignature);
 		ControlDependency controlDependency = new ControlDependency(controlFlow);
 		BlockDependency blocks = new BlockDependency(controlFlow);
@@ -140,8 +116,8 @@ public class MySlicer {
 				continue;
 			}
 
-			// TODO Add cycle end (goto)
-			// Or just if we detect a ConditionalBranchInstruction?
+			// Add cycle end (goto)
+			// TODO Or just if we detect a ConditionalBranchInstruction?
 			List<List<Integer>> cycles = controlFlow.getCyclesForInstruction(blockInstructionIndex);
 			for (List<Integer> cycle : cycles) {
 				if (cycle.get(0) == blockInstructionIndex) {
@@ -159,8 +135,6 @@ public class MySlicer {
 		for (int blockInstructionIndex : block.getInstructions().keySet()) {
 			// Consider data dependencies
 			for (DefaultEdge edge : dataDependency.getGraph().outgoingEdgesOf(blockInstructionIndex)) {
-//				System.out.println("  Data dependency: " + edge);
-
 				int edgeTarget = controlDependency.getGraph().getEdgeTarget(edge);
 				slice(controlFlow, controlDependency, blocks, dataDependency, dependendInstructions, edgeTarget);
 			}
@@ -170,7 +144,6 @@ public class MySlicer {
 				if (edgeSource == -1) {
 					continue;
 				}
-//				System.out.println("  Control dependency: " + edge);
 				slice(controlFlow, controlDependency, blocks, dataDependency, dependendInstructions, edgeSource);
 			}
 		}

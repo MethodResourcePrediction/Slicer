@@ -57,6 +57,8 @@ public class BlockDependency {
 			IInstruction instruction = instructions[index];
 			block.addInstruction(index, instruction);
 
+			// Group subsequent instructions until the stack size equals 0. A block is
+			// complete, if the stack is empty (=0) after some instructions.
 			int stack = instruction.getPushedWordSize();
 			for (index++; index < instructions.length && stack > 0; index++) {
 				instruction = instructions[index];
@@ -68,7 +70,6 @@ public class BlockDependency {
 
 				block.addInstruction(index, instruction);
 			}
-//			System.out.println(block);
 		}
 
 		// Add edges between the blocks (vertices)

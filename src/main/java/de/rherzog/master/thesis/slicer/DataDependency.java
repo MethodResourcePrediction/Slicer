@@ -50,11 +50,14 @@ public class DataDependency {
 
 	private Graph<Integer, DefaultEdge> getDependencyGraph(Graph<Integer, DefaultEdge> cfg)
 			throws IOException, InvalidClassFileException {
+		// Create and add vertices (instruction indexes) first
 		Graph<Integer, DefaultEdge> dependencyGraph = new DefaultDirectedGraph<>(DefaultEdge.class);
 		cfg.vertexSet().forEach(v -> dependencyGraph.addVertex(v));
 
+		// Add edges to the graph if there is a data dependency. Start with iterating
+		// for each instruction index. For each instruction, we analyze all preceding
+		// instructions if there is a data dependency.
 		for (int instructionIndex : cfg.vertexSet()) {
-//			System.out.println("Focus on: " + instructionIndex);
 			buildGraphForVertex(cfg, instructionIndex, instructionIndex, new HashSet<>(), dependencyGraph);
 		}
 		return dependencyGraph;
@@ -63,17 +66,18 @@ public class DataDependency {
 	private void buildGraphForVertex(Graph<Integer, DefaultEdge> cfg, int focusedIndex, int instructionIndex,
 			Set<Integer> visitedVertices, Graph<Integer, DefaultEdge> dependencyGraph)
 			throws IOException, InvalidClassFileException {
+		// We skip already visited instructions
 		if (!visitedVertices.add(instructionIndex)) {
 			return;
 		}
 
+		// Only data dependencies between different instructions are interesting
 		if (focusedIndex != instructionIndex) {
-//			System.out.println("  Check data dependency: (" + focusedIndex + ", " + instructionIndex + ")");
-
 			// Check dependencies for both instructions
 			IInstruction[] instructions = controlFlow.getMethodData().getInstructions();
 			IInstruction instructionA = instructions[focusedIndex];
 			IInstruction instructionB = instructions[instructionIndex];
+
 			if (checkDataDependency(instructionA, instructionB)) {
 				if (!dependencyGraph.containsEdge(focusedIndex, instructionIndex)) {
 					dependencyGraph.addEdge(focusedIndex, instructionIndex);
@@ -81,6 +85,7 @@ public class DataDependency {
 			}
 		}
 
+		// Recursively analyze preceding instructions
 		for (DefaultEdge edge : cfg.incomingEdgesOf(instructionIndex)) {
 			int sourceInstructionIndex = cfg.getEdgeSource(edge);
 			buildGraphForVertex(cfg, focusedIndex, sourceInstructionIndex, visitedVertices, dependencyGraph);
@@ -88,6 +93,8 @@ public class DataDependency {
 	}
 
 	private static boolean checkDataDependency(IInstruction instructionA, IInstruction instructionB) {
+		// A data dependency exists, if a there is a load instruction which are a
+		// preceding store instruction in all possible execution paths.
 		if (instructionA instanceof ILoadInstruction) {
 			ILoadInstruction loadInstruction = (ILoadInstruction) instructionA;
 			if (instructionB instanceof IStoreInstruction) {

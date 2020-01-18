@@ -51,14 +51,18 @@ public class ControlFlow {
 
 		graph = new DefaultDirectedGraph<>(DefaultEdge.class);
 
+		// Add all instruction indexes as vertices first
 		for (int index = 0; index < instructions.length; index++) {
 			graph.addVertex(index);
 		}
 
+		// Iterate all instructions and build the control flow
 		for (int index = 0; index < instructions.length - 1; index++) {
 			IInstruction a = instructions[index];
 
 			int b = index + 1;
+			// If the next instruction is a Goto-/ConditionalBranchInstruction, the flow can
+			// differ to realize if's and loops
 			if (a instanceof GotoInstruction) {
 				int target = a.getBranchTargets()[0];
 				b = target;

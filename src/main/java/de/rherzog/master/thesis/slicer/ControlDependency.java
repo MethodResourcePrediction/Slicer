@@ -40,25 +40,40 @@ public class ControlDependency {
 		IInstruction[] instructions = controlFlow.getMethodData().getInstructions();
 		graph = new DefaultDirectedGraph<>(DefaultEdge.class);
 
+		// In a control dependency graph there is a root node which marks the program
+		// start. Add it first
 		graph.addVertex(rootIndex);
+
+		// Every vertex in the control flow is present in the control dependency graph
+		// as well.
 		Graph<Integer, DefaultEdge> cfg = controlFlow.getGraph();
 		cfg.vertexSet().forEach(v -> graph.addVertex(v));
 
+		// Build up the edges which shows the control dependencies
+		// Start with the root node (index) and begin to analyze with the first
+		// instruction (index 0)
 		iterate(new HashSet<>(), cfg, instructions, rootIndex, 0);
 		return graph;
 	}
 
 	private void iterate(Set<Integer> visited, Graph<Integer, DefaultEdge> cfg, IInstruction[] instructions, int parent,
 			int index) {
+		// We just need to visit each node once
 		if (!visited.add(index)) {
 			return;
 		}
 
+		// If we havn't seen the instruction with "index" before, it always depends on
+		// the parent index.
 		graph.addEdge(parent, index);
+		// If there is a edge to one or more instructions in the cfg focus on it.
 		for (DefaultEdge edge : cfg.outgoingEdgesOf(index)) {
 			int targetInstructionIndex = cfg.getEdgeTarget(edge);
 
 			IInstruction instruction = instructions[index];
+			// If we visit a ConditionalBranchInstruction (CBI), all dependent instructions
+			// can only be reached by executing the CBI first. Hence, the new parent is the
+			// CBI instruction.
 			if (instruction instanceof IConditionalBranchInstruction) {
 				iterate(visited, cfg, instructions, index, targetInstructionIndex);
 			} else {
