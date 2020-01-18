@@ -1,4 +1,4 @@
-package de.rherzog.master.thesis.slicer;
+package de.rherzog.master.thesis.slicer.wala;
 
 import java.util.HashSet;
 import java.util.Set;

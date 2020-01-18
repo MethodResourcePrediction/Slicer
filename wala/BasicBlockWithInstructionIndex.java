@@ -1,4 +1,4 @@
-package de.rherzog.master.thesis.slicer;
+package de.rherzog.master.thesis.slicer.wala;
 
 import com.ibm.wala.ssa.SSACFG.BasicBlock;
 

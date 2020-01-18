@@ -22,10 +22,13 @@ import org.jgrapht.graph.DefaultEdge;
 
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.shrikeBT.IInstruction;
+import com.ibm.wala.shrikeBT.IInvokeInstruction;
+import com.ibm.wala.shrikeBT.ReturnInstruction;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import com.ibm.wala.util.CancelException;
 
 import de.rherzog.master.thesis.slicer.instrumenter.export.SliceWriter.ExportFormat;
+import de.rherzog.master.thesis.utils.Utilities;
 
 public class MySlicer {
 	private String inputJar;
@@ -52,7 +55,7 @@ public class MySlicer {
 	public String makeSlicedFile() throws IOException, ClassHierarchyException, IllegalArgumentException,
 			CancelException, IllegalStateException, DecoderException, InvalidClassFileException, InterruptedException {
 		Set<Integer> instructionIndexesToKeep = getInstructionIndexesToKeep();
-//		System.out.println("InstructionIndexesToKeep: " + instructionIndexesToKeep);
+		System.out.println("InstructionIndexesToKeep: " + instructionIndexesToKeep);
 
 		// Instrument a new program with a modified method which we analyze
 		Instrumenter instrumenter = new Instrumenter(additionalJarsPath, inputJar, outputJar, methodSignature,
@@ -70,38 +73,41 @@ public class MySlicer {
 		BlockDependency blocks = new BlockDependency(controlFlow);
 		DataDependency dataDependency = new DataDependency(controlFlow);
 
-		final Path dir = Files.createTempDirectory("slicer-");
-		dotShow(dir, controlFlow.dotPrint());
-		dotShow(dir, controlDependency.dotPrint());
-		dotShow(dir, blocks.dotPrint());
-		dotShow(dir, dataDependency.dotPrint());
+//		final Path dir = Files.createTempDirectory("slicer-");
+//		dotShow(dir, controlFlow.dotPrint());
+//		dotShow(dir, controlDependency.dotPrint());
+//		dotShow(dir, blocks.dotPrint());
+//		dotShow(dir, dataDependency.dotPrint());
 
 		Set<Integer> indexesToKeep = new HashSet<>();
 		for (int instructionIndex : instructionIndexes) {
 			slice(controlFlow, controlDependency, blocks, dataDependency, indexesToKeep, instructionIndex);
 		}
-		// Add last return instruction
+
 		IInstruction[] instructions = controlFlow.getMethodData().getInstructions();
+
+		// TODO If the method can be invoked recursively, keep all return statements.
+		boolean hasRecursiveInvokeInstruction = false;
+		for (IInstruction iInstruction : instructions) {
+			if (iInstruction instanceof IInvokeInstruction) {
+				IInvokeInstruction instruction = (IInvokeInstruction) iInstruction;
+				if (Utilities.isRecursiveInvokeInstruction(controlFlow.getMethodData(), instruction)) {
+					hasRecursiveInvokeInstruction = true;
+					break;
+				}
+			}
+		}
+		if (hasRecursiveInvokeInstruction) {
+			for (int index = 0; index < instructions.length - 1; index++) {
+				IInstruction iInstruction = instructions[index];
+				if (iInstruction instanceof ReturnInstruction) {
+//					indexesToKeep.add(index);
+				}
+			}
+		}
+		// Add last return instruction
 		indexesToKeep.add(instructions.length - 1);
-
 		return indexesToKeep;
-	}
-
-	private static void dotShow(Path dir, String dotPrint) throws IOException, InterruptedException {
-		final String format = "png";
-		final String path = Files.createTempFile(dir, "slicer-", "." + format).toFile().getPath();
-
-		ProcessBuilder builder = new ProcessBuilder("dot", "-T" + format, "-o" + path);
-		Process process = builder.start();
-		OutputStream outputStream = process.getOutputStream();
-
-		IOUtils.write(dotPrint, outputStream, Charset.defaultCharset());
-		outputStream.close();
-
-		process.waitFor();
-
-		builder = new ProcessBuilder("xdg-open", path);
-		builder.start().waitFor();
 	}
 
 	private void slice(ControlFlow controlFlow, ControlDependency controlDependency, BlockDependency blocks,
@@ -130,7 +136,6 @@ public class MySlicer {
 		if (!addedAny) {
 			return;
 		}
-//		System.out.println(block);
 
 		for (int blockInstructionIndex : block.getInstructions().keySet()) {
 			// Consider data dependencies
@@ -147,6 +152,23 @@ public class MySlicer {
 				slice(controlFlow, controlDependency, blocks, dataDependency, dependendInstructions, edgeSource);
 			}
 		}
+	}
+
+	private static void dotShow(Path dir, String dotPrint) throws IOException, InterruptedException {
+		final String format = "png";
+		final String path = Files.createTempFile(dir, "slicer-", "." + format).toFile().getPath();
+
+		ProcessBuilder builder = new ProcessBuilder("dot", "-T" + format, "-o" + path);
+		Process process = builder.start();
+		OutputStream outputStream = process.getOutputStream();
+
+		IOUtils.write(dotPrint, outputStream, Charset.defaultCharset());
+		outputStream.close();
+
+		process.waitFor();
+
+		builder = new ProcessBuilder("xdg-open", path);
+		builder.start().waitFor();
 	}
 
 	public void parseArgs(String[] args) throws ParseException {
