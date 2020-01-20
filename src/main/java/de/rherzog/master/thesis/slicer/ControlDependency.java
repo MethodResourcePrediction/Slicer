@@ -25,7 +25,7 @@ public class ControlDependency {
 	private Graph<Integer, DefaultEdge> graph;
 	private List<List<Integer>> simpleCycles;
 
-	private final int rootIndex = -1;
+	public static final int ROOT_INDEX = -1;
 
 	public ControlDependency(ControlFlow controlFlowGraph) {
 		this.controlFlow = controlFlowGraph;
@@ -42,7 +42,7 @@ public class ControlDependency {
 
 		// In a control dependency graph there is a root node which marks the program
 		// start. Add it first
-		graph.addVertex(rootIndex);
+		graph.addVertex(ROOT_INDEX);
 
 		// Every vertex in the control flow is present in the control dependency graph
 		// as well.
@@ -52,7 +52,7 @@ public class ControlDependency {
 		// Build up the edges which shows the control dependencies
 		// Start with the root node (index) and begin to analyze with the first
 		// instruction (index 0)
-		iterate(new HashSet<>(), cfg, instructions, rootIndex, 0);
+		iterate(new HashSet<>(), cfg, instructions, ROOT_INDEX, 0);
 		return graph;
 	}
 
@@ -94,7 +94,7 @@ public class ControlDependency {
 		};
 		ComponentNameProvider<Integer> vertexLabelProvider = new ComponentNameProvider<>() {
 			public String getName(Integer index) {
-				if (index == rootIndex) {
+				if (index == ROOT_INDEX) {
 					return "START";
 				}
 				return index + ": " + instructions[index].toString();

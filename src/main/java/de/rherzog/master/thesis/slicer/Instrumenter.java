@@ -338,13 +338,12 @@ public class Instrumenter {
 		// At the end of the method, we save the slicer results
 		int endTimeVarIndex = maxVarIndex;
 		if (exportFormat != null) {
-			methodEditor.insertAfter(lastInstructionIndex, Utilities.getStoreTimePatch(endTimeVarIndex));
+			methodEditor.insertBefore(lastInstructionIndex,
+					getWriteFilePatch(startTimeVarIndex, endTimeVarIndex, loggerVarIndex));
 		}
 		maxVarIndex += 2;
-
 		if (exportFormat != null) {
-			methodEditor.insertAfter(lastInstructionIndex,
-					getWriteFilePatch(startTimeVarIndex, endTimeVarIndex, loggerVarIndex));
+			methodEditor.insertBefore(lastInstructionIndex, Utilities.getStoreTimePatch(endTimeVarIndex));
 		}
 
 		methodEditor.insertAfter(lastInstructionIndex, new Patch() {

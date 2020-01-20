@@ -11,3 +11,4 @@ build
 *.xml
 result
 bin/
+generated/

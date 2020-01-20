@@ -5,7 +5,13 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.jgrapht.Graph;
 import org.jgrapht.alg.cycle.JohnsonSimpleCycles;
@@ -19,6 +25,8 @@ import org.jgrapht.io.GraphExporter;
 import com.ibm.wala.shrikeBT.ConditionalBranchInstruction;
 import com.ibm.wala.shrikeBT.GotoInstruction;
 import com.ibm.wala.shrikeBT.IInstruction;
+import com.ibm.wala.shrikeBT.ILoadInstruction;
+import com.ibm.wala.shrikeBT.IStoreInstruction;
 import com.ibm.wala.shrikeBT.MethodData;
 import com.ibm.wala.shrikeBT.shrikeCT.ClassInstrumenter;
 import com.ibm.wala.shrikeBT.shrikeCT.OfflineInstrumenter;
@@ -85,6 +93,121 @@ public class ControlFlow {
 		JohnsonSimpleCycles<Integer, DefaultEdge> johnsonSimpleCycles = new JohnsonSimpleCycles<>(getGraph());
 		simpleCycles = johnsonSimpleCycles.findSimpleCycles();
 		return simpleCycles;
+	}
+
+	public Map<Integer, Integer> getRenumberedGraph() throws IOException, InvalidClassFileException {
+		Graph<Integer, DefaultEdge> renumberedGraph = new DefaultDirectedGraph<>(DefaultEdge.class);
+
+		Graph<Integer, DefaultEdge> graph = getGraph();
+		graph.vertexSet().forEach(v -> renumberedGraph.addVertex(v));
+		graph.edgeSet().forEach(e -> renumberedGraph.addEdge(graph.getEdgeSource(e), graph.getEdgeTarget(e)));
+
+		Map<Integer, Set<Integer>> varIndexToRenumber = renumberVarIndexes(getMethodData().getInstructions(),
+				renumberedGraph);
+		System.out.println(varIndexToRenumber);
+
+		return Collections.emptyMap();
+	}
+
+	private static Map<Integer, Set<Integer>> renumberVarIndexes(IInstruction[] instructions,
+			Graph<Integer, DefaultEdge> cfg) {
+		Map<Integer, Set<Integer>> loadInstStoreInstMap = new HashMap<>();
+
+		// Build a map of LoadInstruction indexes and their directly dependent
+		// (by varIndex) StoreInstructions. Directly means that only the closest
+		// StoreInstruction will be added in the value list.
+		// After creation, a single load instruction is defined by a set of store
+		// instruction indexes.
+		for (int index = 0; index < instructions.length - 1; index += 1) {
+			IInstruction instruction = instructions[index];
+			if (instruction instanceof ILoadInstruction) {
+				ILoadInstruction loadInstruction = (ILoadInstruction) instruction;
+				int varIndex = loadInstruction.getVarIndex();
+
+//				System.out.println("Search Store for Load with varIndex " + varIndex + " at " + index);
+				Set<Integer> directlyReachableStoreInstructions = new HashSet<>();
+				for (DefaultEdge edge : cfg.incomingEdgesOf(index)) {
+					int prevIndex = cfg.getEdgeSource(edge);
+					getDirectlyPreceedingStoreInstructions(new HashSet<>(), directlyReachableStoreInstructions,
+							instructions, cfg, varIndex, prevIndex);
+				}
+//				System.out.println(directlyReachableStoreInstructions);
+
+				loadInstStoreInstMap.put(index, directlyReachableStoreInstructions);
+			}
+		}
+
+		// Build a map with store instruction indexes as key and load instruction
+		// indexes as values for the same varIndex.
+		Map<Set<Integer>, Set<Integer>> storeLoadMap = new HashMap<>();
+		for (Entry<Integer, Set<Integer>> entry : loadInstStoreInstMap.entrySet()) {
+			int loadInstruction = entry.getKey();
+			Set<Integer> storeInstructions = entry.getValue();
+
+			if (!storeLoadMap.containsKey(storeInstructions)) {
+				Set<Integer> loadInstructions = new HashSet<>();
+				loadInstructions.add(loadInstruction);
+				storeLoadMap.put(storeInstructions, loadInstructions);
+			} else {
+				Set<Integer> loadInstructions = storeLoadMap.get(storeInstructions);
+				loadInstructions.add(loadInstruction);
+			}
+		}
+
+		// Iterate over the load-/store-Instruction map and lookup the default varIndex.
+		// If it is used multiple times, allocate a new variable index.
+		Set<Integer> usedVarIndexes = new HashSet<>();
+		Map<Integer, Set<Integer>> newVariableForInstructions = new HashMap<>();
+		for (Entry<Set<Integer>, Set<Integer>> entry : storeLoadMap.entrySet()) {
+			Set<Integer> storeInstructions = entry.getKey();
+			Set<Integer> loadInstructions = entry.getValue();
+
+			Integer varIndex = null;
+			if (!storeInstructions.isEmpty()) {
+				int anyInstructionIndex = storeInstructions.iterator().next();
+				IStoreInstruction storeInstruction = (IStoreInstruction) instructions[anyInstructionIndex];
+				varIndex = storeInstruction.getVarIndex();
+			} else {
+				int anyInstructionIndex = loadInstructions.iterator().next();
+				ILoadInstruction loadInstruction = (ILoadInstruction) instructions[anyInstructionIndex];
+				varIndex = loadInstruction.getVarIndex();
+			}
+
+			if (!usedVarIndexes.add(varIndex)) {
+				// TODO Generate new variable index
+				// TODO Get maximum variable index and increment it
+				int newVarIndex = 42;
+
+				Set<Integer> varInstructions = new HashSet<>();
+				varInstructions.addAll(storeInstructions);
+				varInstructions.addAll(loadInstructions);
+
+				newVariableForInstructions.put(newVarIndex, varInstructions);
+			}
+		}
+		return newVariableForInstructions;
+	}
+
+	private static void getDirectlyPreceedingStoreInstructions(Set<Integer> visited,
+			Set<Integer> directlyReachableStoreInstructions, IInstruction[] instructions,
+			Graph<Integer, DefaultEdge> cfg, int varIndex, int index) {
+		if (!visited.add(index)) {
+			return;
+		}
+		IInstruction instruction = instructions[index];
+		if (instruction instanceof IStoreInstruction) {
+			IStoreInstruction storeInstruction = (IStoreInstruction) instruction;
+			if (storeInstruction.getVarIndex() == varIndex) {
+				if (directlyReachableStoreInstructions.add(index)) {
+					return;
+				}
+			}
+		}
+		for (DefaultEdge edge : cfg.incomingEdgesOf(index)) {
+			int prevIndex = cfg.getEdgeSource(edge);
+			getDirectlyPreceedingStoreInstructions(visited, directlyReachableStoreInstructions, instructions, cfg,
+					varIndex, prevIndex);
+		}
 	}
 
 	public String dotPrint() throws IOException, InvalidClassFileException {

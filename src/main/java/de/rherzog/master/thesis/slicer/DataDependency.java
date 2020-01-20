@@ -20,6 +20,8 @@ import com.ibm.wala.shrikeBT.IInstruction;
 import com.ibm.wala.shrikeBT.ILoadInstruction;
 import com.ibm.wala.shrikeBT.IStoreInstruction;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
+import com.ibm.wala.types.TypeName;
+import com.ibm.wala.util.strings.StringStuff;
 
 public class DataDependency {
 	private ControlFlow controlFlow;
@@ -50,22 +52,35 @@ public class DataDependency {
 
 	private Graph<Integer, DefaultEdge> getDependencyGraph(Graph<Integer, DefaultEdge> cfg)
 			throws IOException, InvalidClassFileException {
-		// Create and add vertices (instruction indexes) first
+		// Create graph
 		Graph<Integer, DefaultEdge> dependencyGraph = new DefaultDirectedGraph<>(DefaultEdge.class);
+
+		// Add vertexes for data dependencies to "this" and method parameters
+		boolean hasThis = !controlFlow.getMethodData().getIsStatic();
+		if (hasThis) {
+			dependencyGraph.addVertex(-1);
+		}
+		TypeName[] methodParameters = StringStuff.parseForParameterNames(controlFlow.getMethodData().getSignature());
+		for (int parameterIndex = 1; parameterIndex <= methodParameters.length; parameterIndex++) {
+			dependencyGraph.addVertex(-(parameterIndex + (hasThis ? 1 : 0)));
+		}
+
+		// Add a vertex for each instruction index
 		cfg.vertexSet().forEach(v -> dependencyGraph.addVertex(v));
 
 		// Add edges to the graph if there is a data dependency. Start with iterating
 		// for each instruction index. For each instruction, we analyze all preceding
 		// instructions if there is a data dependency.
 		for (int instructionIndex : cfg.vertexSet()) {
-			buildGraphForVertex(cfg, instructionIndex, instructionIndex, new HashSet<>(), dependencyGraph);
+			buildGraphForVertex(cfg, hasThis, methodParameters.length, instructionIndex, instructionIndex,
+					new HashSet<>(), dependencyGraph);
 		}
 		return dependencyGraph;
 	}
 
-	private void buildGraphForVertex(Graph<Integer, DefaultEdge> cfg, int focusedIndex, int instructionIndex,
-			Set<Integer> visitedVertices, Graph<Integer, DefaultEdge> dependencyGraph)
-			throws IOException, InvalidClassFileException {
+	private void buildGraphForVertex(Graph<Integer, DefaultEdge> cfg, boolean hasThis, int methodParameters,
+			int focusedIndex, int instructionIndex, Set<Integer> visitedVertices,
+			Graph<Integer, DefaultEdge> dependencyGraph) throws IOException, InvalidClassFileException {
 		// We skip already visited instructions
 		if (!visitedVertices.add(instructionIndex)) {
 			return;
@@ -73,23 +88,92 @@ public class DataDependency {
 
 		// Only data dependencies between different instructions are interesting
 		if (focusedIndex != instructionIndex) {
-			// Check dependencies for both instructions
 			IInstruction[] instructions = controlFlow.getMethodData().getInstructions();
 			IInstruction instructionA = instructions[focusedIndex];
-			IInstruction instructionB = instructions[instructionIndex];
 
-			if (checkDataDependency(instructionA, instructionB)) {
-				if (!dependencyGraph.containsEdge(focusedIndex, instructionIndex)) {
-					dependencyGraph.addEdge(focusedIndex, instructionIndex);
+			boolean hasDataDependency = false;
+			if (instructionIndex < 0) {
+				// Check dependency against method parameter
+				if (checkDataDependency(instructionA, hasThis, methodParameters, instructionIndex)) {
+					hasDataDependency = true;
+				}
+			} else {
+				// Check dependencies for both normal instructions
+				IInstruction instructionB = instructions[instructionIndex];
+				if (checkDataDependency(instructionA, instructionB)) {
+					hasDataDependency = true;
 				}
 			}
+
+			if (hasDataDependency && !dependencyGraph.containsEdge(focusedIndex, instructionIndex)) {
+				dependencyGraph.addEdge(focusedIndex, instructionIndex);
+			}
+		}
+
+		// Check instruction dependency against "this"
+		buildGraphForVertex(cfg, hasThis, methodParameters, focusedIndex, -1, visitedVertices, dependencyGraph);
+		// Check instruction dependency against method parameters
+		for (int methodParameterIndex = 1; methodParameterIndex <= methodParameters; methodParameterIndex++) {
+			int index = -(methodParameterIndex + (hasThis ? 1 : 0));
+			buildGraphForVertex(cfg, hasThis, methodParameters, focusedIndex, index, visitedVertices, dependencyGraph);
+		}
+
+		if (instructionIndex < 0) {
+			// There cannot be any control flow for method parameters
+			return;
 		}
 
 		// Recursively analyze preceding instructions
 		for (DefaultEdge edge : cfg.incomingEdgesOf(instructionIndex)) {
 			int sourceInstructionIndex = cfg.getEdgeSource(edge);
-			buildGraphForVertex(cfg, focusedIndex, sourceInstructionIndex, visitedVertices, dependencyGraph);
+			buildGraphForVertex(cfg, hasThis, methodParameters, focusedIndex, sourceInstructionIndex, visitedVertices,
+					dependencyGraph);
 		}
+	}
+
+	public boolean hasDependencyToMethodParameter(int instructionIndex) throws IOException, InvalidClassFileException {
+		Graph<Integer, DefaultEdge> graph = getGraph();
+
+		boolean hasThis = !controlFlow.getMethodData().getIsStatic();
+		Set<Integer> parameterIndexes = new HashSet<>();
+		TypeName[] methodParameters = StringStuff.parseForParameterNames(controlFlow.getMethodData().getSignature());
+		for (int parameterIndex = 1; parameterIndex <= methodParameters.length; parameterIndex++) {
+			parameterIndexes.add(-(parameterIndex + (hasThis ? 1 : 0)));
+		}
+
+		boolean hasDependencyToParameters = false;
+		for (int parameterIndex : parameterIndexes) {
+			hasDependencyToParameters |= graph.containsEdge(instructionIndex, parameterIndex);
+		}
+		return hasDependencyToParameters;
+	}
+
+	/*
+	 * Checks a data dependency either to "this" if in a non-static context or a
+	 * method argument
+	 */
+	private static boolean checkDataDependency(IInstruction instructionA, boolean hasThis, int methodParameters,
+			int instructionIndex) {
+		if (instructionA instanceof ILoadInstruction) {
+			ILoadInstruction loadInstruction = (ILoadInstruction) instructionA;
+
+			int varIndex = loadInstruction.getVarIndex();
+			// Check if the varIndex is 0 and refers to "this"
+			if (hasThis && instructionIndex == -1) {
+				return varIndex == 0;
+			} else {
+				// Check if the loaded varIndex refers to a method argument
+				int methodVars = (hasThis ? 1 : 0) + methodParameters;
+				int paramVarIndex = -((hasThis ? 1 : 0) + instructionIndex);
+				if (varIndex < methodVars) {
+					// varIndex references to a method parameter, check the correctness
+					if (varIndex == paramVarIndex) {
+						return true;
+					}
+				}
+			}
+		}
+		return false;
 	}
 
 	private static boolean checkDataDependency(IInstruction instructionA, IInstruction instructionB) {
@@ -109,6 +193,7 @@ public class DataDependency {
 
 	public String dotPrint() throws IOException, InvalidClassFileException {
 		IInstruction[] instructions = controlFlow.getMethodData().getInstructions();
+		boolean hasThis = !controlFlow.getMethodData().getIsStatic();
 
 		// use helper classes to define how vertices should be rendered,
 		// adhering to the DOT language restrictions
@@ -119,6 +204,12 @@ public class DataDependency {
 		};
 		ComponentNameProvider<Integer> vertexLabelProvider = new ComponentNameProvider<Integer>() {
 			public String getName(Integer index) {
+				if (hasThis && index == -1) {
+					return "this";
+				}
+				if ((hasThis && index < -1) || (!hasThis && index < 0)) {
+					return "arg " + -(index + (hasThis ? 1 : 0));
+				}
 				return index + ": " + instructions[index].toString();
 			}
 		};

@@ -55,7 +55,7 @@ public class MySlicer {
 	public String makeSlicedFile() throws IOException, ClassHierarchyException, IllegalArgumentException,
 			CancelException, IllegalStateException, DecoderException, InvalidClassFileException, InterruptedException {
 		Set<Integer> instructionIndexesToKeep = getInstructionIndexesToKeep();
-		System.out.println("InstructionIndexesToKeep: " + instructionIndexesToKeep);
+//		System.out.println("InstructionIndexesToKeep: " + instructionIndexesToKeep);
 
 		// Instrument a new program with a modified method which we analyze
 		Instrumenter instrumenter = new Instrumenter(additionalJarsPath, inputJar, outputJar, methodSignature,
@@ -72,6 +72,8 @@ public class MySlicer {
 		ControlDependency controlDependency = new ControlDependency(controlFlow);
 		BlockDependency blocks = new BlockDependency(controlFlow);
 		DataDependency dataDependency = new DataDependency(controlFlow);
+		
+		controlFlow.getRenumberedGraph();
 
 //		final Path dir = Files.createTempDirectory("slicer-");
 //		dotShow(dir, controlFlow.dotPrint());
@@ -79,32 +81,53 @@ public class MySlicer {
 //		dotShow(dir, blocks.dotPrint());
 //		dotShow(dir, dataDependency.dotPrint());
 
+		IInstruction[] instructions = controlFlow.getMethodData().getInstructions();
+
 		Set<Integer> indexesToKeep = new HashSet<>();
 		for (int instructionIndex : instructionIndexes) {
 			slice(controlFlow, controlDependency, blocks, dataDependency, indexesToKeep, instructionIndex);
 		}
 
-		IInstruction[] instructions = controlFlow.getMethodData().getInstructions();
-
-		// TODO If the method can be invoked recursively, keep all return statements.
-		boolean hasRecursiveInvokeInstruction = false;
-		for (IInstruction iInstruction : instructions) {
+		// If the method can be invoked recursively, keep all return statements.
+		Set<Integer> recursiveInvokeInstructions = new HashSet<>();
+		for (int instructionIndex = 0; instructionIndex < instructions.length; instructionIndex++) {
+			IInstruction iInstruction = instructions[instructionIndex];
 			if (iInstruction instanceof IInvokeInstruction) {
 				IInvokeInstruction instruction = (IInvokeInstruction) iInstruction;
 				if (Utilities.isRecursiveInvokeInstruction(controlFlow.getMethodData(), instruction)) {
-					hasRecursiveInvokeInstruction = true;
+					recursiveInvokeInstructions.add(instructionIndex);
 					break;
 				}
 			}
 		}
-		if (hasRecursiveInvokeInstruction) {
+		// If there are recursive invoke instructions, add all return statements
+		if (!recursiveInvokeInstructions.isEmpty()) {
 			for (int index = 0; index < instructions.length - 1; index++) {
-				IInstruction iInstruction = instructions[index];
-				if (iInstruction instanceof ReturnInstruction) {
-//					indexesToKeep.add(index);
+				IInstruction instruction = instructions[index];
+				// TODO Include all return statements or just the ones occurring before the last
+				// recursive method call?
+				if (instruction instanceof ReturnInstruction) {
+					slice(controlFlow, controlDependency, blocks, dataDependency, indexesToKeep, index);
 				}
 			}
 		}
+
+		// Concurrent modification handling since we iterate through indexesToKeep while
+		// changing inside slice(...)
+		Set<Integer> indexesToKeep2 = new HashSet<>();
+		// Check if there is a data dependency to method parameters. If there is
+		// further a recursive method call, include it into slicing
+		for (int indexToKeep : indexesToKeep) {
+			if (dataDependency.hasDependencyToMethodParameter(indexToKeep)) {
+				// Add all indexes where recursive invoke instructions are performed
+				for (int recursiveInvokeInstructionIndex : recursiveInvokeInstructions) {
+					slice(controlFlow, controlDependency, blocks, dataDependency, indexesToKeep2,
+							recursiveInvokeInstructionIndex);
+				}
+			}
+		}
+		indexesToKeep.addAll(indexesToKeep2);
+
 		// Add last return instruction
 		indexesToKeep.add(instructions.length - 1);
 		return indexesToKeep;
@@ -113,6 +136,11 @@ public class MySlicer {
 	private void slice(ControlFlow controlFlow, ControlDependency controlDependency, BlockDependency blocks,
 			DataDependency dataDependency, Set<Integer> dependendInstructions, int index)
 			throws IOException, InvalidClassFileException {
+		if (index < 0) {
+			// We cannot slice indexes which represent "this" (-1) or method arguments (-2,
+			// -3, ...)
+			return;
+		}
 		Block block = blocks.getBlockForIndex(index);
 
 		boolean addedAny = false;
@@ -146,7 +174,7 @@ public class MySlicer {
 			// Consider control dependencies
 			for (DefaultEdge edge : controlDependency.getGraph().incomingEdgesOf(blockInstructionIndex)) {
 				int edgeSource = controlDependency.getGraph().getEdgeSource(edge);
-				if (edgeSource == -1) {
+				if (edgeSource == ControlDependency.ROOT_INDEX) {
 					continue;
 				}
 				slice(controlFlow, controlDependency, blocks, dataDependency, dependendInstructions, edgeSource);
