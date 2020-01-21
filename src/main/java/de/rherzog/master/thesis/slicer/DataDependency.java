@@ -5,6 +5,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.jgrapht.Graph;
@@ -22,6 +23,8 @@ import com.ibm.wala.shrikeBT.IStoreInstruction;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import com.ibm.wala.types.TypeName;
 import com.ibm.wala.util.strings.StringStuff;
+
+import de.rherzog.master.thesis.utils.Utilities;
 
 public class DataDependency {
 	private ControlFlow controlFlow;
@@ -68,19 +71,22 @@ public class DataDependency {
 		// Add a vertex for each instruction index
 		cfg.vertexSet().forEach(v -> dependencyGraph.addVertex(v));
 
+		Map<Integer, Set<Integer>> varIndexesToRenumber = controlFlow.getVarIndexesToRenumber();
+
 		// Add edges to the graph if there is a data dependency. Start with iterating
 		// for each instruction index. For each instruction, we analyze all preceding
 		// instructions if there is a data dependency.
 		for (int instructionIndex : cfg.vertexSet()) {
 			buildGraphForVertex(cfg, hasThis, methodParameters.length, instructionIndex, instructionIndex,
-					new HashSet<>(), dependencyGraph);
+					new HashSet<>(), dependencyGraph, varIndexesToRenumber);
 		}
 		return dependencyGraph;
 	}
 
 	private void buildGraphForVertex(Graph<Integer, DefaultEdge> cfg, boolean hasThis, int methodParameters,
 			int focusedIndex, int instructionIndex, Set<Integer> visitedVertices,
-			Graph<Integer, DefaultEdge> dependencyGraph) throws IOException, InvalidClassFileException {
+			Graph<Integer, DefaultEdge> dependencyGraph, Map<Integer, Set<Integer>> varIndexesToRenumber)
+			throws IOException, InvalidClassFileException {
 		// We skip already visited instructions
 		if (!visitedVertices.add(instructionIndex)) {
 			return;
@@ -91,6 +97,8 @@ public class DataDependency {
 			IInstruction[] instructions = controlFlow.getMethodData().getInstructions();
 			IInstruction instructionA = instructions[focusedIndex];
 
+			instructionA = Utilities.rewriteVarIndex(varIndexesToRenumber, instructionA, focusedIndex);
+
 			boolean hasDataDependency = false;
 			if (instructionIndex < 0) {
 				// Check dependency against method parameter
@@ -100,6 +108,7 @@ public class DataDependency {
 			} else {
 				// Check dependencies for both normal instructions
 				IInstruction instructionB = instructions[instructionIndex];
+				instructionB = Utilities.rewriteVarIndex(varIndexesToRenumber, instructionB, instructionIndex);
 				if (checkDataDependency(instructionA, instructionB)) {
 					hasDataDependency = true;
 				}
@@ -111,11 +120,13 @@ public class DataDependency {
 		}
 
 		// Check instruction dependency against "this"
-		buildGraphForVertex(cfg, hasThis, methodParameters, focusedIndex, -1, visitedVertices, dependencyGraph);
+		buildGraphForVertex(cfg, hasThis, methodParameters, focusedIndex, -1, visitedVertices, dependencyGraph,
+				varIndexesToRenumber);
 		// Check instruction dependency against method parameters
 		for (int methodParameterIndex = 1; methodParameterIndex <= methodParameters; methodParameterIndex++) {
 			int index = -(methodParameterIndex + (hasThis ? 1 : 0));
-			buildGraphForVertex(cfg, hasThis, methodParameters, focusedIndex, index, visitedVertices, dependencyGraph);
+			buildGraphForVertex(cfg, hasThis, methodParameters, focusedIndex, index, visitedVertices, dependencyGraph,
+					varIndexesToRenumber);
 		}
 
 		if (instructionIndex < 0) {
@@ -127,7 +138,7 @@ public class DataDependency {
 		for (DefaultEdge edge : cfg.incomingEdgesOf(instructionIndex)) {
 			int sourceInstructionIndex = cfg.getEdgeSource(edge);
 			buildGraphForVertex(cfg, hasThis, methodParameters, focusedIndex, sourceInstructionIndex, visitedVertices,
-					dependencyGraph);
+					dependencyGraph, varIndexesToRenumber);
 		}
 	}
 
@@ -210,7 +221,8 @@ public class DataDependency {
 				if ((hasThis && index < -1) || (!hasThis && index < 0)) {
 					return "arg " + -(index + (hasThis ? 1 : 0));
 				}
-				return index + ": " + instructions[index].toString();
+				IInstruction instruction = instructions[index];
+				return index + ": " + instruction.toString();
 			}
 		};
 		GraphExporter<Integer, DefaultEdge> exporter = new DOTExporter<>(vertexIdProvider, vertexLabelProvider, null);

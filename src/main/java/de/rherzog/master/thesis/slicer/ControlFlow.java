@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -34,6 +33,7 @@ import com.ibm.wala.shrikeCT.ClassReader;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 
 import de.rherzog.master.thesis.utils.InstrumenterComparator;
+import de.rherzog.master.thesis.utils.Utilities;
 
 public class ControlFlow {
 	private String inputPath;
@@ -43,6 +43,7 @@ public class ControlFlow {
 
 	private Graph<Integer, DefaultEdge> graph;
 	private List<List<Integer>> simpleCycles;
+	private Map<Integer, Set<Integer>> varIndexToRenumber;
 
 	public ControlFlow(String inputPath, String methodSignature) {
 		this.inputPath = inputPath;
@@ -95,22 +96,27 @@ public class ControlFlow {
 		return simpleCycles;
 	}
 
-	public Map<Integer, Integer> getRenumberedGraph() throws IOException, InvalidClassFileException {
-		Graph<Integer, DefaultEdge> renumberedGraph = new DefaultDirectedGraph<>(DefaultEdge.class);
+	public Map<Integer, Set<Integer>> getVarIndexesToRenumber() throws IOException, InvalidClassFileException {
+		if (varIndexToRenumber != null) {
+			return varIndexToRenumber;
+		}
+		int maxVarIndex = Utilities.getMaxLocalVarIndex(getMethodData());
+		varIndexToRenumber = renumberVarIndexes(getMethodData().getInstructions(), getGraph(), maxVarIndex);
+		return varIndexToRenumber;
+	}
 
-		Graph<Integer, DefaultEdge> graph = getGraph();
-		graph.vertexSet().forEach(v -> renumberedGraph.addVertex(v));
-		graph.edgeSet().forEach(e -> renumberedGraph.addEdge(graph.getEdgeSource(e), graph.getEdgeTarget(e)));
+	public void renumberVarIndexes() throws IOException, InvalidClassFileException {
+		Map<Integer, Set<Integer>> varIndexesToRenumber = getVarIndexesToRenumber();
 
-		Map<Integer, Set<Integer>> varIndexToRenumber = renumberVarIndexes(getMethodData().getInstructions(),
-				renumberedGraph);
-		System.out.println(varIndexToRenumber);
-
-		return Collections.emptyMap();
+		IInstruction[] instructions = getMethodData().getInstructions();
+		for (int index = 0; index < instructions.length; index++) {
+			IInstruction instruction = instructions[index];
+			instructions[index] = Utilities.rewriteVarIndex(varIndexesToRenumber, instruction, index);
+		}
 	}
 
 	private static Map<Integer, Set<Integer>> renumberVarIndexes(IInstruction[] instructions,
-			Graph<Integer, DefaultEdge> cfg) {
+			Graph<Integer, DefaultEdge> cfg, int maxVarIndex) {
 		Map<Integer, Set<Integer>> loadInstStoreInstMap = new HashMap<>();
 
 		// Build a map of LoadInstruction indexes and their directly dependent
@@ -174,9 +180,8 @@ public class ControlFlow {
 			}
 
 			if (!usedVarIndexes.add(varIndex)) {
-				// TODO Generate new variable index
-				// TODO Get maximum variable index and increment it
-				int newVarIndex = 42;
+				// Get maximum variable index and increment it
+				int newVarIndex = maxVarIndex += 1;
 
 				Set<Integer> varInstructions = new HashSet<>();
 				varInstructions.addAll(storeInstructions);

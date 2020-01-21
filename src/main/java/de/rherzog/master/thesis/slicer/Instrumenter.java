@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -24,6 +25,8 @@ import com.ibm.wala.shrikeBT.DupInstruction;
 import com.ibm.wala.shrikeBT.GetInstruction;
 import com.ibm.wala.shrikeBT.GotoInstruction;
 import com.ibm.wala.shrikeBT.IInstruction;
+import com.ibm.wala.shrikeBT.ILoadInstruction;
+import com.ibm.wala.shrikeBT.IStoreInstruction;
 import com.ibm.wala.shrikeBT.InvokeInstruction;
 import com.ibm.wala.shrikeBT.LoadInstruction;
 import com.ibm.wala.shrikeBT.MethodData;
@@ -143,7 +146,7 @@ public class Instrumenter {
 	}
 
 	public void instrument(Set<Integer> instructionIndexes, Set<Integer> instructionIndexesToKeep,
-			Set<Integer> instructionIndexesToIgnore)
+			Set<Integer> instructionIndexesToIgnore, Map<Integer, Set<Integer>> varIndexesToRenumber)
 			throws InvalidClassFileException, IllegalStateException, IOException {
 		InstrumenterComparator comparator = InstrumenterComparator.of(methodSignature);
 
@@ -175,7 +178,7 @@ public class Instrumenter {
 			}
 
 			SliceMethod sliceMethod = sliceMethod(md, instructionIndexes, instructionIndexesToKeep,
-					instructionIndexesToIgnore);
+					instructionIndexesToIgnore, varIndexesToRenumber);
 			sliceMethod.getMethodEditor().endPass();
 
 			// Write no matter if there are changes
@@ -185,14 +188,15 @@ public class Instrumenter {
 	}
 
 	protected SliceMethod sliceMethod(MethodData methodData, Set<Integer> instructionIndexes,
-			Set<Integer> instructionIndexesToKeep, Set<Integer> instructionIndexesToIgnore) {
+			Set<Integer> instructionIndexesToKeep, Set<Integer> instructionIndexesToIgnore,
+			Map<Integer, Set<Integer>> varIndexesToRenumber) {
 		return sliceMethod(methodData, instructionIndexes, instructionIndexesToKeep, instructionIndexesToIgnore,
-				Collections.emptyMap());
+				Collections.emptyMap(), varIndexesToRenumber);
 	}
 
 	protected SliceMethod sliceMethod(MethodData methodData, Set<Integer> instructionIndexes,
 			Set<Integer> instructionIndexesToKeep, Set<Integer> instructionIndexesToIgnore,
-			Map<Integer, Patch> featurePatchMap) {
+			Map<Integer, Patch> featurePatchMap, Map<Integer, Set<Integer>> varIndexesToRenumber) {
 		MethodEditor methodEditor = new MethodEditor(methodData);
 		methodEditor.beginPass();
 
@@ -200,7 +204,7 @@ public class Instrumenter {
 		// This list can be used to select the instruction from the report features
 		IInstruction[] instructions = methodEditor.getInstructions();
 
-		int maxVarIndex = Utilities.getMaxLocalVarIndex(methodData, instructions);
+		int maxVarIndex = Utilities.getMaxLocalVarIndex(methodData);
 
 		int startTimeVarIndex = maxVarIndex;
 		if (exportFormat != null) {
@@ -255,9 +259,10 @@ public class Instrumenter {
 			IInstruction instruction = instructions[i];
 
 			if (instructionIndexesToIgnore.contains(i)) {
-				// An instruction which should be ignored is necessary to provide but not
+				// An instruction which should be ignored is necessary to keep but not
 				// relevant to the output. We can simply ignore the instruction but cannot
 				// delete it. In most cases an ignored instruction is a jump target.
+				// Unfortunately, WALA does not allow to instrument NOOP instructions.
 				methodEditor.replaceWith(i, new Patch() {
 					@Override
 					public void emitTo(Output w) {
@@ -279,6 +284,13 @@ public class Instrumenter {
 				}
 //				System.out.println(i + ": SKIPPED " + instruction);
 			} else {
+				// The instruction should be kept
+				// Change variable indexes if necessary
+				Patch varRenumberPatch = getVarRenumberPatch(varIndexesToRenumber, instruction, i);
+				if (varRenumberPatch != null) {
+					methodEditor.replaceWith(i, varRenumberPatch);
+				}
+
 				if (stackSize != null) {
 					// If the stack size was 0 before, we don't need to correct anything
 					if (stackSize != 0) {
@@ -357,6 +369,41 @@ public class Instrumenter {
 		methodEditor.applyPatches();
 
 		return new SliceMethod(methodEditor, loggerVarIndex);
+	}
+
+	private Patch getVarRenumberPatch(Map<Integer, Set<Integer>> varIndexesToRenumber, IInstruction instruction,
+			int index) {
+		Integer newVarIndex = null;
+		if (instruction instanceof ILoadInstruction || instruction instanceof IStoreInstruction) {
+			for (Entry<Integer, Set<Integer>> entry : varIndexesToRenumber.entrySet()) {
+				if (entry.getValue().contains(index)) {
+					newVarIndex = entry.getKey();
+				}
+			}
+		}
+
+		if (newVarIndex != null) {
+			final int finalNewVarIndex = newVarIndex;
+			if (instruction instanceof ILoadInstruction) {
+				ILoadInstruction loadInstruction = (ILoadInstruction) instruction;
+				return new Patch() {
+					@Override
+					public void emitTo(Output w) {
+						w.emit(LoadInstruction.make(loadInstruction.getType(), finalNewVarIndex));
+					}
+				};
+			}
+			if (instruction instanceof IStoreInstruction) {
+				IStoreInstruction storeInstruction = (IStoreInstruction) instruction;
+				return new Patch() {
+					@Override
+					public void emitTo(Output w) {
+						w.emit(StoreInstruction.make(storeInstruction.getType(), finalNewVarIndex));
+					}
+				};
+			}
+		}
+		return null;
 	}
 
 	protected Patch getResultAfterPatch(final IInstruction instruction, int instructionIndex, final int resultVarIndex,

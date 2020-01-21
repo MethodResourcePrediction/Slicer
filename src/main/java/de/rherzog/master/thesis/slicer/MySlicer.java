@@ -1,13 +1,12 @@
 package de.rherzog.master.thesis.slicer;
 
 import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -17,7 +16,6 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.codec.DecoderException;
-import org.apache.commons.io.IOUtils;
 import org.jgrapht.graph.DefaultEdge;
 
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
@@ -52,35 +50,48 @@ public class MySlicer {
 		mySlicer.makeSlicedFile();
 	}
 
-	public String makeSlicedFile() throws IOException, ClassHierarchyException, IllegalArgumentException,
-			CancelException, IllegalStateException, DecoderException, InvalidClassFileException, InterruptedException {
-		Set<Integer> instructionIndexesToKeep = getInstructionIndexesToKeep();
+	public String makeSlicedFile() throws IOException, InvalidClassFileException, IllegalStateException,
+			DecoderException, InterruptedException {
+		return makeSlicedFile(false);
+	}
+
+	public String makeSlicedFile(boolean showDotPlots) throws IOException, InvalidClassFileException,
+			IllegalStateException, DecoderException, InterruptedException {
+		ControlFlow controlFlow = new ControlFlow(inputJar, methodSignature);
+		// Optional
+//		controlFlow.renumberVarIndexes();
+
+		ControlDependency controlDependency = new ControlDependency(controlFlow);
+		BlockDependency blocks = new BlockDependency(controlFlow);
+		DataDependency dataDependency = new DataDependency(controlFlow);
+
+		Map<Integer, Set<Integer>> varIndexesToRenumber = controlFlow.getVarIndexesToRenumber();
+		System.out.println("VarIndexesToRenumber: " + varIndexesToRenumber);
+
+		if (showDotPlots) {
+			final Path dir = Files.createTempDirectory("slicer-");
+			Utilities.dotShow(dir, controlFlow.dotPrint());
+			Utilities.dotShow(dir, controlDependency.dotPrint());
+			Utilities.dotShow(dir, blocks.dotPrint());
+			Utilities.dotShow(dir, dataDependency.dotPrint());
+		}
+
+		Set<Integer> instructionIndexesToKeep = getInstructionIndexesToKeep(controlFlow, controlDependency, blocks,
+				dataDependency);
 //		System.out.println("InstructionIndexesToKeep: " + instructionIndexesToKeep);
 
 		// Instrument a new program with a modified method which we analyze
 		Instrumenter instrumenter = new Instrumenter(additionalJarsPath, inputJar, outputJar, methodSignature,
 				mainClass, resultFilePath, exportFormat);
-		instrumenter.instrument(instructionIndexes, instructionIndexesToKeep, Collections.emptySet());
+		instrumenter.instrument(instructionIndexes, instructionIndexesToKeep, Collections.emptySet(),
+				varIndexesToRenumber);
 		instrumenter.finalize();
 
 		return outputJar;
 	}
 
-	public Set<Integer> getInstructionIndexesToKeep() throws ClassHierarchyException, IllegalArgumentException,
-			IOException, CancelException, InvalidClassFileException, InterruptedException {
-		ControlFlow controlFlow = new ControlFlow(inputJar, methodSignature);
-		ControlDependency controlDependency = new ControlDependency(controlFlow);
-		BlockDependency blocks = new BlockDependency(controlFlow);
-		DataDependency dataDependency = new DataDependency(controlFlow);
-		
-		controlFlow.getRenumberedGraph();
-
-//		final Path dir = Files.createTempDirectory("slicer-");
-//		dotShow(dir, controlFlow.dotPrint());
-//		dotShow(dir, controlDependency.dotPrint());
-//		dotShow(dir, blocks.dotPrint());
-//		dotShow(dir, dataDependency.dotPrint());
-
+	public Set<Integer> getInstructionIndexesToKeep(ControlFlow controlFlow, ControlDependency controlDependency,
+			BlockDependency blocks, DataDependency dataDependency) throws IOException, InvalidClassFileException {
 		IInstruction[] instructions = controlFlow.getMethodData().getInstructions();
 
 		Set<Integer> indexesToKeep = new HashSet<>();
@@ -102,7 +113,8 @@ public class MySlicer {
 		}
 		// If there are recursive invoke instructions, add all return statements
 		if (!recursiveInvokeInstructions.isEmpty()) {
-			for (int index = 0; index < instructions.length - 1; index++) {
+			int maxRecursiveInstructionIndex = recursiveInvokeInstructions.stream().mapToInt(i -> i).max().getAsInt();
+			for (int index = 0; index < maxRecursiveInstructionIndex; index++) {
 				IInstruction instruction = instructions[index];
 				// TODO Include all return statements or just the ones occurring before the last
 				// recursive method call?
@@ -180,23 +192,6 @@ public class MySlicer {
 				slice(controlFlow, controlDependency, blocks, dataDependency, dependendInstructions, edgeSource);
 			}
 		}
-	}
-
-	private static void dotShow(Path dir, String dotPrint) throws IOException, InterruptedException {
-		final String format = "png";
-		final String path = Files.createTempFile(dir, "slicer-", "." + format).toFile().getPath();
-
-		ProcessBuilder builder = new ProcessBuilder("dot", "-T" + format, "-o" + path);
-		Process process = builder.start();
-		OutputStream outputStream = process.getOutputStream();
-
-		IOUtils.write(dotPrint, outputStream, Charset.defaultCharset());
-		outputStream.close();
-
-		process.waitFor();
-
-		builder = new ProcessBuilder("xdg-open", path);
-		builder.start().waitFor();
 	}
 
 	public void parseArgs(String[] args) throws ParseException {
