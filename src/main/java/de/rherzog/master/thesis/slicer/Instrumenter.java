@@ -190,11 +190,11 @@ public class Instrumenter {
 	protected InstrumentedMethod instrumentMethod(MethodData methodData, Set<Integer> instructionIndexes,
 			Set<Integer> instructionIndexesToKeep, Set<Integer> instructionIndexesToIgnore,
 			Map<Integer, Set<Integer>> varIndexesToRenumber) {
-		return sliceMethod(methodData, instructionIndexes, instructionIndexesToKeep, instructionIndexesToIgnore,
+		return instrumentMethod(methodData, instructionIndexes, instructionIndexesToKeep, instructionIndexesToIgnore,
 				Collections.emptyMap(), varIndexesToRenumber);
 	}
 
-	protected InstrumentedMethod sliceMethod(MethodData methodData, Set<Integer> instructionIndexes,
+	protected InstrumentedMethod instrumentMethod(MethodData methodData, Set<Integer> instructionIndexes,
 			Set<Integer> instructionIndexesToKeep, Set<Integer> instructionIndexesToIgnore,
 			Map<Integer, Patch> featurePatchMap, Map<Integer, Set<Integer>> varIndexesToRenumber) {
 		MethodEditor methodEditor = new MethodEditor(methodData);
