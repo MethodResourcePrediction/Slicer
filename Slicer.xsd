@@ -19,7 +19,15 @@
     </complexType>
     
     <complexType name="Feature">
+    	<sequence>
+    		<element name="Values" type="tns:FeatureValues"></element>
+    	</sequence>
     	<attribute name="instructionIndex" type="int"></attribute>
-    	<attribute name="value" type="string"></attribute>
+    </complexType>
+
+    <complexType name="FeatureValues">
+    	<sequence>
+    		<element name="Value" type="string" maxOccurs="unbounded" minOccurs="0"></element>
+    	</sequence>
     </complexType>
 </schema>

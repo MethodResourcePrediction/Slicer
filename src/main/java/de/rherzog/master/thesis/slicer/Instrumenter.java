@@ -20,11 +20,12 @@ import com.ibm.wala.shrikeBT.ArrayLoadInstruction;
 import com.ibm.wala.shrikeBT.BinaryOpInstruction;
 import com.ibm.wala.shrikeBT.ConditionalBranchInstruction;
 import com.ibm.wala.shrikeBT.ConstantInstruction;
+import com.ibm.wala.shrikeBT.Constants;
 import com.ibm.wala.shrikeBT.ConversionInstruction;
-import com.ibm.wala.shrikeBT.DupInstruction;
 import com.ibm.wala.shrikeBT.GetInstruction;
 import com.ibm.wala.shrikeBT.GotoInstruction;
 import com.ibm.wala.shrikeBT.IInstruction;
+import com.ibm.wala.shrikeBT.IInvokeInstruction;
 import com.ibm.wala.shrikeBT.ILoadInstruction;
 import com.ibm.wala.shrikeBT.IStoreInstruction;
 import com.ibm.wala.shrikeBT.InvokeInstruction;
@@ -33,7 +34,6 @@ import com.ibm.wala.shrikeBT.MethodData;
 import com.ibm.wala.shrikeBT.MethodEditor;
 import com.ibm.wala.shrikeBT.MethodEditor.Output;
 import com.ibm.wala.shrikeBT.MethodEditor.Patch;
-import com.ibm.wala.shrikeBT.NewInstruction;
 import com.ibm.wala.shrikeBT.ReturnInstruction;
 import com.ibm.wala.shrikeBT.StoreInstruction;
 import com.ibm.wala.shrikeBT.Util;
@@ -177,9 +177,9 @@ public class Instrumenter {
 				continue;
 			}
 
-			SliceMethod sliceMethod = sliceMethod(md, instructionIndexes, instructionIndexesToKeep,
+			InstrumentedMethod instrumentedMethod = instrumentMethod(md, instructionIndexes, instructionIndexesToKeep,
 					instructionIndexesToIgnore, varIndexesToRenumber);
-			sliceMethod.getMethodEditor().endPass();
+			instrumentedMethod.getMethodEditor().endPass();
 
 			// Write no matter if there are changes
 			ClassWriter cw = ci.emitClass();
@@ -187,14 +187,14 @@ public class Instrumenter {
 		}
 	}
 
-	protected SliceMethod sliceMethod(MethodData methodData, Set<Integer> instructionIndexes,
+	protected InstrumentedMethod instrumentMethod(MethodData methodData, Set<Integer> instructionIndexes,
 			Set<Integer> instructionIndexesToKeep, Set<Integer> instructionIndexesToIgnore,
 			Map<Integer, Set<Integer>> varIndexesToRenumber) {
 		return sliceMethod(methodData, instructionIndexes, instructionIndexesToKeep, instructionIndexesToIgnore,
 				Collections.emptyMap(), varIndexesToRenumber);
 	}
 
-	protected SliceMethod sliceMethod(MethodData methodData, Set<Integer> instructionIndexes,
+	protected InstrumentedMethod sliceMethod(MethodData methodData, Set<Integer> instructionIndexes,
 			Set<Integer> instructionIndexesToKeep, Set<Integer> instructionIndexesToIgnore,
 			Map<Integer, Patch> featurePatchMap, Map<Integer, Set<Integer>> varIndexesToRenumber) {
 		MethodEditor methodEditor = new MethodEditor(methodData);
@@ -206,31 +206,57 @@ public class Instrumenter {
 
 		int maxVarIndex = Utilities.getMaxLocalVarIndex(methodData);
 
-		int startTimeVarIndex = maxVarIndex;
+		// NOTE: Variables consume 1 or 2 stack elements (2 for long and double, 1
+		// otherwise). Since the times here are saved as a "long" data type, we need to
+		// reserve 2 elements after allocation. The addition to maxVarIndex is done in
+		// the subsequent lines. So we need to reserve the space for the previous
+		// instruction in the current line.
+		// This is why loggerVarIndex gets incremented by 2, because startTimeVarIndex
+		// needs 2 elements on the stack.
+		final int startTimeVarIndex = maxVarIndex += 1;
+		final int loggerVarIndex = maxVarIndex += 2;
+		final int resultVarIndex = maxVarIndex += 1;
+		final int endTimeVarIndex = maxVarIndex += 1;
+
 		if (exportFormat != null) {
 			// Store time at the beginning so that we can calculate the duration later
 			methodEditor.insertAtStart(Utilities.getStoreTimePatch(startTimeVarIndex));
 		}
-		maxVarIndex += 2;
 
 		// Clear feature state in SliceWriter on method start. After the method
 		// execution, other code can use the feature information from the executed slice
-		final int loggerVarIndex = maxVarIndex++;
 		final String loggerType = Util.makeType(FeatureLogger.class);
 		methodEditor.insertAtStart(new Patch() {
 			@Override
 			public void emitTo(Output w) {
 				// Create the new FeatureLogger-Object
-				w.emit(NewInstruction.make(loggerType, 0));
-				w.emit(DupInstruction.make(0));
-				w.emit(Util.makeInvoke(FeatureLogger.class, "<init>", new Class[] {}));
+//				w.emit(NewInstruction.make(loggerType, 0));
+//				w.emit(DupInstruction.make(0));
+				w.emit(Util.makeInvoke(FeatureLogger.class, "getInstance", new Class[] {}));
 				w.emit(StoreInstruction.make(loggerType, loggerVarIndex));
 
 				// Initialize every feature at the beginning
 				instructionIndexes.forEach(instructionIndex -> {
 					w.emit(LoadInstruction.make(loggerType, loggerVarIndex));
 					w.emit(ConstantInstruction.make(instructionIndex));
-					w.emit(Util.makeInvoke(FeatureLogger.class, "initializeFeature", new Class[] { int.class }));
+
+					IInstruction instruction = instructions[instructionIndex];
+					if (instruction instanceof IInvokeInstruction) {
+						// We got an invoke instruction, check if its recursive
+						if (Utilities.isRecursiveInvokeInstruction(methodData, (IInvokeInstruction) instruction)) {
+							// For a recursive invoke instruction, we count the number of invocations.
+							// Initialize its default value with 0 (no invocations so far)
+							w.emit(ConstantInstruction.make(0));
+							Utilities.convertIfNecessary(w, TypeSignature.make(Constants.TYPE_int));
+							w.emit(Util.makeInvoke(FeatureLogger.class, "initializeFeature",
+									new Class[] { int.class, Object.class }));
+						} else {
+							w.emit(Util.makeInvoke(FeatureLogger.class, "initializeFeature",
+									new Class[] { int.class }));
+						}
+					} else {
+						w.emit(Util.makeInvoke(FeatureLogger.class, "initializeFeature", new Class[] { int.class }));
+					}
 				});
 			}
 		});
@@ -285,6 +311,7 @@ public class Instrumenter {
 //				System.out.println(i + ": SKIPPED " + instruction);
 			} else {
 				// The instruction should be kept
+
 				// Change variable indexes if necessary
 				Patch varRenumberPatch = getVarRenumberPatch(varIndexesToRenumber, instruction, i);
 				if (varRenumberPatch != null) {
@@ -307,7 +334,6 @@ public class Instrumenter {
 		}
 
 		// Patch every feature to get the value
-		int resultVarIndex = maxVarIndex++;
 		for (int instructionIndex : instructionIndexes) {
 			IInstruction featureInstruction = instructions[instructionIndex];
 
@@ -342,18 +368,16 @@ public class Instrumenter {
 				methodEditor.replaceWith(instructionIndex, featurePatchMap.get(instructionIndex));
 			}
 
-			Patch resultPatch = getResultAfterPatch(featureInstruction, instructionIndex, resultVarIndex,
+			Patch resultPatch = getResultAfterPatch(methodData, featureInstruction, instructionIndex, resultVarIndex,
 					instructionPopMap, loggerVarIndex);
 			methodEditor.insertAfter(instructionIndex, resultPatch);
 		}
 
 		// At the end of the method, we save the slicer results
-		int endTimeVarIndex = maxVarIndex;
 		if (exportFormat != null) {
 			methodEditor.insertBefore(lastInstructionIndex,
 					getWriteFilePatch(startTimeVarIndex, endTimeVarIndex, loggerVarIndex));
 		}
-		maxVarIndex += 2;
 		if (exportFormat != null) {
 			methodEditor.insertBefore(lastInstructionIndex, Utilities.getStoreTimePatch(endTimeVarIndex));
 		}
@@ -368,7 +392,7 @@ public class Instrumenter {
 
 		methodEditor.applyPatches();
 
-		return new SliceMethod(methodEditor, loggerVarIndex);
+		return new InstrumentedMethod(methodEditor, loggerVarIndex);
 	}
 
 	private Patch getVarRenumberPatch(Map<Integer, Set<Integer>> varIndexesToRenumber, IInstruction instruction,
@@ -396,18 +420,20 @@ public class Instrumenter {
 			if (instruction instanceof IStoreInstruction) {
 				IStoreInstruction storeInstruction = (IStoreInstruction) instruction;
 				return new Patch() {
+
 					@Override
 					public void emitTo(Output w) {
 						w.emit(StoreInstruction.make(storeInstruction.getType(), finalNewVarIndex));
 					}
+
 				};
 			}
 		}
 		return null;
 	}
 
-	protected Patch getResultAfterPatch(final IInstruction instruction, int instructionIndex, final int resultVarIndex,
-			Map<Integer, Integer> instructionPopMap, int loggerVarIndex) {
+	protected Patch getResultAfterPatch(MethodData methodData, final IInstruction instruction, int instructionIndex,
+			final int resultVarIndex, Map<Integer, Integer> instructionPopMap, int loggerVarIndex) {
 		return new Patch() {
 			@Override
 			public void emitTo(Output w) {
@@ -473,8 +499,25 @@ public class Instrumenter {
 				}
 
 				if (type.equals(CTCompiler.TYPE_void)) {
-					// If the type is void we cannot log anything and so does not influence
-					return;
+					// The return value of the instruction is void
+					if (instruction instanceof InvokeInstruction) {
+						// Check if the instruction is a recursive invoke instruction. If so, we can
+						// count the number of invocations.
+						InvokeInstruction instruction2 = (InvokeInstruction) instruction;
+						if (Utilities.isRecursiveInvokeInstruction(methodData, instruction2)) {
+							// Increment the last value by 1
+							w.emit(LoadInstruction.make(Util.makeType(FeatureLogger.class), loggerVarIndex));
+							w.emit(ConstantInstruction.make(instructionIndex));
+							w.emit(ConstantInstruction.make(1));
+							Utilities.convertIfNecessary(w, TypeSignature.make(Constants.TYPE_int));
+							w.emit(Util.makeInvoke(FeatureLogger.class, "incrementLastBy",
+									new Class[] { int.class, Object.class }));
+						}
+						return;
+					} else {
+						// If the type is void we cannot log anything and so does not influence
+						return;
+					}
 				}
 
 				// Special handling for boolean (Z) since the bytecode only knows int (I)

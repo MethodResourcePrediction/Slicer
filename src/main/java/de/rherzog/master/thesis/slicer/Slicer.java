@@ -18,17 +18,15 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.codec.DecoderException;
 import org.jgrapht.graph.DefaultEdge;
 
-import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.shrikeBT.IInstruction;
 import com.ibm.wala.shrikeBT.IInvokeInstruction;
 import com.ibm.wala.shrikeBT.ReturnInstruction;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
-import com.ibm.wala.util.CancelException;
 
 import de.rherzog.master.thesis.slicer.instrumenter.export.SliceWriter.ExportFormat;
 import de.rherzog.master.thesis.utils.Utilities;
 
-public class MySlicer {
+public class Slicer {
 	private String inputJar;
 	private String outputJar;
 	private String methodSignature;
@@ -38,14 +36,19 @@ public class MySlicer {
 	private ExportFormat exportFormat;
 	private String additionalJarsPath;
 
-	public MySlicer() {
+	// Internal graphs
+	private ControlFlow controlFlow;
+	private ControlDependency controlDependency;
+	private BlockDependency blockDependency;
+	private DataDependency dataDependency;
+
+	public Slicer() {
 		this.instructionIndexes = new HashSet<>();
 	}
 
-	public static void main(String[] args)
-			throws ParseException, IOException, ClassHierarchyException, IllegalArgumentException, CancelException,
-			IllegalStateException, DecoderException, InvalidClassFileException, InterruptedException {
-		MySlicer mySlicer = new MySlicer();
+	public static void main(String[] args) throws ParseException, IllegalStateException, IOException,
+			InvalidClassFileException, DecoderException, InterruptedException {
+		Slicer mySlicer = new Slicer();
 		mySlicer.parseArgs(args);
 		mySlicer.makeSlicedFile();
 	}
@@ -55,29 +58,60 @@ public class MySlicer {
 		return makeSlicedFile(false);
 	}
 
+	public ControlFlow getControlFlow() throws IOException, InvalidClassFileException {
+		if (controlFlow != null) {
+			return controlFlow;
+		}
+		controlFlow = new ControlFlow(inputJar, methodSignature);
+		// Optional
+		controlFlow.renumberVarIndexes();
+		return controlFlow;
+	}
+
+	public ControlDependency getControlDependency() throws IOException, InvalidClassFileException {
+		if (controlDependency != null) {
+			return controlDependency;
+		}
+		controlDependency = new ControlDependency(getControlFlow());
+		return controlDependency;
+	}
+
+	public BlockDependency getBlockDependency() throws IOException, InvalidClassFileException {
+		if (blockDependency != null) {
+			return blockDependency;
+		}
+		blockDependency = new BlockDependency(getControlFlow());
+		return blockDependency;
+	}
+
+	public DataDependency getDataDependency() throws IOException, InvalidClassFileException {
+		if (dataDependency != null) {
+			return dataDependency;
+		}
+		dataDependency = new DataDependency(getControlFlow());
+		return dataDependency;
+	}
+
 	public String makeSlicedFile(boolean showDotPlots) throws IOException, InvalidClassFileException,
 			IllegalStateException, DecoderException, InterruptedException {
-		ControlFlow controlFlow = new ControlFlow(inputJar, methodSignature);
-		// Optional
-//		controlFlow.renumberVarIndexes();
-
-		ControlDependency controlDependency = new ControlDependency(controlFlow);
-		BlockDependency blocks = new BlockDependency(controlFlow);
-		DataDependency dataDependency = new DataDependency(controlFlow);
+		ControlFlow controlFlow = getControlFlow();
+		ControlDependency controlDependency = getControlDependency();
+		BlockDependency blockDependency = getBlockDependency();
+		DataDependency dataDependency = getDataDependency();
 
 		Map<Integer, Set<Integer>> varIndexesToRenumber = controlFlow.getVarIndexesToRenumber();
-		System.out.println("VarIndexesToRenumber: " + varIndexesToRenumber);
+//		System.out.println("VarIndexesToRenumber: " + varIndexesToRenumber);
 
 		if (showDotPlots) {
 			final Path dir = Files.createTempDirectory("slicer-");
 			Utilities.dotShow(dir, controlFlow.dotPrint());
 			Utilities.dotShow(dir, controlDependency.dotPrint());
-			Utilities.dotShow(dir, blocks.dotPrint());
+			Utilities.dotShow(dir, blockDependency.dotPrint());
 			Utilities.dotShow(dir, dataDependency.dotPrint());
 		}
 
-		Set<Integer> instructionIndexesToKeep = getInstructionIndexesToKeep(controlFlow, controlDependency, blocks,
-				dataDependency);
+		Set<Integer> instructionIndexesToKeep = getInstructionIndexesToKeep(controlFlow, controlDependency,
+				blockDependency, dataDependency);
 //		System.out.println("InstructionIndexesToKeep: " + instructionIndexesToKeep);
 
 		// Instrument a new program with a modified method which we analyze
@@ -88,6 +122,11 @@ public class MySlicer {
 		instrumenter.finalize();
 
 		return outputJar;
+	}
+
+	public Set<Integer> getInstructionIndexesToKeep() throws IOException, InvalidClassFileException {
+		return getInstructionIndexesToKeep(getControlFlow(), getControlDependency(), getBlockDependency(),
+				getDataDependency());
 	}
 
 	public Set<Integer> getInstructionIndexesToKeep(ControlFlow controlFlow, ControlDependency controlDependency,

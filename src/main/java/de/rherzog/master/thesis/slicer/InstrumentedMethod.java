@@ -2,11 +2,11 @@ package de.rherzog.master.thesis.slicer;
 
 import com.ibm.wala.shrikeBT.MethodEditor;
 
-public class SliceMethod {
+public class InstrumentedMethod {
 	private MethodEditor methodEditor;
 	private Integer featureLoggerVarIndex;
 
-	public SliceMethod(MethodEditor methodEditor, Integer featureLoggerVarIndex) {
+	public InstrumentedMethod(MethodEditor methodEditor, Integer featureLoggerVarIndex) {
 		setMethodEditor(methodEditor);
 		setFeatureLoggerVarIndex(featureLoggerVarIndex);
 	}
