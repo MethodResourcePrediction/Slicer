@@ -20,6 +20,7 @@ import com.ibm.wala.shrikeBT.IArrayLoadInstruction;
 import com.ibm.wala.shrikeBT.IArrayStoreInstruction;
 import com.ibm.wala.shrikeBT.IBinaryOpInstruction;
 import com.ibm.wala.shrikeBT.IConditionalBranchInstruction;
+import com.ibm.wala.shrikeBT.IConversionInstruction;
 import com.ibm.wala.shrikeBT.IGetInstruction;
 import com.ibm.wala.shrikeBT.IInstruction;
 import com.ibm.wala.shrikeBT.IInvokeInstruction;
@@ -189,6 +190,10 @@ public class BlockDependency {
 			ReturnInstruction instruction = (ReturnInstruction) iInstruction;
 			return (byte) instruction.getPoppedCount();
 		}
+		if (iInstruction instanceof IConversionInstruction) {
+			IConversionInstruction instruction = (IConversionInstruction) iInstruction;
+			return getWordSizeByType(instruction.getFromType());
+		}
 		if (iInstruction instanceof NewInstruction) {
 			NewInstruction instruction = (NewInstruction) iInstruction;
 			return (byte) instruction.getPoppedCount();
@@ -201,7 +206,7 @@ public class BlockDependency {
 		}
 		throw new UnsupportedOperationException("Unhandled instruction type " + iInstruction.getClass().getName());
 	}
-	
+
 	private static byte getPushedSize(IInstruction iInstruction) {
 		if (iInstruction instanceof DupInstruction) {
 			DupInstruction instruction = (DupInstruction) iInstruction;

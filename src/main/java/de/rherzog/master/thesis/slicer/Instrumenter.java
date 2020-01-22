@@ -194,6 +194,10 @@ public class Instrumenter {
 				Collections.emptyMap(), varIndexesToRenumber);
 	}
 
+	private enum PatchAction {
+		AT_START, BEFORE, AFTER, AFTER_BODY, REPLACE
+	}
+
 	protected InstrumentedMethod instrumentMethod(MethodData methodData, Set<Integer> instructionIndexes,
 			Set<Integer> instructionIndexesToKeep, Set<Integer> instructionIndexesToIgnore,
 			Map<Integer, Patch> featurePatchMap, Map<Integer, Set<Integer>> varIndexesToRenumber) {
@@ -204,7 +208,28 @@ public class Instrumenter {
 		// This list can be used to select the instruction from the report features
 		IInstruction[] instructions = methodEditor.getInstructions();
 
+		// Calculate the maximum local variable index
 		int maxVarIndex = Utilities.getMaxLocalVarIndex(methodData);
+		// Renumbering of variable indexes can shift the maxVarIndex up
+		for (int varIndex : varIndexesToRenumber.keySet()) {
+			maxVarIndex = Math.max(maxVarIndex, varIndex);
+		}
+
+		// There is a chance of multiple patches, for example if a load instruction
+		// should be renumbered but is still in the "instructionIndexes" list to query
+		// the value for. Therefore, we save a list of patches to each instruction and
+		// apply it later.
+		Map<Integer, Map<PatchAction, List<Patch>>> instructionPatchesMap = new HashMap<>();
+
+		// Initialize all patch actions for each instruction
+		for (int instructionIndex = 0; instructionIndex < instructions.length; instructionIndex++) {
+			Map<PatchAction, List<Patch>> patchesMap = new HashMap<>();
+			for (PatchAction patchAction : PatchAction.values()) {
+				List<Patch> instructionPatches = new ArrayList<>();
+				patchesMap.put(patchAction, instructionPatches);
+			}
+			instructionPatchesMap.put(instructionIndex, patchesMap);
+		}
 
 		// NOTE: Variables consume 1 or 2 stack elements (2 for long and double, 1
 		// otherwise). Since the times here are saved as a "long" data type, we need to
@@ -218,20 +243,19 @@ public class Instrumenter {
 		final int resultVarIndex = maxVarIndex += 1;
 		final int endTimeVarIndex = maxVarIndex += 1;
 
+		List<Patch> atStartPatches = instructionPatchesMap.get(0).get(PatchAction.AT_START);
 		if (exportFormat != null) {
 			// Store time at the beginning so that we can calculate the duration later
-			methodEditor.insertAtStart(Utilities.getStoreTimePatch(startTimeVarIndex));
+			atStartPatches.add(Utilities.getStoreTimePatch(startTimeVarIndex));
 		}
 
 		// Clear feature state in SliceWriter on method start. After the method
 		// execution, other code can use the feature information from the executed slice
 		final String loggerType = Util.makeType(FeatureLogger.class);
-		methodEditor.insertAtStart(new Patch() {
+		atStartPatches.add(new Patch() {
 			@Override
 			public void emitTo(Output w) {
 				// Create the new FeatureLogger-Object
-//				w.emit(NewInstruction.make(loggerType, 0));
-//				w.emit(DupInstruction.make(0));
 				w.emit(Util.makeInvoke(FeatureLogger.class, "getInstance", new Class[] {}));
 				w.emit(StoreInstruction.make(loggerType, loggerVarIndex));
 
@@ -281,15 +305,16 @@ public class Instrumenter {
 		Integer stackSize = null;
 
 		// Iterate all instructions and replace those we wont keep
-		for (int i = 0; i < instructions.length; i++) {
-			IInstruction instruction = instructions[i];
+		for (int index = 0; index < instructions.length; index++) {
+			IInstruction instruction = instructions[index];
 
-			if (instructionIndexesToIgnore.contains(i)) {
+			List<Patch> replacePatches = instructionPatchesMap.get(index).get(PatchAction.REPLACE);
+			if (instructionIndexesToIgnore.contains(index)) {
 				// An instruction which should be ignored is necessary to keep but not
 				// relevant to the output. We can simply ignore the instruction but cannot
 				// delete it. In most cases an ignored instruction is a jump target.
 				// Unfortunately, WALA does not allow to instrument NOOP instructions.
-				methodEditor.replaceWith(i, new Patch() {
+				replacePatches.add(new Patch() {
 					@Override
 					public void emitTo(Output w) {
 						w.emit(Util.makeInvoke(Nothing.class, "doNothing"));
@@ -298,12 +323,8 @@ public class Instrumenter {
 //				System.out.println(i + ": IGNORED " + instruction);
 			}
 
-			if (!instructionIndexesToKeep.contains(i)) {
-				methodEditor.replaceWith(i, new Patch() {
-					@Override
-					public void emitTo(Output w) {
-					}
-				});
+			if (!instructionIndexesToKeep.contains(index)) {
+				replacePatches.add(Utilities.getEmptyPatch());
 
 				if (stackSize == null) {
 					stackSize = lastPushedSize;
@@ -313,9 +334,9 @@ public class Instrumenter {
 				// The instruction should be kept
 
 				// Change variable indexes if necessary
-				Patch varRenumberPatch = getVarRenumberPatch(varIndexesToRenumber, instruction, i);
+				Patch varRenumberPatch = getVarRenumberPatch(varIndexesToRenumber, instruction, index);
 				if (varRenumberPatch != null) {
-					methodEditor.replaceWith(i, varRenumberPatch);
+					replacePatches.add(varRenumberPatch);
 				}
 
 				if (stackSize != null) {
@@ -328,7 +349,7 @@ public class Instrumenter {
 				}
 //				System.out.println(i + ": " + instruction);
 
-				lastInstructionIndex = i;
+				lastInstructionIndex = index;
 				lastPushedSize = instruction.getPushedWordSize();
 			}
 		}
@@ -353,7 +374,8 @@ public class Instrumenter {
 				// 6 first instruction after the conditional
 				ConditionalBranchInstruction instruction = (ConditionalBranchInstruction) featureInstruction;
 
-				methodEditor.insertBefore(instructionIndex - 2, new Patch() {
+				List<Patch> patches = instructionPatchesMap.get(instructionIndex - 2).get(PatchAction.BEFORE);
+				patches.add(new Patch() {
 					@Override
 					public void emitTo(Output w) {
 						w.emit(ConstantInstruction.make(0));
@@ -365,24 +387,26 @@ public class Instrumenter {
 
 			// Replace the original feature if a patch is given
 			if (featurePatchMap.containsKey(instructionIndex)) {
-				methodEditor.replaceWith(instructionIndex, featurePatchMap.get(instructionIndex));
+				List<Patch> patches = instructionPatchesMap.get(instructionIndex).get(PatchAction.REPLACE);
+				patches.add(featurePatchMap.get(instructionIndex));
 			}
 
+			// Logging patch for instruction value
 			Patch resultPatch = getResultAfterPatch(methodData, featureInstruction, instructionIndex, resultVarIndex,
 					instructionPopMap, loggerVarIndex);
-			methodEditor.insertAfter(instructionIndex, resultPatch);
+			List<Patch> patches = instructionPatchesMap.get(instructionIndex).get(PatchAction.AFTER);
+			patches.add(resultPatch);
 		}
 
 		// At the end of the method, we save the slicer results
 		if (exportFormat != null) {
-			methodEditor.insertBefore(lastInstructionIndex,
-					getWriteFilePatch(startTimeVarIndex, endTimeVarIndex, loggerVarIndex));
-		}
-		if (exportFormat != null) {
-			methodEditor.insertBefore(lastInstructionIndex, Utilities.getStoreTimePatch(endTimeVarIndex));
+			List<Patch> patches = instructionPatchesMap.get(lastInstructionIndex).get(PatchAction.BEFORE);
+			patches.add(Utilities.getStoreTimePatch(endTimeVarIndex));
+			patches.add(getWriteFilePatch(startTimeVarIndex, endTimeVarIndex, loggerVarIndex));
 		}
 
-		methodEditor.insertAfter(lastInstructionIndex, new Patch() {
+		List<Patch> patches = instructionPatchesMap.get(lastInstructionIndex).get(PatchAction.BEFORE);
+		patches.add(new Patch() {
 			@Override
 			public void emitTo(Output w) {
 				// Per convention we return void at the end
@@ -390,9 +414,74 @@ public class Instrumenter {
 			}
 		});
 
+		// TODO Apply patches from map
+		applyPatches(methodEditor, instructionPatchesMap);
+
 		methodEditor.applyPatches();
 
 		return new InstrumentedMethod(methodEditor, loggerVarIndex);
+	}
+
+	private static void applyPatches(MethodEditor methodEditor,
+			Map<Integer, Map<PatchAction, List<Patch>>> instructionPatchesMap) {
+		for (Entry<Integer, Map<PatchAction, List<Patch>>> entry : instructionPatchesMap.entrySet()) {
+			int instructionIndex = entry.getKey();
+			Map<PatchAction, List<Patch>> patchMap = entry.getValue();
+
+			for (Entry<PatchAction, List<Patch>> entry2 : patchMap.entrySet()) {
+				PatchAction patchAction = entry2.getKey();
+				List<Patch> patchList = entry2.getValue();
+				if (patchList.isEmpty()) {
+					continue;
+				}
+				List<Patch> patchListCopy = new ArrayList<>(patchList);
+
+				switch (patchAction) {
+				case BEFORE:
+					methodEditor.insertBefore(instructionIndex, new Patch() {
+						@Override
+						public void emitTo(Output w) {
+							patchList.forEach(patch -> patch.emitTo(w));
+						}
+					});
+					break;
+				case AFTER:
+					Collections.reverse(patchListCopy);
+					methodEditor.insertAfter(instructionIndex, new Patch() {
+						@Override
+						public void emitTo(Output w) {
+							patchListCopy.forEach(patch -> patch.emitTo(w));
+						}
+					});
+					break;
+				case REPLACE:
+					methodEditor.replaceWith(instructionIndex, new Patch() {
+						@Override
+						public void emitTo(Output w) {
+							patchList.forEach(patch -> patch.emitTo(w));
+						}
+					});
+					break;
+				case AT_START:
+					Collections.reverse(patchListCopy);
+					methodEditor.insertAtStart(new Patch() {
+						@Override
+						public void emitTo(Output w) {
+							patchListCopy.forEach(patch -> patch.emitTo(w));
+						}
+					});
+					break;
+				case AFTER_BODY:
+					methodEditor.insertAfterBody(new Patch() {
+						@Override
+						public void emitTo(Output w) {
+							patchList.forEach(patch -> patch.emitTo(w));
+						}
+					});
+					break;
+				}
+			}
+		}
 	}
 
 	private Patch getVarRenumberPatch(Map<Integer, Set<Integer>> varIndexesToRenumber, IInstruction instruction,
@@ -420,12 +509,10 @@ public class Instrumenter {
 			if (instruction instanceof IStoreInstruction) {
 				IStoreInstruction storeInstruction = (IStoreInstruction) instruction;
 				return new Patch() {
-
 					@Override
 					public void emitTo(Output w) {
 						w.emit(StoreInstruction.make(storeInstruction.getType(), finalNewVarIndex));
 					}
-
 				};
 			}
 		}

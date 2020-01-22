@@ -193,6 +193,7 @@ public class Slicer {
 			return;
 		}
 		Block block = blocks.getBlockForIndex(index);
+		Objects.requireNonNull(block, "No block for instruction index " + index + " found");
 
 		boolean addedAny = false;
 		for (int blockInstructionIndex : block.getInstructions().keySet()) {
