@@ -50,6 +50,7 @@ public class Slicer {
 			InvalidClassFileException, DecoderException, InterruptedException {
 		Slicer mySlicer = new Slicer();
 		mySlicer.parseArgs(args);
+		mySlicer.setExportFormat(null);
 		mySlicer.makeSlicedFile();
 	}
 
@@ -112,7 +113,7 @@ public class Slicer {
 
 		Set<Integer> instructionIndexesToKeep = getInstructionIndexesToKeep(controlFlow, controlDependency,
 				blockDependency, dataDependency);
-//		System.out.println("InstructionIndexesToKeep: " + instructionIndexesToKeep);
+		System.out.println("InstructionIndexesToKeep: " + instructionIndexesToKeep);
 
 		// Instrument a new program with a modified method which we analyze
 		Instrumenter instrumenter = new Instrumenter(additionalJarsPath, inputJar, outputJar, methodSignature,
@@ -243,7 +244,7 @@ public class Slicer {
 		options.addOption("ms", "methodSignature", true, "methodSignature");
 		options.addOption("mc", "mainClass", true, "");
 		options.addOption("ii", "instructionIndexes", true, "instructionIndexes [int,int,...]");
-		options.addOption("ef", "exportFormat", true, "export format [CSV,XML] default: XML");
+		options.addOption("ef", "exportFormat", true, "export format [CSV,XML,NONE] default: XML");
 		options.addOption("rf", "resultFilePath", true, "path to saved result file [result.xml]");
 		options.addOption("ajp", "additionalJarsPath", true,
 				"path where the additional jars are stored [Default: ../]");
@@ -265,10 +266,15 @@ public class Slicer {
 		Objects.requireNonNull(mainClass, "-mc/--mainClass must be set");
 
 		String exportFormatStr = cmd.getOptionValue("exportFormat", "XML");
-		try {
-			setExportFormat(ExportFormat.valueOf(exportFormatStr));
-		} catch (IllegalArgumentException e) {
-			throw new IllegalArgumentException("Unknown --exportFormat '" + exportFormatStr + "'");
+
+		if (exportFormatStr.contentEquals("NONE")) {
+			setExportFormat(null);
+		} else {
+			try {
+				setExportFormat(ExportFormat.valueOf(exportFormatStr));
+			} catch (IllegalArgumentException e) {
+				throw new IllegalArgumentException("Unknown --exportFormat '" + exportFormatStr + "'");
+			}
 		}
 
 		// Support multiple instruction indexes (a feature may consist out of many)

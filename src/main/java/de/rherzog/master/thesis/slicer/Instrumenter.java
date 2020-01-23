@@ -301,7 +301,7 @@ public class Instrumenter {
 		// elements to pop.
 		// Like that, we can archive a consistent stack size slice
 		final Map<Integer, Integer> instructionPopMap = new HashMap<>();
-		int lastPushedSize = 0, lastInstructionIndex = 0;
+		int lastStackSize = 0, lastInstructionIndex = 0;
 		Integer stackSize = null;
 
 		// Iterate all instructions and replace those we wont keep
@@ -327,7 +327,7 @@ public class Instrumenter {
 				replacePatches.add(Utilities.getEmptyPatch());
 
 				if (stackSize == null) {
-					stackSize = lastPushedSize;
+					stackSize = lastStackSize;
 				}
 //				System.out.println(i + ": SKIPPED " + instruction);
 			} else {
@@ -339,18 +339,17 @@ public class Instrumenter {
 					replacePatches.add(varRenumberPatch);
 				}
 
-				if (stackSize != null) {
-					// If the stack size was 0 before, we don't need to correct anything
-					if (stackSize != 0) {
-						instructionPopMap.put(lastInstructionIndex, lastPushedSize);
-//						System.out.println("  " + stackSize + " element(s) on stack to correct");
-					}
+				// If the stack size was 0 before, we don't need to correct anything
+				if (stackSize != null && stackSize != 0) {
+					instructionPopMap.put(lastInstructionIndex, lastStackSize);
+//					System.out.println("  " + stackSize + " element(s) on stack to correct");
 					stackSize = null;
+					lastStackSize = 0;
 				}
 //				System.out.println(i + ": " + instruction);
 
 				lastInstructionIndex = index;
-				lastPushedSize = instruction.getPushedWordSize();
+				lastStackSize += Utilities.getPushedSize(instruction) - Utilities.getPoppedSize(instruction);
 			}
 		}
 
@@ -394,8 +393,23 @@ public class Instrumenter {
 			// Logging patch for instruction value
 			Patch resultPatch = getResultAfterPatch(methodData, featureInstruction, instructionIndex, resultVarIndex,
 					instructionPopMap, loggerVarIndex);
-			List<Patch> patches = instructionPatchesMap.get(instructionIndex).get(PatchAction.AFTER);
-			patches.add(resultPatch);
+			List<Patch> afterPatches = instructionPatchesMap.get(instructionIndex).get(PatchAction.AFTER);
+			afterPatches.add(resultPatch);
+
+			// TODO Pop remaining elements on the stack for instruction
+			// TODO TODO TODO Why do I NOT need to remove remaining elements on the stack??? WTF?
+			// TODO If I do so, the WALA stack validation fails
+//			Integer elementPopSize = instructionPopMap.get(instructionIndex);
+//			if (elementPopSize != null) {
+//				for (int i = 0; i < elementPopSize - 1; i++) {
+//					afterPatches.add(new Patch() {
+//						@Override
+//						public void emitTo(Output w) {
+//							w.emit(PopInstruction.make(1));
+//						}
+//					});
+//				}
+//			}
 		}
 
 		// At the end of the method, we save the slicer results
@@ -414,7 +428,7 @@ public class Instrumenter {
 			}
 		});
 
-		// TODO Apply patches from map
+		// Apply patches from map
 		applyPatches(methodEditor, instructionPatchesMap);
 
 		methodEditor.applyPatches();
@@ -509,10 +523,12 @@ public class Instrumenter {
 			if (instruction instanceof IStoreInstruction) {
 				IStoreInstruction storeInstruction = (IStoreInstruction) instruction;
 				return new Patch() {
+
 					@Override
 					public void emitTo(Output w) {
 						w.emit(StoreInstruction.make(storeInstruction.getType(), finalNewVarIndex));
 					}
+
 				};
 			}
 		}
@@ -618,41 +634,41 @@ public class Instrumenter {
 				// Restore the feature value if there was any
 				if (instruction instanceof LoadInstruction) {
 					// Restore what we just saved
-					if (!instructionPopMap.containsKey(instructionIndex)) {
-						w.emit(LoadInstruction.make(type, resultVarIndex));
-					}
+//					if (!instructionPopMap.containsKey(instructionIndex)) {
+					w.emit(LoadInstruction.make(type, resultVarIndex));
+//					}
 				} else if (instruction instanceof StoreInstruction) {
 					// Nothing to restore (there was no element pushed before)
 				} else if (instruction instanceof BinaryOpInstruction) {
 					// Restore what we just saved
-					if (!instructionPopMap.containsKey(instructionIndex)) {
-						w.emit(LoadInstruction.make(type, resultVarIndex));
-					}
+//					if (!instructionPopMap.containsKey(instructionIndex)) {
+					w.emit(LoadInstruction.make(type, resultVarIndex));
+//					}
 				} else if (instruction instanceof ConstantInstruction) {
 					ConstantInstruction instruction2 = (ConstantInstruction) instruction;
-					if (!instructionPopMap.containsKey(instructionIndex)) {
-						w.emit(instruction2);
-					}
+//					if (!instructionPopMap.containsKey(instructionIndex)) {
+					w.emit(instruction2);
+//					}
 				} else if (instruction instanceof GetInstruction) {
 					// Restore what we just saved
-					if (!instructionPopMap.containsKey(instructionIndex)) {
-						w.emit(LoadInstruction.make(type, resultVarIndex));
-					}
+//					if (!instructionPopMap.containsKey(instructionIndex)) {
+					w.emit(LoadInstruction.make(type, resultVarIndex));
+//					}
 				} else if (instruction instanceof InvokeInstruction) {
 					// Restore what we just saved
-					if (!instructionPopMap.containsKey(instructionIndex)) {
-						w.emit(LoadInstruction.make(type, resultVarIndex));
-					}
+//					if (!instructionPopMap.containsKey(instructionIndex)) {
+					w.emit(LoadInstruction.make(type, resultVarIndex));
+//					}
 				} else if (instruction instanceof ConversionInstruction) {
 					// Restore what we just saved
-					if (!instructionPopMap.containsKey(instructionIndex)) {
-						w.emit(LoadInstruction.make(type, resultVarIndex));
-					}
+//					if (!instructionPopMap.containsKey(instructionIndex)) {
+					w.emit(LoadInstruction.make(type, resultVarIndex));
+//					}
 				} else if (instruction instanceof ArrayLoadInstruction) {
 					// Restore what we just saved
-					if (!instructionPopMap.containsKey(instructionIndex)) {
-						w.emit(LoadInstruction.make(type, resultVarIndex));
-					}
+//					if (!instructionPopMap.containsKey(instructionIndex)) {
+					w.emit(LoadInstruction.make(type, resultVarIndex));
+//					}
 				} else if (instruction instanceof GotoInstruction) {
 					// Nothing to restore (there was no element pushed before)
 				}

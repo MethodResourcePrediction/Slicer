@@ -14,25 +14,10 @@ import org.jgrapht.io.DOTExporter;
 import org.jgrapht.io.ExportException;
 import org.jgrapht.io.GraphExporter;
 
-import com.ibm.wala.shrikeBT.ConstantInstruction;
-import com.ibm.wala.shrikeBT.DupInstruction;
-import com.ibm.wala.shrikeBT.IArrayLoadInstruction;
-import com.ibm.wala.shrikeBT.IArrayStoreInstruction;
-import com.ibm.wala.shrikeBT.IBinaryOpInstruction;
-import com.ibm.wala.shrikeBT.IConditionalBranchInstruction;
-import com.ibm.wala.shrikeBT.IConversionInstruction;
-import com.ibm.wala.shrikeBT.IGetInstruction;
 import com.ibm.wala.shrikeBT.IInstruction;
-import com.ibm.wala.shrikeBT.IInvokeInstruction;
-import com.ibm.wala.shrikeBT.ILoadInstruction;
-import com.ibm.wala.shrikeBT.IStoreInstruction;
-import com.ibm.wala.shrikeBT.NewInstruction;
-import com.ibm.wala.shrikeBT.PopInstruction;
-import com.ibm.wala.shrikeBT.ReturnInstruction;
-import com.ibm.wala.shrikeBT.shrikeCT.CTCompiler;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
-import com.ibm.wala.types.TypeName;
-import com.ibm.wala.util.strings.StringStuff;
+
+import de.rherzog.master.thesis.utils.Utilities;
 
 public class BlockDependency {
 	private ControlFlow controlFlow;
@@ -65,8 +50,8 @@ public class BlockDependency {
 			int stack = instruction.getPushedWordSize();
 			for (index++; index < instructions.length && stack > 0; index++) {
 				instruction = instructions[index];
-				stack -= getPoppedSize(instruction);
-				stack += getPushedSize(instruction);
+				stack -= Utilities.getPoppedSize(instruction);
+				stack += Utilities.getPushedSize(instruction);
 				if (stack < 0) {
 					throw new java.lang.IllegalStateException("Stack cannot be negative. Is: " + stack);
 				}
@@ -131,98 +116,5 @@ public class BlockDependency {
 			}
 		}
 		return null;
-	}
-
-	private static byte getPoppedSize(IInstruction iInstruction) {
-		if (iInstruction instanceof ILoadInstruction) {
-//			ILoadInstruction instruction = (ILoadInstruction) iInstruction;
-			// A load instruction does never pop anything
-			return 0;
-		}
-		if (iInstruction instanceof IStoreInstruction) {
-			IStoreInstruction instruction = (IStoreInstruction) iInstruction;
-			return getWordSizeByType(instruction.getType());
-		}
-		if (iInstruction instanceof IInvokeInstruction) {
-			IInvokeInstruction instruction = (IInvokeInstruction) iInstruction;
-			String methodSignature = instruction.getMethodSignature();
-			TypeName[] parameterNames = StringStuff.parseForParameterNames(methodSignature);
-			byte poppedSize = (byte) (instruction.getInvocationCode().hasImplicitThis() ? 1 : 0);
-			if (parameterNames != null) {
-				for (TypeName parameterName : parameterNames) {
-					poppedSize += getWordSizeByType(parameterName.getClassName().toString());
-				}
-			}
-			return poppedSize;
-		}
-		if (iInstruction instanceof IConditionalBranchInstruction) {
-			IConditionalBranchInstruction instruction = (IConditionalBranchInstruction) iInstruction;
-//			return (byte) (2 * getWordSizeByType(instruction.getType()));
-			return (byte) instruction.getPoppedCount();
-		}
-		if (iInstruction instanceof IBinaryOpInstruction) {
-			IBinaryOpInstruction instruction = (IBinaryOpInstruction) iInstruction;
-			return (byte) (2 * getWordSizeByType(instruction.getType()));
-		}
-		if (iInstruction instanceof ConstantInstruction) {
-			// A constant instruction does never pop anything
-			return 0;
-		}
-		if (iInstruction instanceof IArrayLoadInstruction) {
-			IArrayLoadInstruction instruction = (IArrayLoadInstruction) iInstruction;
-			// TODO Usually consumes 2 elements but what about a primitive array?
-//			return getWordSizeByType(instruction.getType());
-			return (byte) instruction.getPoppedCount();
-		}
-		if (iInstruction instanceof PopInstruction) {
-			PopInstruction instruction = (PopInstruction) iInstruction;
-			return (byte) instruction.getPoppedCount();
-		}
-		if (iInstruction instanceof DupInstruction) {
-			DupInstruction instruction = (DupInstruction) iInstruction;
-			return (byte) instruction.getPoppedCount();
-		}
-		if (iInstruction instanceof IGetInstruction) {
-			IGetInstruction instruction = (IGetInstruction) iInstruction;
-			return (byte) instruction.getPoppedCount();
-		}
-		if (iInstruction instanceof ReturnInstruction) {
-			ReturnInstruction instruction = (ReturnInstruction) iInstruction;
-			return (byte) instruction.getPoppedCount();
-		}
-		if (iInstruction instanceof IConversionInstruction) {
-			IConversionInstruction instruction = (IConversionInstruction) iInstruction;
-			return getWordSizeByType(instruction.getFromType());
-		}
-		if (iInstruction instanceof NewInstruction) {
-			NewInstruction instruction = (NewInstruction) iInstruction;
-			return (byte) instruction.getPoppedCount();
-		}
-		if (iInstruction instanceof IArrayStoreInstruction) {
-			IArrayStoreInstruction instruction = (IArrayStoreInstruction) iInstruction;
-			// TODO Usually consumes 2 elements but what about a primitive array?
-//			return getWordSizeByType(instruction.getType());
-			return (byte) instruction.getPoppedCount();
-		}
-		throw new UnsupportedOperationException("Unhandled instruction type " + iInstruction.getClass().getName());
-	}
-
-	private static byte getPushedSize(IInstruction iInstruction) {
-		if (iInstruction instanceof DupInstruction) {
-			DupInstruction instruction = (DupInstruction) iInstruction;
-			return (byte) (2 * instruction.getSize());
-		}
-		return iInstruction.getPushedWordSize();
-	}
-
-	private static byte getWordSizeByType(String type) {
-		switch (type) {
-		case CTCompiler.TYPE_double:
-		case CTCompiler.TYPE_float:
-		case CTCompiler.TYPE_long:
-			return 2;
-		default:
-			return 1;
-		}
 	}
 }
