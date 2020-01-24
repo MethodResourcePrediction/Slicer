@@ -25,7 +25,6 @@ import com.ibm.wala.shrikeBT.ConversionInstruction;
 import com.ibm.wala.shrikeBT.GetInstruction;
 import com.ibm.wala.shrikeBT.GotoInstruction;
 import com.ibm.wala.shrikeBT.IInstruction;
-import com.ibm.wala.shrikeBT.IInvokeInstruction;
 import com.ibm.wala.shrikeBT.ILoadInstruction;
 import com.ibm.wala.shrikeBT.IStoreInstruction;
 import com.ibm.wala.shrikeBT.InvokeInstruction;
@@ -34,6 +33,7 @@ import com.ibm.wala.shrikeBT.MethodData;
 import com.ibm.wala.shrikeBT.MethodEditor;
 import com.ibm.wala.shrikeBT.MethodEditor.Output;
 import com.ibm.wala.shrikeBT.MethodEditor.Patch;
+import com.ibm.wala.shrikeBT.PopInstruction;
 import com.ibm.wala.shrikeBT.ReturnInstruction;
 import com.ibm.wala.shrikeBT.StoreInstruction;
 import com.ibm.wala.shrikeBT.Util;
@@ -49,6 +49,7 @@ import com.ibm.wala.util.collections.Iterator2Iterable;
 import com.ibm.wala.util.strings.StringStuff;
 
 import de.rherzog.master.thesis.slicer.instrumenter.export.FeatureLogger;
+import de.rherzog.master.thesis.slicer.instrumenter.export.FeatureLoggerExecution;
 import de.rherzog.master.thesis.slicer.instrumenter.export.Nothing;
 import de.rherzog.master.thesis.slicer.instrumenter.export.SliceWriter;
 import de.rherzog.master.thesis.slicer.instrumenter.export.SliceWriter.ExportFormat;
@@ -71,8 +72,8 @@ public class Instrumenter {
 
 	// Filter for duplicate entries.
 	private Set<String> duplicateEntrySet = new HashSet<>();
-
 	private String[] exportJars = new String[] { "SlicerExport.jar", "Utils.jar" };
+	private boolean verbose = false;
 
 	/**
 	 * Constructor for an OfflineInstrumenter
@@ -146,8 +147,8 @@ public class Instrumenter {
 	}
 
 	public void instrument(Set<Integer> instructionIndexes, Set<Integer> instructionIndexesToKeep,
-			Set<Integer> instructionIndexesToIgnore, Map<Integer, Set<Integer>> varIndexesToRenumber)
-			throws InvalidClassFileException, IllegalStateException, IOException {
+			Set<Integer> instructionIndexesToIgnore, Map<Integer, Set<Integer>> varIndexesToRenumber,
+			Set<Integer> instructionsInCycles) throws InvalidClassFileException, IllegalStateException, IOException {
 		InstrumenterComparator comparator = InstrumenterComparator.of(methodSignature);
 
 		instrumenter.beginTraversal();
@@ -178,7 +179,7 @@ public class Instrumenter {
 			}
 
 			InstrumentedMethod instrumentedMethod = instrumentMethod(md, instructionIndexes, instructionIndexesToKeep,
-					instructionIndexesToIgnore, varIndexesToRenumber);
+					instructionIndexesToIgnore, varIndexesToRenumber, instructionsInCycles);
 			instrumentedMethod.getMethodEditor().endPass();
 
 			// Write no matter if there are changes
@@ -189,9 +190,10 @@ public class Instrumenter {
 
 	protected InstrumentedMethod instrumentMethod(MethodData methodData, Set<Integer> instructionIndexes,
 			Set<Integer> instructionIndexesToKeep, Set<Integer> instructionIndexesToIgnore,
-			Map<Integer, Set<Integer>> varIndexesToRenumber) {
+			Map<Integer, Set<Integer>> varIndexesToRenumber, Set<Integer> instructionsInCycles) {
+		// No feature patches here
 		return instrumentMethod(methodData, instructionIndexes, instructionIndexesToKeep, instructionIndexesToIgnore,
-				Collections.emptyMap(), varIndexesToRenumber);
+				Collections.emptyMap(), varIndexesToRenumber, instructionsInCycles);
 	}
 
 	private enum PatchAction {
@@ -200,7 +202,8 @@ public class Instrumenter {
 
 	protected InstrumentedMethod instrumentMethod(MethodData methodData, Set<Integer> instructionIndexes,
 			Set<Integer> instructionIndexesToKeep, Set<Integer> instructionIndexesToIgnore,
-			Map<Integer, Patch> featurePatchMap, Map<Integer, Set<Integer>> varIndexesToRenumber) {
+			Map<Integer, Patch> featurePatchMap, Map<Integer, Set<Integer>> varIndexesToRenumber,
+			Set<Integer> instructionsInCycles) {
 		MethodEditor methodEditor = new MethodEditor(methodData);
 		methodEditor.beginPass();
 
@@ -240,6 +243,7 @@ public class Instrumenter {
 		// needs 2 elements on the stack.
 		final int startTimeVarIndex = maxVarIndex += 1;
 		final int loggerVarIndex = maxVarIndex += 2;
+		final int executionLoggerVarIndex = maxVarIndex += 1;
 		final int resultVarIndex = maxVarIndex += 1;
 		final int endTimeVarIndex = maxVarIndex += 1;
 
@@ -252,6 +256,7 @@ public class Instrumenter {
 		// Clear feature state in SliceWriter on method start. After the method
 		// execution, other code can use the feature information from the executed slice
 		final String loggerType = Util.makeType(FeatureLogger.class);
+		final String executionLoggerType = Util.makeType(FeatureLoggerExecution.class);
 		atStartPatches.add(new Patch() {
 			@Override
 			public void emitTo(Output w) {
@@ -263,25 +268,15 @@ public class Instrumenter {
 				instructionIndexes.forEach(instructionIndex -> {
 					w.emit(LoadInstruction.make(loggerType, loggerVarIndex));
 					w.emit(ConstantInstruction.make(instructionIndex));
-
-					IInstruction instruction = instructions[instructionIndex];
-					if (instruction instanceof IInvokeInstruction) {
-						// We got an invoke instruction, check if its recursive
-						if (Utilities.isRecursiveInvokeInstruction(methodData, (IInvokeInstruction) instruction)) {
-							// For a recursive invoke instruction, we count the number of invocations.
-							// Initialize its default value with 0 (no invocations so far)
-							w.emit(ConstantInstruction.make(0));
-							Utilities.convertIfNecessary(w, TypeSignature.make(Constants.TYPE_int));
-							w.emit(Util.makeInvoke(FeatureLogger.class, "initializeFeature",
-									new Class[] { int.class, Object.class }));
-						} else {
-							w.emit(Util.makeInvoke(FeatureLogger.class, "initializeFeature",
-									new Class[] { int.class }));
-						}
-					} else {
-						w.emit(Util.makeInvoke(FeatureLogger.class, "initializeFeature", new Class[] { int.class }));
-					}
+					w.emit(ConstantInstruction.make(0));
+					w.emit(Util.makeInvoke(FeatureLogger.class, "initializeFeature",
+							new Class[] { int.class, boolean.class }));
 				});
+
+				// Create an execution object
+				w.emit(LoadInstruction.make(loggerType, loggerVarIndex));
+				w.emit(Util.makeInvoke(FeatureLogger.class, "createExecution", new Class[] {}));
+				w.emit(StoreInstruction.make(executionLoggerType, executionLoggerVarIndex));
 			}
 		});
 
@@ -320,16 +315,18 @@ public class Instrumenter {
 						w.emit(Util.makeInvoke(Nothing.class, "doNothing"));
 					}
 				});
-//				System.out.println(i + ": IGNORED " + instruction);
-			}
-
-			if (!instructionIndexesToKeep.contains(index)) {
+				if (verbose) {
+					System.out.println(index + ": IGNORED " + instruction);
+				}
+			} else if (!instructionIndexesToKeep.contains(index)) {
 				replacePatches.add(Utilities.getEmptyPatch());
 
 				if (stackSize == null) {
 					stackSize = lastStackSize;
 				}
-//				System.out.println(i + ": SKIPPED " + instruction);
+				if (verbose) {
+					System.out.println(index + ": SKIPPED " + instruction);
+				}
 			} else {
 				// The instruction should be kept
 
@@ -346,7 +343,9 @@ public class Instrumenter {
 					stackSize = null;
 					lastStackSize = 0;
 				}
-//				System.out.println(i + ": " + instruction);
+				if (verbose) {
+					System.out.println(index + ": " + instruction);
+				}
 
 				lastInstructionIndex = index;
 				lastStackSize += Utilities.getPushedSize(instruction) - Utilities.getPoppedSize(instruction);
@@ -356,6 +355,8 @@ public class Instrumenter {
 		// Patch every feature to get the value
 		for (int instructionIndex : instructionIndexes) {
 			IInstruction featureInstruction = instructions[instructionIndex];
+
+			boolean allowValueOverwrite = instructionsInCycles.contains(instructionIndex);
 
 			if (featureInstruction instanceof ConditionalBranchInstruction) {
 				// Special handing before a conditional jump.
@@ -373,15 +374,32 @@ public class Instrumenter {
 				// 6 first instruction after the conditional
 				ConditionalBranchInstruction instruction = (ConditionalBranchInstruction) featureInstruction;
 
-				List<Patch> patches = instructionPatchesMap.get(instructionIndex - 2).get(PatchAction.BEFORE);
-				patches.add(new Patch() {
+				List<Patch> beforeCBIpatches = instructionPatchesMap.get(instructionIndex - 2).get(PatchAction.BEFORE);
+				Patch patch = new Patch() {
 					@Override
 					public void emitTo(Output w) {
 						w.emit(ConstantInstruction.make(0));
-						getFeatureLoggerLogPatch(instructionIndex, resultVarIndex, instruction.getType(),
-								loggerVarIndex).emitTo(w);
+						Patch featureLoggerLogPatch = getFeatureLoggerLogPatch(instructionIndex, resultVarIndex,
+								instruction.getType(), executionLoggerVarIndex);
+						featureLoggerLogPatch.emitTo(w);
+						w.emit(PopInstruction.make(1));
 					}
-				});
+				};
+				beforeCBIpatches.add(patch);
+
+				allowValueOverwrite = true;
+//				List<Patch> beforeNextCBIpatches = instructionPatchesMap.get(instructionIndex).get(PatchAction.AFTER);
+//				patch = new Patch() {
+//					@Override
+//					public void emitTo(Output w) {
+//						w.emit(ConstantInstruction.make(1));
+//						Patch featureLoggerLogPatch = getFeatureLoggerLogPatch(instructionIndex, resultVarIndex,
+//								instruction.getType(), executionLoggerVarIndex, true);
+//						featureLoggerLogPatch.emitTo(w);
+//						w.emit(PopInstruction.make(1));
+//					}
+//				};
+//				beforeNextCBIpatches.add(patch);
 			}
 
 			// Replace the original feature if a patch is given
@@ -392,31 +410,43 @@ public class Instrumenter {
 
 			// Logging patch for instruction value
 			Patch resultPatch = getResultAfterPatch(methodData, featureInstruction, instructionIndex, resultVarIndex,
-					instructionPopMap, loggerVarIndex);
+					instructionPopMap, executionLoggerVarIndex, allowValueOverwrite);
 			List<Patch> afterPatches = instructionPatchesMap.get(instructionIndex).get(PatchAction.AFTER);
 			afterPatches.add(resultPatch);
 
-			// TODO Pop remaining elements on the stack for instruction
-			// TODO TODO TODO Why do I NOT need to remove remaining elements on the stack??? WTF?
-			// TODO If I do so, the WALA stack validation fails
-//			Integer elementPopSize = instructionPopMap.get(instructionIndex);
-//			if (elementPopSize != null) {
-//				for (int i = 0; i < elementPopSize - 1; i++) {
-//					afterPatches.add(new Patch() {
-//						@Override
-//						public void emitTo(Output w) {
-//							w.emit(PopInstruction.make(1));
-//						}
-//					});
+			// Pop remaining elements on the stack for instruction
+			Integer elementPopSize = instructionPopMap.get(instructionIndex);
+			if (elementPopSize != null) {
+				// TODO Why do I not need to remove multiple elements here? Stack size is
+				// definitively bigger than 1 (for example for a long data type) or does the
+				// 2-sized elements only belong to local variables????
+//				for (int i = 0; i < elementPopSize; i++) {
+				afterPatches.add(new Patch() {
+					@Override
+					public void emitTo(Output w) {
+						w.emit(PopInstruction.make(1));
+					}
+				});
 //				}
-//			}
+			}
+		}
+
+		for (int instructionIndex : instructionIndexesToKeep) {
+			IInstruction instruction = instructions[instructionIndex];
+			if (instructionIndex != lastInstructionIndex && instruction instanceof ReturnInstruction) {
+				List<Patch> patches = instructionPatchesMap.get(instructionIndex).get(PatchAction.BEFORE);
+				patches.add(Utilities.getStoreTimePatch(endTimeVarIndex));
+				patches.add(getExecutionEndPatch(executionLoggerVarIndex, startTimeVarIndex, endTimeVarIndex));
+				patches.add(getWriteFilePatch(loggerVarIndex));
+			}
 		}
 
 		// At the end of the method, we save the slicer results
 		if (exportFormat != null) {
 			List<Patch> patches = instructionPatchesMap.get(lastInstructionIndex).get(PatchAction.BEFORE);
 			patches.add(Utilities.getStoreTimePatch(endTimeVarIndex));
-			patches.add(getWriteFilePatch(startTimeVarIndex, endTimeVarIndex, loggerVarIndex));
+			patches.add(getExecutionEndPatch(executionLoggerVarIndex, startTimeVarIndex, endTimeVarIndex));
+			patches.add(getWriteFilePatch(loggerVarIndex));
 		}
 
 		List<Patch> patches = instructionPatchesMap.get(lastInstructionIndex).get(PatchAction.BEFORE);
@@ -434,6 +464,151 @@ public class Instrumenter {
 		methodEditor.applyPatches();
 
 		return new InstrumentedMethod(methodEditor, loggerVarIndex);
+	}
+
+	protected Patch getResultAfterPatch(MethodData methodData, final IInstruction instruction, int instructionIndex,
+			final int resultVarIndex, Map<Integer, Integer> instructionPopMap, int executionLoggerVarIndex,
+			boolean allowValueOverwrite) {
+		return new Patch() {
+			@Override
+			public void emitTo(Output w) {
+				// Prepare the feature value to appear on the stack
+				String type = null;
+				if (instruction instanceof LoadInstruction) {
+					// Nothing to push on stack (value is already there)
+					LoadInstruction instruction2 = (LoadInstruction) instruction;
+					type = instruction2.getType();
+				} else if (instruction instanceof StoreInstruction) {
+					// A StoreFeature consumes the top-most element and saves it into a variable
+					// since we are interested in the value, we have to load (with a
+					// LoadInstruction) it again
+					StoreInstruction instruction2 = (StoreInstruction) instruction;
+					type = instruction2.getType();
+					w.emit(LoadInstruction.make(type, instruction2.getVarIndex()));
+				} else if (instruction instanceof BinaryOpInstruction) {
+					// Nothing to push on stack (value is already there)
+					BinaryOpInstruction instruction2 = (BinaryOpInstruction) instruction;
+					type = instruction2.getType();
+				} else if (instruction instanceof ConditionalBranchInstruction) {
+					// A ConditionalBranchInstruction jumps if the condition is met. Directly after
+					// the instruction, we only can be sure that the result was positive (true)
+					// because the instruction does not instruct a jump.
+					ConditionalBranchInstruction instruction2 = (ConditionalBranchInstruction) instruction;
+					type = instruction2.getType();
+					// Push a true (1) since following the normal program call flow means not
+					// jumping anywhere
+					w.emit(ConstantInstruction.make(1));
+				} else if (instruction instanceof GetInstruction) {
+					// A GetInstruction already pushed a value on the stack
+					GetInstruction instruction2 = (GetInstruction) instruction;
+					type = instruction2.getFieldType();
+				} else if (instruction instanceof InvokeInstruction) {
+					// A InvokeInstruction already pushed a value on the stack
+					InvokeInstruction instruction2 = (InvokeInstruction) instruction;
+//					type = instruction2.getPushedType(null);
+					TypeName typeName = StringStuff.parseForReturnTypeName(instruction2.getMethodSignature());
+					type = typeName.toString();
+					if (!typeName.isPrimitiveType()) {
+						type += ";";
+					}
+				} else if (instruction instanceof ConstantInstruction) {
+					// A ConstantInstruction already pushed a value on the stack
+					ConstantInstruction instruction2 = (ConstantInstruction) instruction;
+					type = instruction2.getType();
+				} else if (instruction instanceof ConversionInstruction) {
+					// A ConversionInstruction already pushed a value on the stack
+					ConversionInstruction instruction2 = (ConversionInstruction) instruction;
+					type = instruction2.getToType();
+				} else if (instruction instanceof ArrayLoadInstruction) {
+					// A ArrayLoadInstruction already pushed an object on the stack
+					ArrayLoadInstruction instruction2 = (ArrayLoadInstruction) instruction;
+					type = instruction2.getType();
+				} else if (instruction instanceof GotoInstruction) {
+					// A GotoInstruction does not push anything and has no type
+					type = CTCompiler.TYPE_void;
+				}
+
+				if (type == null) {
+					throw new NullPointerException(
+							"type of instruction '" + instruction + "' with index " + instructionIndex + " is null");
+				}
+
+				if (type.equals(CTCompiler.TYPE_void)) {
+					// The return value of the instruction is void
+					if (instruction instanceof InvokeInstruction) {
+						// Check if the instruction is a recursive invoke instruction. If so, we can
+						// count the number of invocations.
+						InvokeInstruction instruction2 = (InvokeInstruction) instruction;
+						if (Utilities.isRecursiveInvokeInstruction(methodData, instruction2)) {
+							// Increment the last value by 1
+							w.emit(LoadInstruction.make(Util.makeType(FeatureLoggerExecution.class),
+									executionLoggerVarIndex));
+							w.emit(ConstantInstruction.make(instructionIndex));
+							w.emit(ConstantInstruction.make(1));
+							Utilities.convertIfNecessary(w, TypeSignature.make(Constants.TYPE_int));
+							w.emit(Util.makeInvoke(FeatureLoggerExecution.class, "log",
+									new Class[] { int.class, Object.class }));
+						}
+						return;
+					} else {
+						// If the type is void we cannot log anything and so does not influence
+						return;
+					}
+				}
+
+				// Special handling for boolean (Z) since the bytecode only knows int (I)
+				if (CTCompiler.TYPE_boolean.equals(type)) {
+					type = CTCompiler.TYPE_int;
+				}
+
+				// Log the value on the stack in local variable "resultVarIndex"
+				getFeatureLoggerLogPatch(instructionIndex, resultVarIndex, type, executionLoggerVarIndex,
+						allowValueOverwrite).emitTo(w);
+			}
+		};
+	}
+
+	protected Patch getFeatureLoggerLogPatch(int instructionIndex, final int resultVarIndex, String type,
+			int executionLoggerVarIndex) {
+		return getFeatureLoggerLogPatch(instructionIndex, resultVarIndex, type, executionLoggerVarIndex, false);
+	}
+
+	protected Patch getFeatureLoggerLogPatch(int instructionIndex, final int resultVarIndex, String type,
+			int executionLoggerVarIndex, boolean allowValueOverwrite) {
+
+		return new Patch() {
+			@Override
+			public void emitTo(Output w) {
+				// Special handling for boolean (Z) since the bytecode only knows int (I)
+				String type2 = type;
+				if (CTCompiler.TYPE_boolean.equals(type)) {
+					type2 = CTCompiler.TYPE_int;
+				}
+
+				// Result of slice is on the top of the stack save it from where we can load it
+				// again later
+				w.emit(StoreInstruction.make(type2, resultVarIndex));
+
+				// featureLogger.log(instructionIndex, value)
+				w.emit(LoadInstruction.make(Util.makeType(FeatureLoggerExecution.class), executionLoggerVarIndex));
+
+				// Export the feature value and time (prepare the parameters first)
+				w.emit(ConstantInstruction.make(instructionIndex));
+				w.emit(LoadInstruction.make(type2, resultVarIndex));
+				Utilities.convertIfNecessary(w, TypeSignature.make(type2));
+
+				if (allowValueOverwrite) {
+					w.emit(ConstantInstruction.make(1));
+					w.emit(Util.makeInvoke(FeatureLoggerExecution.class, "log",
+							new Class[] { int.class, Object.class, boolean.class }));
+				} else {
+					w.emit(Util.makeInvoke(FeatureLoggerExecution.class, "log",
+							new Class[] { int.class, Object.class }));
+				}
+
+				w.emit(LoadInstruction.make(type2, resultVarIndex));
+			}
+		};
 	}
 
 	private static void applyPatches(MethodEditor methodEditor,
@@ -460,7 +635,7 @@ public class Instrumenter {
 					});
 					break;
 				case AFTER:
-					Collections.reverse(patchListCopy);
+//					Collections.reverse(patchListCopy);
 					methodEditor.insertAfter(instructionIndex, new Patch() {
 						@Override
 						public void emitTo(Output w) {
@@ -535,193 +710,33 @@ public class Instrumenter {
 		return null;
 	}
 
-	protected Patch getResultAfterPatch(MethodData methodData, final IInstruction instruction, int instructionIndex,
-			final int resultVarIndex, Map<Integer, Integer> instructionPopMap, int loggerVarIndex) {
+	protected Patch getExecutionEndPatch(int executionLoggerVarIndex, int startTimeVarIndex, int endTimeVarIndex) {
 		return new Patch() {
 			@Override
 			public void emitTo(Output w) {
-				// Prepare the feature value to appear on the stack
-				String type = null;
-				if (instruction instanceof LoadInstruction) {
-					// Nothing to push on stack (value is already there)
-					LoadInstruction instruction2 = (LoadInstruction) instruction;
-					type = instruction2.getType();
-				} else if (instruction instanceof StoreInstruction) {
-					// A StoreFeature consumes the top-most element and saves it into a variable
-					// since we are interested in the value, we have to load (with a
-					// LoadInstruction) it again
-					StoreInstruction instruction2 = (StoreInstruction) instruction;
-					type = instruction2.getType();
-					w.emit(LoadInstruction.make(type, instruction2.getVarIndex()));
-				} else if (instruction instanceof BinaryOpInstruction) {
-					// Nothing to push on stack (value is already there)
-					BinaryOpInstruction instruction2 = (BinaryOpInstruction) instruction;
-					type = instruction2.getType();
-				} else if (instruction instanceof ConditionalBranchInstruction) {
-					// A ConditionalBranchInstruction jumps if the condition is met. Directly after
-					// the instruction, we only can be sure that the result was positive (true)
-					// because the instruction does not instruct a jump.
-					ConditionalBranchInstruction instruction2 = (ConditionalBranchInstruction) instruction;
-					type = instruction2.getType();
-					// Push a true (1) since following the normal program call flow means not
-					// jumping anywhere
-					w.emit(ConstantInstruction.make(1));
-				} else if (instruction instanceof GetInstruction) {
-					// A GetInstruction already pushed a value on the stack
-					GetInstruction instruction2 = (GetInstruction) instruction;
-					type = instruction2.getFieldType();
-				} else if (instruction instanceof InvokeInstruction) {
-					// A InvokeInstruction already pushed a value on the stack
-					InvokeInstruction instruction2 = (InvokeInstruction) instruction;
-//					type = instruction2.getPushedType(null);
-					TypeName typeName = StringStuff.parseForReturnTypeName(instruction2.getMethodSignature());
-					type = typeName.toString();
-					if (!typeName.isPrimitiveType()) {
-						type += ";";
-					}
-				} else if (instruction instanceof ConstantInstruction) {
-					// A ConstantInstruction already pushed a value on the stack
-					ConstantInstruction instruction2 = (ConstantInstruction) instruction;
-					type = instruction2.getType();
-				} else if (instruction instanceof ConversionInstruction) {
-					// A ConversionInstruction already pushed a value on the stack
-					ConversionInstruction instruction2 = (ConversionInstruction) instruction;
-					type = instruction2.getToType();
-				} else if (instruction instanceof ArrayLoadInstruction) {
-					// A ArrayLoadInstruction already pushed an object on the stack
-					ArrayLoadInstruction instruction2 = (ArrayLoadInstruction) instruction;
-					type = instruction2.getType();
-				} else if (instruction instanceof GotoInstruction) {
-					// A GotoInstruction does not push anything and has no type
-					type = CTCompiler.TYPE_void;
-				}
-
-				if (type == null) {
-					throw new NullPointerException(
-							"type of instruction '" + instruction + "' with index " + instructionIndex + " is null");
-				}
-
-				if (type.equals(CTCompiler.TYPE_void)) {
-					// The return value of the instruction is void
-					if (instruction instanceof InvokeInstruction) {
-						// Check if the instruction is a recursive invoke instruction. If so, we can
-						// count the number of invocations.
-						InvokeInstruction instruction2 = (InvokeInstruction) instruction;
-						if (Utilities.isRecursiveInvokeInstruction(methodData, instruction2)) {
-							// Increment the last value by 1
-							w.emit(LoadInstruction.make(Util.makeType(FeatureLogger.class), loggerVarIndex));
-							w.emit(ConstantInstruction.make(instructionIndex));
-							w.emit(ConstantInstruction.make(1));
-							Utilities.convertIfNecessary(w, TypeSignature.make(Constants.TYPE_int));
-							w.emit(Util.makeInvoke(FeatureLogger.class, "incrementLastBy",
-									new Class[] { int.class, Object.class }));
-						}
-						return;
-					} else {
-						// If the type is void we cannot log anything and so does not influence
-						return;
-					}
-				}
-
-				// Special handling for boolean (Z) since the bytecode only knows int (I)
-				if (CTCompiler.TYPE_boolean.equals(type)) {
-					type = CTCompiler.TYPE_int;
-				}
-
-				// Log the value on the stack in local variable "resultVarIndex"
-				getFeatureLoggerLogPatch(instructionIndex, resultVarIndex, type, loggerVarIndex).emitTo(w);
-
-				// Restore the feature value if there was any
-				if (instruction instanceof LoadInstruction) {
-					// Restore what we just saved
-//					if (!instructionPopMap.containsKey(instructionIndex)) {
-					w.emit(LoadInstruction.make(type, resultVarIndex));
-//					}
-				} else if (instruction instanceof StoreInstruction) {
-					// Nothing to restore (there was no element pushed before)
-				} else if (instruction instanceof BinaryOpInstruction) {
-					// Restore what we just saved
-//					if (!instructionPopMap.containsKey(instructionIndex)) {
-					w.emit(LoadInstruction.make(type, resultVarIndex));
-//					}
-				} else if (instruction instanceof ConstantInstruction) {
-					ConstantInstruction instruction2 = (ConstantInstruction) instruction;
-//					if (!instructionPopMap.containsKey(instructionIndex)) {
-					w.emit(instruction2);
-//					}
-				} else if (instruction instanceof GetInstruction) {
-					// Restore what we just saved
-//					if (!instructionPopMap.containsKey(instructionIndex)) {
-					w.emit(LoadInstruction.make(type, resultVarIndex));
-//					}
-				} else if (instruction instanceof InvokeInstruction) {
-					// Restore what we just saved
-//					if (!instructionPopMap.containsKey(instructionIndex)) {
-					w.emit(LoadInstruction.make(type, resultVarIndex));
-//					}
-				} else if (instruction instanceof ConversionInstruction) {
-					// Restore what we just saved
-//					if (!instructionPopMap.containsKey(instructionIndex)) {
-					w.emit(LoadInstruction.make(type, resultVarIndex));
-//					}
-				} else if (instruction instanceof ArrayLoadInstruction) {
-					// Restore what we just saved
-//					if (!instructionPopMap.containsKey(instructionIndex)) {
-					w.emit(LoadInstruction.make(type, resultVarIndex));
-//					}
-				} else if (instruction instanceof GotoInstruction) {
-					// Nothing to restore (there was no element pushed before)
-				}
+				w.emit(LoadInstruction.make(Util.makeType(FeatureLoggerExecution.class), executionLoggerVarIndex));
+				w.emit(LoadInstruction.make(Constants.TYPE_long, startTimeVarIndex));
+				w.emit(LoadInstruction.make(Constants.TYPE_long, endTimeVarIndex));
+				w.emit(Util.makeInvoke(FeatureLoggerExecution.class, "end", new Class[] { long.class, long.class }));
 			}
 		};
 	}
 
-	protected Patch getFeatureLoggerLogPatch(int instructionIndex, final int resultVarIndex, String type,
-			int loggerVarIndex) {
-
-		return new Patch() {
-			@Override
-			public void emitTo(Output w) {
-				// Special handling for boolean (Z) since the bytecode only knows int (I)
-				String type2 = type;
-				if (CTCompiler.TYPE_boolean.equals(type)) {
-					type2 = CTCompiler.TYPE_int;
-				}
-
-				// Result of slice is on the top of the stack save it from where we can load it
-				// again later
-				w.emit(StoreInstruction.make(type2, resultVarIndex));
-
-				// featureLogger.log(instructionIndex, value)
-				w.emit(LoadInstruction.make(Util.makeType(FeatureLogger.class), loggerVarIndex));
-
-				// Export the feature value and time (prepare the parameters first)
-				w.emit(ConstantInstruction.make(instructionIndex));
-				w.emit(LoadInstruction.make(type2, resultVarIndex));
-				Utilities.convertIfNecessary(w, TypeSignature.make(type2));
-
-				w.emit(Util.makeInvoke(FeatureLogger.class, "log", new Class[] { int.class, Object.class }));
-			}
-		};
-	}
-
-	protected Patch getWriteFilePatch(int startTimeVarIndex, int endTimeVarIndex, int loggerVarIndex) {
+	protected Patch getWriteFilePatch(int loggerVarIndex) {
 		return new Patch() {
 			@Override
 			public void emitTo(Output w) {
 				// FeatureValueWriter.writeCSV(path)
 				w.emit(ConstantInstruction.makeString(resultFilePath));
-				w.emit(LoadInstruction.make(CTCompiler.TYPE_long, startTimeVarIndex));
-				w.emit(LoadInstruction.make(CTCompiler.TYPE_long, endTimeVarIndex));
 				w.emit(LoadInstruction.make(Util.makeType(FeatureLogger.class), loggerVarIndex));
 				switch (exportFormat) {
 				case CSV:
 					w.emit(Util.makeInvoke(SliceWriter.class, "writeCSV",
-							new Class[] { String.class, long.class, long.class, FeatureLogger.class }));
+							new Class[] { String.class, FeatureLogger.class }));
 					break;
 				case XML:
 					w.emit(Util.makeInvoke(SliceWriter.class, "writeXML",
-							new Class[] { String.class, long.class, long.class, FeatureLogger.class }));
+							new Class[] { String.class, FeatureLogger.class }));
 					break;
 				}
 			}
@@ -820,5 +835,9 @@ public class Instrumenter {
 
 	public String getAdditionalJarsPath() {
 		return additionalJarsPath;
+	}
+
+	public void setVerbose(boolean verbose) {
+		this.verbose = verbose;
 	}
 }

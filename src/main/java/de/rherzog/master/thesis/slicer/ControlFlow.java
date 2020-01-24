@@ -96,6 +96,25 @@ public class ControlFlow {
 		return simpleCycles;
 	}
 
+	public boolean isPartOfCycle(int instructionIndex) throws IOException, InvalidClassFileException {
+		for (List<Integer> cycle : getSimpleCycles()) {
+			if (cycle.contains(instructionIndex)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public Set<Integer> getInstructionsInCycles() throws IOException, InvalidClassFileException {
+		Set<Integer> instructionsInCycleSet = new HashSet<>();
+		for (int index = 0; index < getMethodData().getInstructions().length; index++) {
+			if (isPartOfCycle(index)) {
+				instructionsInCycleSet.add(index);
+			}
+		}
+		return instructionsInCycleSet;
+	}
+
 	public Map<Integer, Set<Integer>> getVarIndexesToRenumber() throws IOException, InvalidClassFileException {
 		if (varIndexToRenumber != null) {
 			return varIndexToRenumber;
