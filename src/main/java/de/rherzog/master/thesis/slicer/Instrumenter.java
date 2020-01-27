@@ -245,7 +245,7 @@ public class Instrumenter {
 		final int loggerVarIndex = maxVarIndex += 2;
 		final int executionLoggerVarIndex = maxVarIndex += 1;
 		final int resultVarIndex = maxVarIndex += 1;
-		final int endTimeVarIndex = maxVarIndex += 1;
+		final int endTimeVarIndex = maxVarIndex += 2;
 
 		List<Patch> atStartPatches = instructionPatchesMap.get(0).get(PatchAction.AT_START);
 		if (exportFormat != null) {
@@ -413,6 +413,17 @@ public class Instrumenter {
 					instructionPopMap, executionLoggerVarIndex, allowValueOverwrite);
 			List<Patch> afterPatches = instructionPatchesMap.get(instructionIndex).get(PatchAction.AFTER);
 			afterPatches.add(resultPatch);
+
+			if (featureInstruction instanceof ConditionalBranchInstruction) {
+				// We just pushed a "true" on the stack and since it is not consumed by any
+				// other instruction, we need to pop it ourself
+				afterPatches.add(new Patch() {
+					@Override
+					public void emitTo(Output w) {
+						w.emit(PopInstruction.make(1));
+					}
+				});
+			}
 
 			// Pop remaining elements on the stack for instruction
 			Integer elementPopSize = instructionPopMap.get(instructionIndex);
