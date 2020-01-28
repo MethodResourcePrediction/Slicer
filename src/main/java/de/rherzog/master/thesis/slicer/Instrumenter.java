@@ -448,7 +448,10 @@ public class Instrumenter {
 				List<Patch> patches = instructionPatchesMap.get(instructionIndex).get(PatchAction.BEFORE);
 				patches.add(Utilities.getStoreTimePatch(endTimeVarIndex));
 				patches.add(getExecutionEndPatch(executionLoggerVarIndex, startTimeVarIndex, endTimeVarIndex));
-				patches.add(getWriteFilePatch(loggerVarIndex));
+
+				if (exportFormat != null) {
+					patches.add(getWriteFilePatch(loggerVarIndex));
+				}
 			}
 		}
 
@@ -460,14 +463,17 @@ public class Instrumenter {
 			patches.add(getWriteFilePatch(loggerVarIndex));
 		}
 
-		List<Patch> patches = instructionPatchesMap.get(lastInstructionIndex).get(PatchAction.BEFORE);
-		patches.add(new Patch() {
-			@Override
-			public void emitTo(Output w) {
-				// Per convention we return void at the end
-				w.emit(ReturnInstruction.make(CTCompiler.TYPE_void));
-			}
-		});
+		// Add a return statement to the end of the method if there is not any
+		if (!instructionIndexesToKeep.contains(lastInstructionIndex)) {
+			List<Patch> patches = instructionPatchesMap.get(lastInstructionIndex).get(PatchAction.BEFORE);
+			patches.add(new Patch() {
+				@Override
+				public void emitTo(Output w) {
+					// Per convention we return void at the end
+					w.emit(ReturnInstruction.make(CTCompiler.TYPE_void));
+				}
+			});
+		}
 
 		// Apply patches from map
 		applyPatches(methodEditor, instructionPatchesMap);
