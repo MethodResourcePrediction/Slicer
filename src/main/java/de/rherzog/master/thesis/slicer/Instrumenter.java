@@ -295,6 +295,7 @@ public class Instrumenter {
 							w.emit(LoadInstruction.make(loggerType, loggerVarIndex));
 							w.emit(ConstantInstruction.make(instructionIndex));
 							w.emit(ConstantInstruction.make(instruction.getType(), instruction.getValue()));
+							Utilities.convertIfNecessary(w, TypeSignature.make(instruction.getType()));
 							w.emit(Util.makeInvoke(FeatureLogger.class, "setFeatureDefaultValue",
 									new Class[] { int.class, Object.class }));
 						}
