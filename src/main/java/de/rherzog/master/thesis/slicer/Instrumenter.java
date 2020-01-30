@@ -268,9 +268,37 @@ public class Instrumenter {
 				instructionIndexes.forEach(instructionIndex -> {
 					w.emit(LoadInstruction.make(loggerType, loggerVarIndex));
 					w.emit(ConstantInstruction.make(instructionIndex));
-					w.emit(ConstantInstruction.make(0));
+					w.emit(ConstantInstruction.make(0)); // do not throw an exception
 					w.emit(Util.makeInvoke(FeatureLogger.class, "initializeFeature",
 							new Class[] { int.class, boolean.class }));
+
+					// Add instruction default values
+					// If there is a specified patch for the feature, use the patch instead of the
+					// default value
+					if (featurePatchMap.containsKey(instructionIndex)) {
+						// TODO Handle more instruction types here
+						if (instructions[instructionIndex] instanceof ConstantInstruction) {
+							ConstantInstruction instruction = (ConstantInstruction) instructions[instructionIndex];
+							w.emit(LoadInstruction.make(loggerType, loggerVarIndex));
+							w.emit(ConstantInstruction.make(instructionIndex));
+							Patch patch = featurePatchMap.get(instructionIndex);
+							patch.emitTo(w);
+							Utilities.convertIfNecessary(w, TypeSignature.make(instruction.getType()));
+							w.emit(Util.makeInvoke(FeatureLogger.class, "setFeatureDefaultValue",
+									new Class[] { int.class, Object.class }));
+						}
+					} else {
+						// Handle all other instructions were no explicit patch is given
+						// We can be sure that a not modified constant has the constant value
+						if (instructions[instructionIndex] instanceof ConstantInstruction) {
+							ConstantInstruction instruction = (ConstantInstruction) instructions[instructionIndex];
+							w.emit(LoadInstruction.make(loggerType, loggerVarIndex));
+							w.emit(ConstantInstruction.make(instructionIndex));
+							w.emit(ConstantInstruction.make(instruction.getType(), instruction.getValue()));
+							w.emit(Util.makeInvoke(FeatureLogger.class, "setFeatureDefaultValue",
+									new Class[] { int.class, Object.class }));
+						}
+					}
 				});
 
 				// Create an execution object
