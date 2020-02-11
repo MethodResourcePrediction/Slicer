@@ -55,7 +55,7 @@ public class Slicer {
 		mySlicer.parseArgs(args);
 //		mySlicer.setExportFormat(null);
 		mySlicer.setVerbose(true);
-		mySlicer.makeSlicedFile();
+		mySlicer.makeSlicedFile(true);
 	}
 
 	public String makeSlicedFile() throws IOException, InvalidClassFileException, IllegalStateException,
@@ -303,6 +303,18 @@ public class Slicer {
 				slice(controlFlow, controlDependency, blocks, dataDependency, dependendInstructions, edgeSource);
 			}
 		}
+	}
+
+	public static SliceResult getSliceResult(String inputJar, String methodSignature, Set<Integer> instructionIndexes)
+			throws IOException, InvalidClassFileException {
+		Slicer slicer = new Slicer();
+		slicer.setInputJar(inputJar);
+		slicer.setMethodSignature(methodSignature);
+		slicer.setInstructionIndexes(instructionIndexes);
+
+		SliceResult sliceResult = new SliceResult(slicer.getInstructionIndexesToKeep(),
+				slicer.getInstructionIndexesToIgnore());
+		return sliceResult;
 	}
 
 	public void parseArgs(String[] args) throws ParseException {

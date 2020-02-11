@@ -1,27 +1,24 @@
 package de.rherzog.master.thesis.slicer;
 
-import java.util.LinkedHashSet;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.math3.util.Pair;
 
-import com.ibm.wala.ssa.ISSABasicBlock;
-
-public class SliceResult extends Pair<Set<ISSABasicBlock>, Set<ISSABasicBlock>> {
-
-	public SliceResult(Set<ISSABasicBlock> normalBlocks, Set<ISSABasicBlock> ignoredBlocks) {
-		super(normalBlocks, ignoredBlocks);
+public class SliceResult extends Pair<Set<Integer>, Set<Integer>> {
+	public SliceResult(Set<Integer> instructionsToKeep, Set<Integer> instructionsToIgnore) {
+		super(instructionsToKeep, instructionsToIgnore);
 	}
 
-	public Set<ISSABasicBlock> getNormalBlocks() {
+	public Set<Integer> getInstructionsToKeep() {
 		return getKey();
 	}
 
-	public Set<ISSABasicBlock> getIgnoredBlocks() {
+	public Set<Integer> getInstructionsToIgnore() {
 		return getValue();
 	}
 
 	public static SliceResult emptyResult() {
-		return new SliceResult(new LinkedHashSet<>(), new LinkedHashSet<>());
+		return new SliceResult(new HashSet<>(), new HashSet<>());
 	}
 }
