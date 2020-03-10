@@ -50,6 +50,10 @@ public class ControlFlow {
 		this.methodSignature = methodSignature;
 	}
 
+	public ControlFlow(MethodData methodData) {
+		this.methodData = methodData;
+	}
+
 	public Graph<Integer, DefaultEdge> getGraph() throws IOException, InvalidClassFileException {
 		if (graph != null) {
 			return graph;
