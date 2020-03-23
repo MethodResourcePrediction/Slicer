@@ -16,6 +16,7 @@ import java.util.jar.JarFile;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.io.FilenameUtils;
 
+import com.ibm.wala.shrikeBT.ArrayLengthInstruction;
 import com.ibm.wala.shrikeBT.ArrayLoadInstruction;
 import com.ibm.wala.shrikeBT.BinaryOpInstruction;
 import com.ibm.wala.shrikeBT.ConditionalBranchInstruction;
@@ -572,6 +573,10 @@ public class Instrumenter {
 				} else if (instruction instanceof GotoInstruction) {
 					// A GotoInstruction does not push anything and has no type
 					type = CTCompiler.TYPE_void;
+				} else if (instruction instanceof ArrayLengthInstruction) {
+//					ArrayLengthInstruction instruction2 = (ArrayLengthInstruction) instruction;
+					// An ArrayLengthInstruction always pushes an ints
+					type = CTCompiler.TYPE_int;
 				}
 
 				if (type == null) {
