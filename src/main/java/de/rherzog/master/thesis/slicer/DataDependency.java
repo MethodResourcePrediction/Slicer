@@ -4,12 +4,10 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.jgrapht.Graph;
-import org.jgrapht.alg.cycle.JohnsonSimpleCycles;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.io.ComponentNameProvider;
@@ -29,7 +27,6 @@ import de.rherzog.master.thesis.utils.Utilities;
 public class DataDependency {
 	private ControlFlow controlFlow;
 	private Graph<Integer, DefaultEdge> dataDependencyGraph;
-	private List<List<Integer>> simpleCycles;
 
 	public DataDependency(ControlFlow controlFlowGraph) throws IOException, InvalidClassFileException {
 		this.controlFlow = controlFlowGraph;
@@ -43,14 +40,16 @@ public class DataDependency {
 		return dataDependencyGraph;
 	}
 
-	public List<List<Integer>> getSimpleCycles() throws IOException, InvalidClassFileException {
-		if (simpleCycles != null) {
-			return simpleCycles;
-		}
+	public Set<Integer> getDataDependencyInstructions(int index) throws IOException, InvalidClassFileException {
+		Graph<Integer, DefaultEdge> dataDependencyGraph = getGraph();
+		Set<DefaultEdge> outgoingEdges = dataDependencyGraph.outgoingEdgesOf(index);
 
-		JohnsonSimpleCycles<Integer, DefaultEdge> johnsonSimpleCycles = new JohnsonSimpleCycles<>(getGraph());
-		simpleCycles = johnsonSimpleCycles.findSimpleCycles();
-		return simpleCycles;
+		Set<Integer> dataDependentInstructionSet = new HashSet<>();
+		for (DefaultEdge dataDependencyEdge : outgoingEdges) {
+			Integer edgeTarget = dataDependencyGraph.getEdgeTarget(dataDependencyEdge);
+			dataDependentInstructionSet.add(edgeTarget);
+		}
+		return dataDependentInstructionSet;
 	}
 
 	private Graph<Integer, DefaultEdge> getDependencyGraph(Graph<Integer, DefaultEdge> cfg)

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.List;
+import java.util.Set;
 
 import org.jgrapht.Graph;
 import org.jgrapht.alg.cycle.JohnsonSimpleCycles;
@@ -47,13 +48,14 @@ public class BlockDependency {
 
 			// Group subsequent instructions until the stack size equals 0. A block is
 			// complete, if the stack is empty (=0) after some instructions.
-			int stack = instruction.getPushedWordSize();
+			// TODO Rewrite this with Stack-Class?
+			int stack = Utilities.getPushedSize(instruction);
 			for (index++; index < instructions.length && stack > 0; index++) {
 				instruction = instructions[index];
 				stack -= Utilities.getPoppedSize(instruction);
 				stack += Utilities.getPushedSize(instruction);
 				if (stack < 0) {
-					throw new java.lang.IllegalStateException("Stack cannot be negative. Is: " + stack);
+					throw new IllegalStateException("Stack cannot be negative. Is: " + stack);
 				}
 
 				block.addInstruction(index, instruction);
@@ -107,6 +109,10 @@ public class BlockDependency {
 		JohnsonSimpleCycles<Block, DefaultEdge> johnsonSimpleCycles = new JohnsonSimpleCycles<>(getGraph());
 		simpleCycles = johnsonSimpleCycles.findSimpleCycles();
 		return simpleCycles;
+	}
+
+	public Set<Block> getBlocks() throws IOException, InvalidClassFileException {
+		return getGraph().vertexSet();
 	}
 
 	public Block getBlockForIndex(int index) throws IOException, InvalidClassFileException {

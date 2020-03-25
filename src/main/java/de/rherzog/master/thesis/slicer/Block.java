@@ -1,6 +1,8 @@
 package de.rherzog.master.thesis.slicer;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -21,6 +23,36 @@ public class Block {
 
 	public void addInstruction(int index, IInstruction instruction) {
 		instructions.put(index, instruction);
+	}
+
+	public Integer getHighestIndex() {
+		Integer highestIndex = null;
+		for (int index : getInstructions().keySet()) {
+			if (highestIndex == null) {
+				highestIndex = index;
+				continue;
+			}
+			highestIndex = Math.max(highestIndex, index);
+		}
+		return highestIndex;
+	}
+
+	public Integer getLowestIndex() {
+		Integer lowestIndex = null;
+		for (int index : getInstructions().keySet()) {
+			if (lowestIndex == null) {
+				lowestIndex = index;
+				continue;
+			}
+			lowestIndex = Math.min(lowestIndex, index);
+		}
+		return lowestIndex;
+	}
+
+	public List<Integer> getInstructionIndexes() {
+		ArrayList<Integer> instructionIndexList = new ArrayList<>(getInstructions().keySet());
+		instructionIndexList.sort(Integer::compareTo);
+		return instructionIndexList;
 	}
 
 	@Override

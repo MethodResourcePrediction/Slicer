@@ -82,6 +82,18 @@ public class ControlDependency {
 		}
 	}
 
+	public Set<Integer> getControlDependencyInstructions(int index) throws IOException, InvalidClassFileException {
+		Graph<Integer, DefaultEdge> controlDependencyGraph = getGraph();
+		Set<DefaultEdge> incomingEdges = controlDependencyGraph.incomingEdgesOf(index);
+
+		Set<Integer> controlDependentInstructionSet = new HashSet<>();
+		for (DefaultEdge controlEdge : incomingEdges) {
+			Integer edgeSource = controlDependencyGraph.getEdgeSource(controlEdge);
+			controlDependentInstructionSet.add(edgeSource);
+		}
+		return controlDependentInstructionSet;
+	}
+
 	public String dotPrint() throws IOException, InvalidClassFileException {
 		IInstruction[] instructions = controlFlow.getMethodData().getInstructions();
 

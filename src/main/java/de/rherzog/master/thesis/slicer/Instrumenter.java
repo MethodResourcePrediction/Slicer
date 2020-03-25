@@ -28,6 +28,7 @@ import com.ibm.wala.shrikeBT.GotoInstruction;
 import com.ibm.wala.shrikeBT.IInstruction;
 import com.ibm.wala.shrikeBT.ILoadInstruction;
 import com.ibm.wala.shrikeBT.IStoreInstruction;
+import com.ibm.wala.shrikeBT.InvokeDynamicInstruction;
 import com.ibm.wala.shrikeBT.InvokeInstruction;
 import com.ibm.wala.shrikeBT.LoadInstruction;
 import com.ibm.wala.shrikeBT.MethodData;
@@ -51,7 +52,6 @@ import com.ibm.wala.util.strings.StringStuff;
 
 import de.rherzog.master.thesis.slicer.instrumenter.export.FeatureLogger;
 import de.rherzog.master.thesis.slicer.instrumenter.export.FeatureLoggerExecution;
-import de.rherzog.master.thesis.slicer.instrumenter.export.Nothing;
 import de.rherzog.master.thesis.slicer.instrumenter.export.SliceWriter;
 import de.rherzog.master.thesis.slicer.instrumenter.export.SliceWriter.ExportFormat;
 import de.rherzog.master.thesis.utils.InstrumenterComparator;
@@ -148,8 +148,9 @@ public class Instrumenter {
 	}
 
 	public void instrument(Set<Integer> instructionIndexes, Set<Integer> instructionIndexesToKeep,
-			Set<Integer> instructionIndexesToIgnore, Map<Integer, Set<Integer>> varIndexesToRenumber,
-			Set<Integer> instructionsInCycles) throws InvalidClassFileException, IllegalStateException, IOException {
+			Set<Integer> instructionIndexesToIgnore, Map<Integer, Integer> instructionPopMap,
+			Map<Integer, Set<Integer>> varIndexesToRenumber, Set<Integer> instructionsInCycles)
+			throws InvalidClassFileException, IllegalStateException, IOException {
 		InstrumenterComparator comparator = InstrumenterComparator.of(methodSignature);
 
 		instrumenter.beginTraversal();
@@ -180,7 +181,7 @@ public class Instrumenter {
 			}
 
 			InstrumentedMethod instrumentedMethod = instrumentMethod(md, instructionIndexes, instructionIndexesToKeep,
-					instructionIndexesToIgnore, varIndexesToRenumber, instructionsInCycles);
+					instructionIndexesToIgnore, instructionPopMap, varIndexesToRenumber, instructionsInCycles);
 			instrumentedMethod.getMethodEditor().endPass();
 
 			// Write no matter if there are changes
@@ -191,10 +192,11 @@ public class Instrumenter {
 
 	protected InstrumentedMethod instrumentMethod(MethodData methodData, Set<Integer> instructionIndexes,
 			Set<Integer> instructionIndexesToKeep, Set<Integer> instructionIndexesToIgnore,
-			Map<Integer, Set<Integer>> varIndexesToRenumber, Set<Integer> instructionsInCycles) {
+			Map<Integer, Integer> instructionPopMap, Map<Integer, Set<Integer>> varIndexesToRenumber,
+			Set<Integer> instructionsInCycles) {
 		// No feature patches here
 		return instrumentMethod(methodData, instructionIndexes, instructionIndexesToKeep, instructionIndexesToIgnore,
-				Collections.emptyMap(), varIndexesToRenumber, instructionsInCycles);
+				instructionPopMap, Collections.emptyMap(), varIndexesToRenumber, instructionsInCycles);
 	}
 
 	private enum PatchAction {
@@ -203,14 +205,15 @@ public class Instrumenter {
 
 	protected InstrumentedMethod instrumentMethod(MethodData methodData, Set<Integer> instructionIndexes,
 			Set<Integer> instructionIndexesToKeep, Set<Integer> instructionIndexesToIgnore,
-			Map<Integer, Patch> featurePatchMap, Map<Integer, Set<Integer>> varIndexesToRenumber,
-			Set<Integer> instructionsInCycles) {
+			Map<Integer, Integer> instructionPopMap, Map<Integer, Patch> featurePatchMap,
+			Map<Integer, Set<Integer>> varIndexesToRenumber, Set<Integer> instructionsInCycles) {
 		MethodEditor methodEditor = new MethodEditor(methodData);
 		methodEditor.beginPass();
 
 		// Build a List out of the IInstruction array.
 		// This list can be used to select the instruction from the report features
 		IInstruction[] instructions = methodEditor.getInstructions();
+		final int lastInstructionIndex = instructions.length - 1;
 
 		// Calculate the maximum local variable index
 		int maxVarIndex = Utilities.getMaxLocalVarIndex(methodData);
@@ -310,78 +313,6 @@ public class Instrumenter {
 			}
 		});
 
-		// Some instructions will leave an element on the stack without being processed
-		// by others (because they are removed for the slice). For example:
-		// _____ 5: BinaryOp(I,mul)
-		// _____ 6: SKIPPED Conversion(I,J)
-		// _____ 7: SKIPPED Invoke(STATIC,Ljava/lang/Thread;,sleep,(J)V)
-		// _____ 8: Goto(10)
-		// The result of instruction 5 would normally consumed by instruction 7 (but
-		// which is skipped and therefore not in the slice).
-		// For that, we first need to remember which instruction pushed how many
-		// elements. Second, as long as there are skipped instructions, count a stack
-		// variable to find out how many elements were left "behind" (1 or 2 are only
-		// possible). As a third and last step, after the "skipped" instructions end,
-		// the previously kept instruction index is stored together with the number of
-		// elements to pop.
-		// Like that, we can archive a consistent stack size slice
-		final Map<Integer, Integer> instructionPopMap = new HashMap<>();
-		int lastStackSize = 0, lastInstructionIndex = 0;
-		Integer stackSize = null;
-
-		// Iterate all instructions and replace those we wont keep
-		for (int index = 0; index < instructions.length; index++) {
-			IInstruction instruction = instructions[index];
-
-			List<Patch> replacePatches = instructionPatchesMap.get(index).get(PatchAction.REPLACE);
-			if (instructionIndexesToIgnore.contains(index)) {
-				// An instruction which should be ignored is necessary to keep but not
-				// relevant to the output. We can simply ignore the instruction but cannot
-				// delete it. In most cases an ignored instruction is a jump target.
-				// Unfortunately, WALA does not allow to instrument NOOP instructions.
-				replacePatches.add(new Patch() {
-					@Override
-					public void emitTo(Output w) {
-						w.emit(Util.makeInvoke(Nothing.class, "doNothing"));
-					}
-				});
-				if (verbose) {
-					System.out.println(index + ": IGNORED " + instruction);
-				}
-			} else if (!instructionIndexesToKeep.contains(index)) {
-				replacePatches.add(Utilities.getEmptyPatch());
-
-				if (stackSize == null) {
-					stackSize = lastStackSize;
-				}
-				if (verbose) {
-					System.out.println(index + ": SKIPPED " + instruction);
-				}
-			} else {
-				// The instruction should be kept
-
-				// Change variable indexes if necessary
-				Patch varRenumberPatch = getVarRenumberPatch(varIndexesToRenumber, instruction, index);
-				if (varRenumberPatch != null) {
-					replacePatches.add(varRenumberPatch);
-				}
-
-				// If the stack size was 0 before, we don't need to correct anything
-				if (stackSize != null && stackSize != 0) {
-					instructionPopMap.put(lastInstructionIndex, lastStackSize);
-//					System.out.println("  " + stackSize + " element(s) on stack to correct");
-					stackSize = null;
-					lastStackSize = 0;
-				}
-				if (verbose) {
-					System.out.println(index + ": " + instruction);
-				}
-
-				lastInstructionIndex = index;
-				lastStackSize += Utilities.getPushedSize(instruction) - Utilities.getPoppedSize(instruction);
-			}
-		}
-
 		// Patch every feature to get the value
 		for (int instructionIndex : instructionIndexes) {
 			IInstruction featureInstruction = instructions[instructionIndex];
@@ -472,6 +403,23 @@ public class Instrumenter {
 			}
 		}
 
+		// Add AFTER-Patches (PopInstruction)
+		for (Entry<Integer, Integer> entry : instructionPopMap.entrySet()) {
+			int instructionIndex = entry.getKey();
+			int elementsToPop = entry.getValue();
+
+			Map<PatchAction, List<Patch>> patchList = instructionPatchesMap.get(instructionIndex);
+			patchList.get(PatchAction.AFTER).add(new Patch() {
+				@Override
+				public void emitTo(Output w) {
+					for (int popIteration = 0; popIteration < elementsToPop; popIteration++) {
+						w.emit(PopInstruction.make(1));
+					}
+				}
+			});
+		}
+
+		// Instrument all method endings
 		for (int instructionIndex : instructionIndexesToKeep) {
 			IInstruction instruction = instructions[instructionIndex];
 			if (instructionIndex != lastInstructionIndex && instruction instanceof ReturnInstruction) {
@@ -506,7 +454,7 @@ public class Instrumenter {
 		}
 
 		// Apply patches from map
-		applyPatches(methodEditor, instructionPatchesMap);
+		applyPatches(methodEditor, instructionIndexesToKeep, instructionPatchesMap);
 
 		methodEditor.applyPatches();
 
@@ -558,6 +506,15 @@ public class Instrumenter {
 					if (!typeName.isPrimitiveType()) {
 						type += ";";
 					}
+				} else if (instruction instanceof InvokeDynamicInstruction) {
+					// A InvokeInstruction already pushed a value on the stack
+					InvokeDynamicInstruction instruction2 = (InvokeDynamicInstruction) instruction;
+//					type = instruction2.getPushedType(null);
+					TypeName typeName = StringStuff.parseForReturnTypeName(instruction2.getMethodSignature());
+					type = typeName.toString();
+					if (!typeName.isPrimitiveType()) {
+						type += ";";
+					}
 				} else if (instruction instanceof ConstantInstruction) {
 					// A ConstantInstruction already pushed a value on the stack
 					ConstantInstruction instruction2 = (ConstantInstruction) instruction;
@@ -575,8 +532,16 @@ public class Instrumenter {
 					type = CTCompiler.TYPE_void;
 				} else if (instruction instanceof ArrayLengthInstruction) {
 //					ArrayLengthInstruction instruction2 = (ArrayLengthInstruction) instruction;
-					// An ArrayLengthInstruction always pushes an ints
+					// An ArrayLengthInstruction always pushes an int
 					type = CTCompiler.TYPE_int;
+				} else if (instruction instanceof PopInstruction) {
+//					PopInstruction instruction2 = (PopInstruction) instruction;
+					// A PopInstruction never pushes anything
+					type = CTCompiler.TYPE_void;
+				} else if (instruction instanceof ReturnInstruction) {
+//					ReturnInstruction instruction2 = (ReturnInstruction) instruction;
+					// A ReturnInstruction never pushes anything
+					type = CTCompiler.TYPE_void;
 				}
 
 				if (type == null) {
@@ -662,11 +627,15 @@ public class Instrumenter {
 		};
 	}
 
-	private static void applyPatches(MethodEditor methodEditor,
+	private static void applyPatches(MethodEditor methodEditor, Set<Integer> instructionIndexesToKeep,
 			Map<Integer, Map<PatchAction, List<Patch>>> instructionPatchesMap) {
 		for (Entry<Integer, Map<PatchAction, List<Patch>>> entry : instructionPatchesMap.entrySet()) {
 			int instructionIndex = entry.getKey();
 			Map<PatchAction, List<Patch>> patchMap = entry.getValue();
+
+			if (patchMap.get(PatchAction.REPLACE).isEmpty() && !instructionIndexesToKeep.contains(instructionIndex)) {
+				methodEditor.replaceWith(instructionIndex, Utilities.getEmptyPatch());
+			}
 
 			for (Entry<PatchAction, List<Patch>> entry2 : patchMap.entrySet()) {
 				PatchAction patchAction = entry2.getKey();
@@ -674,6 +643,7 @@ public class Instrumenter {
 				if (patchList.isEmpty()) {
 					continue;
 				}
+
 				List<Patch> patchListCopy = new ArrayList<>(patchList);
 
 				switch (patchAction) {
