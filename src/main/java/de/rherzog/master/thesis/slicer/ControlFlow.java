@@ -44,6 +44,7 @@ public class ControlFlow {
 	private Graph<Integer, DefaultEdge> graph;
 	private List<List<Integer>> simpleCycles;
 	private Map<Integer, Set<Integer>> varIndexToRenumber;
+	private StackTrace stackTrace;
 
 	public ControlFlow(String inputPath, String methodSignature) {
 		this.inputPath = inputPath;
@@ -52,6 +53,17 @@ public class ControlFlow {
 
 	public ControlFlow(MethodData methodData) {
 		this.methodData = methodData;
+	}
+
+	public StackTrace getStackTrace() throws IOException, InvalidClassFileException {
+		if (stackTrace != null) {
+			return stackTrace;
+		}
+
+		MethodData methodData = getMethodData();
+		IInstruction[] instructions = methodData.getInstructions();
+		stackTrace = new StackTrace(instructions);
+		return stackTrace;
 	}
 
 	public Graph<Integer, DefaultEdge> getGraph() throws IOException, InvalidClassFileException {

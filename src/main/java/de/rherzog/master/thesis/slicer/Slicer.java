@@ -17,13 +17,16 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.codec.DecoderException;
+import org.jgrapht.graph.DefaultEdge;
 
 import com.ibm.wala.shrikeBT.GotoInstruction;
 import com.ibm.wala.shrikeBT.IConditionalBranchInstruction;
 import com.ibm.wala.shrikeBT.IInstruction;
 import com.ibm.wala.shrikeBT.IInvokeInstruction;
+import com.ibm.wala.shrikeBT.LoadInstruction;
 import com.ibm.wala.shrikeBT.PopInstruction;
 import com.ibm.wala.shrikeBT.ReturnInstruction;
+import com.ibm.wala.shrikeBT.StoreInstruction;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 
 import de.rherzog.master.thesis.slicer.instrumenter.export.SliceWriter.ExportFormat;
@@ -58,7 +61,8 @@ public class Slicer {
 		mySlicer.setVerbose(true);
 		mySlicer.parseArgs(args);
 //		mySlicer.setExportFormat(null);
-		mySlicer.makeSlicedFile(true);
+//		mySlicer.makeSlicedFile(true);
+		mySlicer.makeSlicedFile(false);
 	}
 
 	public String makeSlicedFile() throws IOException, InvalidClassFileException, IllegalStateException,
@@ -121,11 +125,11 @@ public class Slicer {
 
 		if (showDotPlots) {
 			final Path dir = Files.createTempDirectory("slicer-");
-			Utilities.dotShow(dir, controlFlow.dotPrint());
-			Utilities.dotShow(dir, controlDependency.dotPrint());
-			Utilities.dotShow(dir, blockDependency.dotPrint());
+//			Utilities.dotShow(dir, controlFlow.dotPrint());
+//			Utilities.dotShow(dir, controlDependency.dotPrint());
+//			Utilities.dotShow(dir, blockDependency.dotPrint());
 			Utilities.dotShow(dir, dataDependency.dotPrint());
-			Utilities.dotShow(dir, argumentDependency.dotPrint());
+//			Utilities.dotShow(dir, argumentDependency.dotPrint());
 		}
 
 		Set<Integer> instructionIndexesToKeep = getInstructionIndexesToKeep(controlFlow, controlDependency,
@@ -253,16 +257,22 @@ public class Slicer {
 		// invoke instructions)
 		if (dependendOnParameters && !recursiveInvokeInstructions.isEmpty()) {
 			for (int recursiveInvokeInstructionIndex : recursiveInvokeInstructions) {
-//				if (!indexesToKeep.contains(recursiveInvokeInstructionIndex)) {
-//					continue;
-//				}
+				// Slice the recursive invoke instruction
 				slice(controlFlow, controlDependency, blockDependency, argumentDependency, dataDependency,
 						indexesToKeep, recursiveInvokeInstructionIndex);
+
+				// Include all return statements that are reachable from any instruction if
+				// they are already kept in "indexesToKeep"
 				for (int index = 0; index < recursiveInvokeInstructionIndex; index++) {
 					IInstruction instruction = instructions[index];
-					// TODO Include all return statements or just the ones occurring before the last
-					// recursive method call?
-					if (instruction instanceof ReturnInstruction) {
+					if (!(instruction instanceof ReturnInstruction)) {
+						continue;
+					}
+					for (DefaultEdge incomingEdge : controlFlow.getGraph().incomingEdgesOf(index)) {
+						Integer instructionSourceIndex = controlFlow.getGraph().getEdgeSource(incomingEdge);
+						if (!indexesToKeep.contains(instructionSourceIndex)) {
+							continue;
+						}
 						slice(controlFlow, controlDependency, blockDependency, argumentDependency, dataDependency,
 								indexesToKeep, index);
 					}
@@ -325,14 +335,14 @@ public class Slicer {
 				// Iterate all instructions and build the control flow
 				IInstruction instruction = instructions[blockInstructionIndex];
 
-				boolean pushedElement = instruction.getPushedWordSize() > 0;
-				int poppedElements = instruction.getPoppedCount();
+				int pushedElementCount = Utilities.getPushedElementCount(instruction);
+				int poppedElementCount = Utilities.getPoppedElementCount(instruction);
 
 				// Simulate stack execution
-				for (int popIteration = 0; popIteration < poppedElements; popIteration++) {
+				for (int popIteration = 0; popIteration < poppedElementCount; popIteration++) {
 					stack.pop();
 				}
-				if (pushedElement) {
+				for (int pushIteration = 0; pushIteration < pushedElementCount; pushIteration++) {
 					stack.push(blockInstructionIndex);
 				}
 			}
@@ -360,7 +370,7 @@ public class Slicer {
 		}
 
 		// Add dependent argument instructions
-		for (Integer argumentIndex : argumentDependency.getArgumentInstructions(index)) {
+		for (Integer argumentIndex : argumentDependency.getArgumentInstructionIndexes(index)) {
 			slice(controlFlow, controlDependency, blockDependency, argumentDependency, dataDependency,
 					dependendInstructions, argumentIndex);
 		}
@@ -387,8 +397,12 @@ public class Slicer {
 			// TODO Filter for lower data dependencies is not correct in a loop. Try to find
 			// another solution.
 			// Example: LSleep;.p([Ljava/lang/String;)V with InstructionIndexes: [12]
-			if (dataDependentIndex > index) {
-				continue;
+			if (dataDependentIndex >= 0) {
+				IInstruction instruction = getControlFlow().getMethodData().getInstructions()[dataDependentIndex];
+				if ((instruction instanceof LoadInstruction || instruction instanceof StoreInstruction)
+						&& dataDependentIndex > index) {
+					continue;
+				}
 			}
 			slice(controlFlow, controlDependency, blockDependency, argumentDependency, dataDependency,
 					dependendInstructions, dataDependentIndex);

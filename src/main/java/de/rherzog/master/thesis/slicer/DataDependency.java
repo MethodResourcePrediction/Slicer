@@ -6,6 +6,7 @@ import java.io.Writer;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;
@@ -15,6 +16,8 @@ import org.jgrapht.io.DOTExporter;
 import org.jgrapht.io.ExportException;
 import org.jgrapht.io.GraphExporter;
 
+import com.ibm.wala.shrikeBT.ArrayStoreInstruction;
+import com.ibm.wala.shrikeBT.DupInstruction;
 import com.ibm.wala.shrikeBT.IInstruction;
 import com.ibm.wala.shrikeBT.ILoadInstruction;
 import com.ibm.wala.shrikeBT.IStoreInstruction;
@@ -41,11 +44,15 @@ public class DataDependency {
 	}
 
 	public Set<Integer> getDataDependencyInstructions(int index) throws IOException, InvalidClassFileException {
+		// TODO In both directions?
 		Graph<Integer, DefaultEdge> dataDependencyGraph = getGraph();
-		Set<DefaultEdge> outgoingEdges = dataDependencyGraph.outgoingEdgesOf(index);
+		Set<DefaultEdge> edges = dataDependencyGraph.edgesOf(index);
 
 		Set<Integer> dataDependentInstructionSet = new HashSet<>();
-		for (DefaultEdge dataDependencyEdge : outgoingEdges) {
+		for (DefaultEdge dataDependencyEdge : edges) {
+			Integer edgeSource = dataDependencyGraph.getEdgeSource(dataDependencyEdge);
+			dataDependentInstructionSet.add(edgeSource);
+
 			Integer edgeTarget = dataDependencyGraph.getEdgeTarget(dataDependencyEdge);
 			dataDependentInstructionSet.add(edgeTarget);
 		}
@@ -90,12 +97,29 @@ public class DataDependency {
 		if (!visitedVertices.add(instructionIndex)) {
 			return;
 		}
+		IInstruction[] instructions = controlFlow.getMethodData().getInstructions();
+		IInstruction instructionA = instructions[focusedIndex];
+
+		// Check data dependency for ArrayStoreInstruction using stack simulation
+		if (instructionA instanceof ArrayStoreInstruction) {
+			Stack<Integer> poppedStack = controlFlow.getStackTrace().getPoppedStackAtInstructionIndex(focusedIndex);
+			poppedStack.pop(); // elementInstructionIndex
+			poppedStack.pop(); // indexInstructionIndex
+			Integer arrayRefInstructionIndex = poppedStack.pop();
+
+			dependencyGraph.addEdge(focusedIndex, arrayRefInstructionIndex);
+		}
+
+		// Check data dependency for DupInstruction using stack simulation
+		if (instructionA instanceof DupInstruction) {
+			Stack<Integer> poppedStack = controlFlow.getStackTrace().getPoppedStackAtInstructionIndex(focusedIndex);
+			Integer elementInstructionIndex = poppedStack.pop();
+
+			dependencyGraph.addEdge(focusedIndex, elementInstructionIndex);
+		}
 
 		// Only data dependencies between different instructions are interesting
 		if (focusedIndex != instructionIndex) {
-			IInstruction[] instructions = controlFlow.getMethodData().getInstructions();
-			IInstruction instructionA = instructions[focusedIndex];
-
 			instructionA = Utilities.rewriteVarIndex(varIndexesToRenumber, instructionA, focusedIndex);
 
 			boolean hasDataDependency = false;

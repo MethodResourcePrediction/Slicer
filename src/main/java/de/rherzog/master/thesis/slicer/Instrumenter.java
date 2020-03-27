@@ -23,6 +23,7 @@ import com.ibm.wala.shrikeBT.ConditionalBranchInstruction;
 import com.ibm.wala.shrikeBT.ConstantInstruction;
 import com.ibm.wala.shrikeBT.Constants;
 import com.ibm.wala.shrikeBT.ConversionInstruction;
+import com.ibm.wala.shrikeBT.DupInstruction;
 import com.ibm.wala.shrikeBT.GetInstruction;
 import com.ibm.wala.shrikeBT.GotoInstruction;
 import com.ibm.wala.shrikeBT.IInstruction;
@@ -33,6 +34,7 @@ import com.ibm.wala.shrikeBT.InvokeInstruction;
 import com.ibm.wala.shrikeBT.LoadInstruction;
 import com.ibm.wala.shrikeBT.MethodData;
 import com.ibm.wala.shrikeBT.MethodEditor;
+import com.ibm.wala.shrikeBT.NewInstruction;
 import com.ibm.wala.shrikeBT.MethodEditor.Output;
 import com.ibm.wala.shrikeBT.MethodEditor.Patch;
 import com.ibm.wala.shrikeBT.PopInstruction;
@@ -541,6 +543,15 @@ public class Instrumenter {
 				} else if (instruction instanceof ReturnInstruction) {
 //					ReturnInstruction instruction2 = (ReturnInstruction) instruction;
 					// A ReturnInstruction never pushes anything
+					type = CTCompiler.TYPE_void;
+				} else if (instruction instanceof NewInstruction) {
+					NewInstruction instruction2 = (NewInstruction) instruction;
+					// A NewInstruction always pushes some element
+					type = instruction2.getType();
+				} else if (instruction instanceof DupInstruction) {
+					DupInstruction instruction2 = (DupInstruction) instruction;
+					// A DupInstruction always pushes two elements
+					// TODO How to determine the type? Disabled logging for now
 					type = CTCompiler.TYPE_void;
 				}
 

@@ -5,7 +5,6 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.Stack;
 import java.util.stream.IntStream;
 
 import org.jgrapht.Graph;
@@ -34,40 +33,47 @@ public class ArgumentDependency {
 		graph = new DefaultDirectedGraph<>(DefaultEdge.class);
 
 		IInstruction[] instructions = controlFlow.getMethodData().getInstructions();
+		StackTrace stackTrace = new StackTrace(instructions);
 
 		// Add vertices (all instructions)
 		IntStream.range(0, instructions.length).forEach(i -> graph.addVertex(i));
 
-		Stack<Integer> stack = new Stack<>();
-		// Iterate all instructions and build the control flow
-		for (int index = 0; index < instructions.length - 1; index++) {
-			IInstruction instruction = instructions[index];
-
-			boolean pushedElement = instruction.getPushedWordSize() > 0;
-			int poppedElements = instruction.getPoppedCount();
-
-			// Simulate stack execution
-			for (int popIteration = 0; popIteration < poppedElements; popIteration++) {
-				Integer poppedInstructionIndex = stack.pop();
+		stackTrace.forEachPopped((index, stack) -> {
+			for (Integer poppedInstructionIndex : stack) {
 				graph.addEdge(index, poppedInstructionIndex);
 			}
-
-			if (pushedElement) {
-				stack.push(index);
-			}
-		}
-
-		if (stack.size() > 0) {
-			throw new IllegalStateException(
-					"Stack must be empty after execution simulation but has " + stack.size() + " elements left");
-		}
+		});
 		return graph;
 	}
 
-	public Set<Integer> getArgumentInstructions(int index) throws IOException, InvalidClassFileException {
+	public Set<Integer> getAllArgumentInstructionIndexes(int index) throws IOException, InvalidClassFileException {
 		Graph<Integer, DefaultEdge> argumentDependencyGraph = getGraph();
 		Set<DefaultEdge> outgoingEdges = argumentDependencyGraph.outgoingEdgesOf(index);
-		
+
+		Set<Integer> argumentInstructionSet = new HashSet<>();
+		for (DefaultEdge argumentEdge : outgoingEdges) {
+			Integer edgeTarget = argumentDependencyGraph.getEdgeTarget(argumentEdge);
+			addAllArgumentInstructionIndexes(edgeTarget, argumentDependencyGraph, argumentInstructionSet);
+		}
+		return argumentInstructionSet;
+	}
+
+	private static void addAllArgumentInstructionIndexes(int index, Graph<Integer, DefaultEdge> argumentDependencyGraph,
+			Set<Integer> argumentInstructionSet) {
+		if (!argumentInstructionSet.add(index)) {
+			return;
+		}
+		Set<DefaultEdge> outgoingEdges = argumentDependencyGraph.outgoingEdgesOf(index);
+		for (DefaultEdge argumentEdge : outgoingEdges) {
+			Integer edgeTarget = argumentDependencyGraph.getEdgeTarget(argumentEdge);
+			addAllArgumentInstructionIndexes(edgeTarget, argumentDependencyGraph, argumentInstructionSet);
+		}
+	}
+
+	public Set<Integer> getArgumentInstructionIndexes(int index) throws IOException, InvalidClassFileException {
+		Graph<Integer, DefaultEdge> argumentDependencyGraph = getGraph();
+		Set<DefaultEdge> outgoingEdges = argumentDependencyGraph.outgoingEdgesOf(index);
+
 		Set<Integer> argumentInstructionSet = new HashSet<>();
 		for (DefaultEdge argumentEdge : outgoingEdges) {
 			Integer edgeTarget = argumentDependencyGraph.getEdgeTarget(argumentEdge);
