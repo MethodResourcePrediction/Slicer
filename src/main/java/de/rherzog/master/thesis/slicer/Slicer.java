@@ -24,7 +24,6 @@ import com.ibm.wala.shrikeBT.IConditionalBranchInstruction;
 import com.ibm.wala.shrikeBT.IInstruction;
 import com.ibm.wala.shrikeBT.IInvokeInstruction;
 import com.ibm.wala.shrikeBT.LoadInstruction;
-import com.ibm.wala.shrikeBT.PopInstruction;
 import com.ibm.wala.shrikeBT.ReturnInstruction;
 import com.ibm.wala.shrikeBT.StoreInstruction;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
@@ -137,37 +136,6 @@ public class Slicer {
 		Set<Integer> instructionIndexesToIgnore = getInstructionIndexesToIgnore(controlFlow, controlDependency,
 				argumentDependency, dataDependency);
 		Map<Integer, Integer> instructionPopMap = getInstructionPopMap();
-
-		if (verbose) {
-			System.out.println(methodSignature);
-			System.out.println();
-			System.out.println("InstructionIndexes: " + instructionIndexes);
-			System.out.println("InstructionIndexesToKeep: " + instructionIndexesToKeep);
-			System.out.println("instructionIndexesToIgnore: " + instructionIndexesToIgnore);
-			System.out.println("instructionPopMap: " + instructionPopMap);
-			System.out.println("VarIndexesToRenumber: " + varIndexesToRenumber);
-
-			IInstruction[] instructions = controlFlow.getMethodData().getInstructions();
-			int padding = instructions.length / 10;
-
-			System.out.println();
-			System.out.println("=== Final slice ===");
-			for (int index = 0; index < instructions.length; index++) {
-				IInstruction instruction = instructions[index];
-
-				String str = String.format("%" + padding + "s", index);
-				if (instructionIndexesToKeep.contains(index)) {
-					System.out.println(str + ": " + instruction);
-				} else if (instructionIndexesToIgnore.contains(index)) {
-					System.out.println(str + ": " + instruction + " (IGNORED)");
-				}
-				if (instructionPopMap.containsKey(index)) {
-					for (int popCount = 0; popCount < instructionPopMap.get(index); popCount++) {
-						System.out.println(str + ": " + PopInstruction.make(1) + " (ADDITIONAL)");
-					}
-				}
-			}
-		}
 
 		// Instrument a new program with a modified method which we analyze
 		Instrumenter instrumenter = new Instrumenter(additionalJarsPath, inputJar, outputJar, methodSignature,
@@ -418,6 +386,11 @@ public class Slicer {
 //		}
 	}
 
+	public SliceResult getSliceResult() throws IOException, InvalidClassFileException {
+		return new SliceResult(getMethodSignature(), getInstructionIndexes(), getInstructionIndexesToKeep(),
+				getInstructionIndexesToIgnore(), getInstructionPopMap(), getControlFlow());
+	}
+
 	public static SliceResult getSliceResult(String inputJar, String methodSignature, Set<Integer> instructionIndexes)
 			throws IOException, InvalidClassFileException {
 		Slicer slicer = new Slicer();
@@ -425,9 +398,7 @@ public class Slicer {
 		slicer.setMethodSignature(methodSignature);
 		slicer.setInstructionIndexes(instructionIndexes);
 
-		SliceResult sliceResult = new SliceResult(slicer.getInstructionIndexesToKeep(),
-				slicer.getInstructionIndexesToIgnore());
-		return sliceResult;
+		return slicer.getSliceResult();
 	}
 
 	public void parseArgs(String[] args) throws ParseException {
