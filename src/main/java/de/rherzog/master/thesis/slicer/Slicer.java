@@ -365,13 +365,13 @@ public class Slicer {
 			// TODO Filter for lower data dependencies is not correct in a loop. Try to find
 			// another solution.
 			// Example: LSleep;.p([Ljava/lang/String;)V with InstructionIndexes: [12]
-			if (dataDependentIndex >= 0) {
-				IInstruction instruction = getControlFlow().getMethodData().getInstructions()[dataDependentIndex];
-				if ((instruction instanceof LoadInstruction || instruction instanceof StoreInstruction)
-						&& dataDependentIndex > index) {
-					continue;
-				}
-			}
+//			if (dataDependentIndex >= 0) {
+//				IInstruction instruction = getControlFlow().getMethodData().getInstructions()[dataDependentIndex];
+//				if ((instruction instanceof LoadInstruction || instruction instanceof StoreInstruction)
+//						&& dataDependentIndex > index) {
+//					continue;
+//				}
+//			}
 			slice(controlFlow, controlDependency, blockDependency, argumentDependency, dataDependency,
 					dependendInstructions, dataDependentIndex);
 		}

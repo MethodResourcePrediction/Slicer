@@ -31,6 +31,7 @@ import com.ibm.wala.shrikeBT.shrikeCT.ClassInstrumenter;
 import com.ibm.wala.shrikeBT.shrikeCT.OfflineInstrumenter;
 import com.ibm.wala.shrikeCT.ClassReader;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
+import com.ibm.wala.util.collections.Pair;
 
 import de.rherzog.master.thesis.utils.InstrumenterComparator;
 import de.rherzog.master.thesis.utils.Utilities;
@@ -45,6 +46,7 @@ public class ControlFlow {
 	private List<List<Integer>> simpleCycles;
 	private Map<Integer, Set<Integer>> varIndexToRenumber;
 	private StackTrace stackTrace;
+	private List<Pair<Integer, Integer>> loopPairs;
 
 	public ControlFlow(String inputPath, String methodSignature) {
 		this.inputPath = inputPath;
@@ -110,6 +112,24 @@ public class ControlFlow {
 		JohnsonSimpleCycles<Integer, DefaultEdge> johnsonSimpleCycles = new JohnsonSimpleCycles<>(getGraph());
 		simpleCycles = johnsonSimpleCycles.findSimpleCycles();
 		return simpleCycles;
+	}
+
+	public List<Pair<Integer, Integer>> getLoopPairs() throws IOException, InvalidClassFileException {
+		if (loopPairs != null) {
+			return loopPairs;
+		}
+
+		loopPairs = new ArrayList<>();
+		for (List<Integer> simpleCycle : getSimpleCycles()) {
+			int min = simpleCycle.stream().mapToInt(Integer::intValue).min().getAsInt();
+			int max = simpleCycle.stream().mapToInt(Integer::intValue).max().getAsInt();
+
+			Pair<Integer, Integer> loopPair = Pair.make(min, max);
+			if (!loopPairs.stream().filter(loopIndex -> loopIndex.equals(loopPair)).findAny().isPresent()) {
+				loopPairs.add(loopPair);
+			}
+		}
+		return loopPairs;
 	}
 
 	public boolean isPartOfCycle(int instructionIndex) throws IOException, InvalidClassFileException {
