@@ -127,8 +127,8 @@ public class Slicer {
 //			Utilities.dotShow(dir, controlFlow.dotPrint());
 //			Utilities.dotShow(dir, controlDependency.dotPrint());
 //			Utilities.dotShow(dir, blockDependency.dotPrint());
-			Utilities.dotShow(dir, dataDependency.dotPrint());
-//			Utilities.dotShow(dir, argumentDependency.dotPrint());
+//			Utilities.dotShow(dir, dataDependency.dotPrint());
+			Utilities.dotShow(dir, argumentDependency.dotPrint());
 		}
 
 		Set<Integer> instructionIndexesToKeep = getInstructionIndexesToKeep(controlFlow, controlDependency,

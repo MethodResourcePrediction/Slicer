@@ -41,7 +41,6 @@ import com.ibm.wala.shrikeBT.PopInstruction;
 import com.ibm.wala.shrikeBT.ReturnInstruction;
 import com.ibm.wala.shrikeBT.StoreInstruction;
 import com.ibm.wala.shrikeBT.Util;
-import com.ibm.wala.shrikeBT.shrikeCT.CTCompiler;
 import com.ibm.wala.shrikeBT.shrikeCT.ClassInstrumenter;
 import com.ibm.wala.shrikeBT.shrikeCT.OfflineInstrumenter;
 import com.ibm.wala.shrikeCT.ClassReader;
@@ -450,7 +449,7 @@ public class Instrumenter {
 				@Override
 				public void emitTo(Output w) {
 					// Per convention we return void at the end
-					w.emit(ReturnInstruction.make(CTCompiler.TYPE_void));
+					w.emit(ReturnInstruction.make(Constants.TYPE_void));
 				}
 			});
 		}
@@ -491,7 +490,7 @@ public class Instrumenter {
 					// the instruction, we only can be sure that the result was positive (true)
 					// because the instruction does not instruct a jump.
 					ConditionalBranchInstruction instruction2 = (ConditionalBranchInstruction) instruction;
-					type = instruction2.getType();
+					type = Constants.TYPE_boolean;
 					// Push a true (1) since following the normal program call flow means not
 					// jumping anywhere
 					w.emit(ConstantInstruction.make(1));
@@ -531,19 +530,19 @@ public class Instrumenter {
 					type = instruction2.getType();
 				} else if (instruction instanceof GotoInstruction) {
 					// A GotoInstruction does not push anything and has no type
-					type = CTCompiler.TYPE_void;
+					type = Constants.TYPE_void;
 				} else if (instruction instanceof ArrayLengthInstruction) {
 //					ArrayLengthInstruction instruction2 = (ArrayLengthInstruction) instruction;
 					// An ArrayLengthInstruction always pushes an int
-					type = CTCompiler.TYPE_int;
+					type = Constants.TYPE_int;
 				} else if (instruction instanceof PopInstruction) {
 //					PopInstruction instruction2 = (PopInstruction) instruction;
 					// A PopInstruction never pushes anything
-					type = CTCompiler.TYPE_void;
+					type = Constants.TYPE_void;
 				} else if (instruction instanceof ReturnInstruction) {
 //					ReturnInstruction instruction2 = (ReturnInstruction) instruction;
 					// A ReturnInstruction never pushes anything
-					type = CTCompiler.TYPE_void;
+					type = Constants.TYPE_void;
 				} else if (instruction instanceof NewInstruction) {
 					NewInstruction instruction2 = (NewInstruction) instruction;
 					// A NewInstruction always pushes some element
@@ -552,7 +551,7 @@ public class Instrumenter {
 					DupInstruction instruction2 = (DupInstruction) instruction;
 					// A DupInstruction always pushes two elements
 					// TODO How to determine the type? Disabled logging for now
-					type = CTCompiler.TYPE_void;
+					type = Constants.TYPE_void;
 				}
 
 				if (type == null) {
@@ -560,7 +559,7 @@ public class Instrumenter {
 							"type of instruction '" + instruction + "' with index " + instructionIndex + " is null");
 				}
 
-				if (type.equals(CTCompiler.TYPE_void)) {
+				if (type.equals(Constants.TYPE_void)) {
 					// The return value of the instruction is void
 					if (instruction instanceof InvokeInstruction) {
 						// Check if the instruction is a recursive invoke instruction. If so, we can
@@ -584,8 +583,8 @@ public class Instrumenter {
 				}
 
 				// Special handling for boolean (Z) since the bytecode only knows int (I)
-				if (CTCompiler.TYPE_boolean.equals(type)) {
-					type = CTCompiler.TYPE_int;
+				if (Constants.TYPE_boolean.equals(type)) {
+					type = Constants.TYPE_int;
 				}
 
 				// Log the value on the stack in local variable "resultVarIndex"
@@ -608,8 +607,8 @@ public class Instrumenter {
 			public void emitTo(Output w) {
 				// Special handling for boolean (Z) since the bytecode only knows int (I)
 				String type2 = type;
-				if (CTCompiler.TYPE_boolean.equals(type)) {
-					type2 = CTCompiler.TYPE_int;
+				if (Constants.TYPE_boolean.equals(type)) {
+					type2 = Constants.TYPE_int;
 				}
 
 				// Result of slice is on the top of the stack save it from where we can load it
@@ -788,10 +787,10 @@ public class Instrumenter {
 ////			    LSUB
 ////				LSTORE 2 [timeDurationVarIndex]
 //
-//				w.emit(LoadInstruction.make(CTCompiler.TYPE_long, timeDurationVarIndex));
-//				w.emit(LoadInstruction.make(CTCompiler.TYPE_long, timeStartVarIndex));
-//				w.emit(BinaryOpInstruction.make(CTCompiler.TYPE_long, Operator.SUB));
-//				w.emit(StoreInstruction.make(CTCompiler.TYPE_long, timeDurationVarIndex));
+//				w.emit(LoadInstruction.make(Constants.TYPE_long, timeDurationVarIndex));
+//				w.emit(LoadInstruction.make(Constants.TYPE_long, timeStartVarIndex));
+//				w.emit(BinaryOpInstruction.make(Constants.TYPE_long, Operator.SUB));
+//				w.emit(StoreInstruction.make(Constants.TYPE_long, timeDurationVarIndex));
 //			}
 //		};
 //	}
