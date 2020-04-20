@@ -70,8 +70,12 @@ public class DataDependency {
 			dependencyGraph.addVertex(-1);
 		}
 		TypeName[] methodParameters = StringStuff.parseForParameterNames(controlFlow.getMethodData().getSignature());
-		for (int parameterIndex = 1; parameterIndex <= methodParameters.length; parameterIndex++) {
-			dependencyGraph.addVertex(-(parameterIndex + (hasThis ? 1 : 0)));
+		int methodParametersLength = 0;
+		if (methodParameters != null) {
+			methodParametersLength = methodParameters.length;
+			for (int parameterIndex = 1; parameterIndex <= methodParameters.length; parameterIndex++) {
+				dependencyGraph.addVertex(-(parameterIndex + (hasThis ? 1 : 0)));
+			}
 		}
 
 		// Add a vertex for each instruction index
@@ -83,7 +87,7 @@ public class DataDependency {
 		// for each instruction index. For each instruction, we analyze all preceding
 		// instructions if there is a data dependency.
 		for (int instructionIndex : cfg.vertexSet()) {
-			buildGraphForVertex(cfg, hasThis, methodParameters.length, instructionIndex, instructionIndex,
+			buildGraphForVertex(cfg, hasThis, methodParametersLength, instructionIndex, instructionIndex,
 					new HashSet<>(), dependencyGraph, varIndexesToRenumber);
 		}
 		return dependencyGraph;
@@ -171,8 +175,10 @@ public class DataDependency {
 		boolean hasThis = !controlFlow.getMethodData().getIsStatic();
 		Set<Integer> parameterIndexes = new HashSet<>();
 		TypeName[] methodParameters = StringStuff.parseForParameterNames(controlFlow.getMethodData().getSignature());
-		for (int parameterIndex = 1; parameterIndex <= methodParameters.length; parameterIndex++) {
-			parameterIndexes.add(-(parameterIndex + (hasThis ? 1 : 0)));
+		if (methodParameters != null) {
+			for (int parameterIndex = 1; parameterIndex <= methodParameters.length; parameterIndex++) {
+				parameterIndexes.add(-(parameterIndex + (hasThis ? 1 : 0)));
+			}
 		}
 
 		boolean hasDependencyToParameters = false;

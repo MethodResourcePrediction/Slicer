@@ -1,26 +1,34 @@
 package de.rherzog.master.thesis.slicer.test;
 
-import static org.junit.Assert.*;
-
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
+import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.ibm.wala.shrikeBT.ConstantInstruction;
+import com.ibm.wala.shrikeBT.Constants;
+import com.ibm.wala.shrikeBT.IInstruction;
+import com.ibm.wala.shrikeBT.PopInstruction;
+import com.ibm.wala.shrikeBT.ReturnInstruction;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 
-import de.rherzog.master.thesis.slicer.ArgumentDependency;
-import de.rherzog.master.thesis.slicer.BlockDependency;
-import de.rherzog.master.thesis.slicer.ControlFlow;
-import de.rherzog.master.thesis.slicer.DataDependency;
 import de.rherzog.master.thesis.slicer.SliceResult;
 import de.rherzog.master.thesis.slicer.Slicer;
-import de.rherzog.master.thesis.utils.Utilities;
 
 public class SlicerTest {
 	private Slicer slicer;
@@ -31,30 +39,65 @@ public class SlicerTest {
 	}
 
 	@Test
-	public void testSliceForAllInstructions() throws IOException, InvalidClassFileException, InterruptedException {
-		slicer.setInputJar("../EvaluationPrograms.jar");
-//		slicer.setMethodSignature("LSleep;.w([Ljava/lang/String;)V");
-		slicer.setMethodSignature("LBubbleSort;.bubble_srt([I)V");
-		slicer.setInstructionIndexes(new HashSet<>(Arrays.asList(0)));
+	public void testSlice() throws IOException, InvalidClassFileException, InterruptedException {
+		String classFilePath = SlicerTest.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+		String path = URLDecoder.decode(classFilePath, "UTF-8");
 
-		SliceResult sliceResult = slicer.getSliceResult();
-		ControlFlow controlFlow = sliceResult.getControlFlow();
+		String jvmPackageName = SlicerValidation.class.getPackageName();
+		String packageName = jvmPackageName.replaceAll("\\.", File.separator) + File.separator;
 
-		final Path dir = Files.createTempDirectory("slicer-");
-		Utilities.dotShow(dir, controlFlow.dotPrint());
-//		Utilities.dotShow(dir, new BlockDependency(controlFlow).dotPrint());
-//		Utilities.dotShow(dir, new DataDependency(controlFlow).dotPrint());
-//		Utilities.dotShow(dir, new ArgumentDependency(controlFlow).dotPrint());
+		String slicerValidationClassPath = FilenameUtils.concat(path,
+				packageName + SlicerValidation.class.getSimpleName() + ".class");
+		String slicerValidationJarPath = FilenameUtils.concat(path,
+				packageName + SlicerValidation.class.getSimpleName() + ".jar");
 
-		int instructionIndex = 11;
-		slicer.setInstructionIndexes(new HashSet<>(Arrays.asList(instructionIndex)));
-		sliceResult = slicer.getSliceResult();
+		Process process = new ProcessBuilder("jar", "-cfv", slicerValidationJarPath, slicerValidationClassPath).start();
+		process.waitFor();
+		if (process.exitValue() != 0) {
+			System.err.println("Some error occured during jar compilation\n");
+			System.err.println("\nStderr:\n" + readInputStream(process.getErrorStream()));
+			System.out.println("\nStdout:\n" + readInputStream(process.getInputStream()));
+			throw new IOException("Process exited with exit code " + process.exitValue());
+		}
 
-		System.out.println(sliceResult);
-		Assert.assertTrue(sliceResult.getInstructionIndex().size() > 0);
+		slicer.setInputJar(slicerValidationJarPath);
+		slicer.setMethodSignature(
+				"Lde.rherzog.master.thesis.slicer.test.SlicerValidation;.reuseVariableWithoutReinitialization()V");
 
-//		int instructionCount = slicer.getControlFlow().getMethodData().getInstructions().length;
-//		for (int instructionIndex = 0; instructionIndex < instructionCount; instructionIndex++) {
-//		}
+		Map<Set<Integer>, List<IInstruction>> slicerCriterionResultMap = new HashMap<>();
+//		slicerCriterionResultMap.put(Set.of(0), Arrays.asList(ConstantInstruction.make(0), PopInstruction.make(1),
+//				ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(1), Arrays.asList(ConstantInstruction.make(0), PopInstruction.make(1),
+				ReturnInstruction.make(Constants.TYPE_void)));
+
+		Path dir = Files.createTempDirectory("slicer-");
+		for (Entry<Set<Integer>, List<IInstruction>> slicerCriterionResultEntry : slicerCriterionResultMap.entrySet()) {
+			Set<Integer> criterionSet = slicerCriterionResultEntry.getKey();
+			List<IInstruction> resultList = slicerCriterionResultEntry.getValue();
+
+			slicer.setInstructionIndexes(criterionSet);
+			SliceResult sliceResult = slicer.getSliceResult();
+			
+			System.out.println(sliceResult.toJavaSource());
+
+//			Assert.assertTrue("Expected slice\n  " + resultList + "\nbut is\n  " + sliceResult.getSlice(),
+//					resultList.equals(sliceResult.getSlice()));
+
+			System.out.println(sliceResult);
+
+//			ControlFlow controlFlow = sliceResult.getControlFlow();
+//			Utilities.dotShow(dir, controlFlow.dotPrint());
+		}
+	}
+
+	private String readInputStream(InputStream inputStream) {
+		// Copy the stream contents into a StringWriter
+		StringWriter writer = new StringWriter();
+		try {
+			IOUtils.copy(inputStream, writer, "UTF-8");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return writer.toString();
 	}
 }
