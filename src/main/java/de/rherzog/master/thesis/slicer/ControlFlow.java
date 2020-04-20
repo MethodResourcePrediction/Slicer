@@ -345,4 +345,24 @@ public class ControlFlow {
 		}
 		return scsWithInstructionIndex;
 	}
+
+	public boolean inSameCycle(int instructionIndexA, int instructionIndexB)
+			throws IOException, InvalidClassFileException {
+		return inSameCycle(instructionIndexA, instructionIndexB, null);
+	}
+
+	public boolean inSameCycle(int instructionIndexA, int instructionIndexB, int... moreInstructionIndexes)
+			throws IOException, InvalidClassFileException {
+		if (!getCyclesForInstruction(instructionIndexA).equals(getCyclesForInstruction(instructionIndexB))) {
+			return false;
+		}
+		if (moreInstructionIndexes != null) {
+			for (int instructionIndex : moreInstructionIndexes) {
+				if (!getCyclesForInstruction(instructionIndexA).equals(getCyclesForInstruction(instructionIndex))) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
 }

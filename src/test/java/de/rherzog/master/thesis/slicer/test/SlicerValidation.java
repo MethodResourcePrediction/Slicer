@@ -1,5 +1,7 @@
 package de.rherzog.master.thesis.slicer.test;
 
+import de.rherzog.master.thesis.slicer.instrumenter.export.Nothing;
+
 public class SlicerValidation {
 	public void reuseVariableWithoutReinitialization() {
 		int i = 0;
@@ -9,6 +11,7 @@ public class SlicerValidation {
 		for (; i < 10; i++) {
 			System.currentTimeMillis();
 		}
+		Nothing.doNothing();
 	}
 
 	public void reuseVariableWitReinitialization() {

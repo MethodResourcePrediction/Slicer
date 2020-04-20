@@ -22,13 +22,21 @@ import org.junit.Test;
 
 import com.ibm.wala.shrikeBT.ConstantInstruction;
 import com.ibm.wala.shrikeBT.Constants;
+import com.ibm.wala.shrikeBT.GotoInstruction;
 import com.ibm.wala.shrikeBT.IInstruction;
+import com.ibm.wala.shrikeBT.IInvokeInstruction.Dispatch;
+import com.ibm.wala.shrikeBT.InvokeInstruction;
+import com.ibm.wala.shrikeBT.LoadInstruction;
 import com.ibm.wala.shrikeBT.PopInstruction;
 import com.ibm.wala.shrikeBT.ReturnInstruction;
+import com.ibm.wala.shrikeBT.StoreInstruction;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 
+import de.rherzog.master.thesis.slicer.ArgumentDependency;
+import de.rherzog.master.thesis.slicer.ControlFlow;
 import de.rherzog.master.thesis.slicer.SliceResult;
 import de.rherzog.master.thesis.slicer.Slicer;
+import de.rherzog.master.thesis.utils.Utilities;
 
 public class SlicerTest {
 	private Slicer slicer;
@@ -67,7 +75,23 @@ public class SlicerTest {
 		Map<Set<Integer>, List<IInstruction>> slicerCriterionResultMap = new HashMap<>();
 //		slicerCriterionResultMap.put(Set.of(0), Arrays.asList(ConstantInstruction.make(0), PopInstruction.make(1),
 //				ReturnInstruction.make(Constants.TYPE_void)));
-		slicerCriterionResultMap.put(Set.of(1), Arrays.asList(ConstantInstruction.make(0), PopInstruction.make(1),
+//		slicerCriterionResultMap.put(Set.of(1), Arrays.asList(ConstantInstruction.make(0),
+//				StoreInstruction.make(Constants.TYPE_int, 1), ReturnInstruction.make(Constants.TYPE_void)));
+//		slicerCriterionResultMap.put(Set.of(2),
+//				Arrays.asList(GotoInstruction.make(9), InvokeInstruction.make("()V",
+//						"Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;", "doNothing", Dispatch.STATIC),
+//						ReturnInstruction.make(Constants.TYPE_void)));
+//		slicerCriterionResultMap.put(Set.of(3),
+//				Arrays.asList(InvokeInstruction.make("()J", "Ljava/lang/System;", "currentTimeMillis", Dispatch.STATIC),
+//						PopInstruction.make(1), ReturnInstruction.make(Constants.TYPE_void)));
+//		slicerCriterionResultMap.put(Set.of(4),
+//				Arrays.asList(InvokeInstruction.make("()J", "Ljava/lang/System;", "currentTimeMillis", Dispatch.STATIC),
+//						PopInstruction.make(1), ReturnInstruction.make(Constants.TYPE_void)));
+//		slicerCriterionResultMap.put(Set.of(5), Arrays.asList(LoadInstruction.make(Constants.TYPE_int, 1),
+//				PopInstruction.make(1), ReturnInstruction.make(Constants.TYPE_void)));
+//		slicerCriterionResultMap.put(Set.of(6), Arrays.asList(ConstantInstruction.make(1), PopInstruction.make(1),
+//				ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(7), Arrays.asList(ConstantInstruction.make(1), PopInstruction.make(1),
 				ReturnInstruction.make(Constants.TYPE_void)));
 
 		Path dir = Files.createTempDirectory("slicer-");
@@ -77,16 +101,17 @@ public class SlicerTest {
 
 			slicer.setInstructionIndexes(criterionSet);
 			SliceResult sliceResult = slicer.getSliceResult();
-			
+
 			System.out.println(sliceResult.toJavaSource());
 
-//			Assert.assertTrue("Expected slice\n  " + resultList + "\nbut is\n  " + sliceResult.getSlice(),
-//					resultList.equals(sliceResult.getSlice()));
+			Assert.assertTrue("Expected slice\n  " + resultList + "\nbut is\n  " + sliceResult.getSlice(),
+					resultList.equals(sliceResult.getSlice()));
 
 			System.out.println(sliceResult);
 
 //			ControlFlow controlFlow = sliceResult.getControlFlow();
-//			Utilities.dotShow(dir, controlFlow.dotPrint());
+//			ArgumentDependency argumentDependency = new ArgumentDependency(controlFlow);
+//			Utilities.dotShow(dir, argumentDependency.dotPrint());
 		}
 	}
 

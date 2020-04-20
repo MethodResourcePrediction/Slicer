@@ -1,6 +1,7 @@
 package de.rherzog.master.thesis.slicer;
 
 import java.io.IOException;
+import java.rmi.UnexpectedException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -18,6 +19,8 @@ import com.ibm.wala.shrikeBT.DupInstruction;
 import com.ibm.wala.shrikeBT.GetInstruction;
 import com.ibm.wala.shrikeBT.GotoInstruction;
 import com.ibm.wala.shrikeBT.IInstruction;
+import com.ibm.wala.shrikeBT.IInvokeInstruction;
+import com.ibm.wala.shrikeBT.IInvokeInstruction.Dispatch;
 import com.ibm.wala.shrikeBT.InvokeDynamicInstruction;
 import com.ibm.wala.shrikeBT.InvokeInstruction;
 import com.ibm.wala.shrikeBT.LoadInstruction;
@@ -25,10 +28,13 @@ import com.ibm.wala.shrikeBT.NewInstruction;
 import com.ibm.wala.shrikeBT.PopInstruction;
 import com.ibm.wala.shrikeBT.ReturnInstruction;
 import com.ibm.wala.shrikeBT.StoreInstruction;
+import com.ibm.wala.shrikeBT.Util;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import com.ibm.wala.types.TypeName;
+import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.strings.StringStuff;
 
+import de.rherzog.master.thesis.slicer.instrumenter.export.Nothing;
 import de.rherzog.master.thesis.utils.Utilities;
 
 public class SliceResult {
@@ -86,7 +92,7 @@ public class SliceResult {
 				}
 				slice.add(instruction);
 			} else if (getInstructionsToIgnore().contains(index)) {
-				slice.add(instruction);
+				slice.add(InvokeInstruction.make("()V", Util.makeType(Nothing.class), "doNothing", Dispatch.STATIC));
 			}
 			if (getInstructionPopMap().containsKey(index) && index != instructions.length - 1) {
 				for (int popCount = 0; popCount < getInstructionPopMap().get(index); popCount++) {
@@ -98,32 +104,64 @@ public class SliceResult {
 		return slice;
 	}
 
+	// TODO Extract me to Utilities
 	public String toJavaSource() throws IOException, InvalidClassFileException {
 		StringBuilder javaSource = new StringBuilder();
 		javaSource.append("Arrays.asList(\n");
-		for (IInstruction instruction : getSlice()) {
-			String instructionSource = "";
+		List<IInstruction> slice = getSlice();
+		for (int index = 0; index < slice.size(); index++) {
+			IInstruction instruction = slice.get(index);
+			String instructionSource = null;
 
 			if (instruction instanceof LoadInstruction) {
+//				LoadInstruction.make(type, index)
 				LoadInstruction instruction2 = (LoadInstruction) instruction;
 				instructionSource = String.format("LoadInstruction.make(%s, %s)",
 						Utilities.typeToConstantFieldSource(instruction2.getType()), instruction2.getVarIndex());
 			} else if (instruction instanceof StoreInstruction) {
+//				StoreInstruction.make(type, index)
 				StoreInstruction instruction2 = (StoreInstruction) instruction;
 				instructionSource = String.format("StoreInstruction.make(%s, %s)",
 						Utilities.typeToConstantFieldSource(instruction2.getType()), instruction2.getVarIndex());
 			} else if (instruction instanceof BinaryOpInstruction) {
+//				BinaryOpInstruction.make(type, operator)
 				BinaryOpInstruction instruction2 = (BinaryOpInstruction) instruction;
+				instructionSource = String.format("BinaryOpInstruction.make(%s, Operator.%s)",
+						Utilities.typeToConstantFieldSource(instruction2.getType()), instruction2.getOperator().name());
 			} else if (instruction instanceof ConditionalBranchInstruction) {
+//				ConditionalBranchInstruction.make(arg0, arg1, arg2)
 				ConditionalBranchInstruction instruction2 = (ConditionalBranchInstruction) instruction;
+				instructionSource = String.format("ConditionalBranchInstruction.make(%s, Operator.%s, %s)",
+						Utilities.typeToConstantFieldSource(instruction2.getType()), instruction2.getOperator().name(),
+						instruction2.getTarget());
 			} else if (instruction instanceof GetInstruction) {
+//				GetInstruction.make(type, className, fieldName, isStatic)
 				GetInstruction instruction2 = (GetInstruction) instruction;
+				// TODO Check parameters
+				instructionSource = String.format("GetInstruction.make(%s, %s, %s, %s)",
+						Utilities.typeToConstantFieldSource(instruction2.getFieldType()), instruction2.getClassType(),
+						instruction2.getFieldName(), instruction2.isStatic());
 			} else if (instruction instanceof InvokeInstruction) {
+//				InvokeInstruction.make(type, className, methodName, mode)
 				InvokeInstruction instruction2 = (InvokeInstruction) instruction;
-				TypeName typeName = StringStuff.parseForReturnTypeName(instruction2.getMethodSignature());
+				TypeName returnTypeName = StringStuff.parseForReturnTypeName(instruction2.getMethodSignature());
+				// TODO Check parameters
+				instructionSource = String.format("InvokeInstruction.make(%s, %s, %s, Dispatch.%s)",
+						"\"" + instruction2.getMethodSignature() + "\"", "\"" + instruction2.getClassType() + "\"",
+						"\"" + instruction2.getMethodName() + "\"",
+						Dispatch.valueOf(instruction2.getInvocationModeString()));
 			} else if (instruction instanceof InvokeDynamicInstruction) {
 				InvokeDynamicInstruction instruction2 = (InvokeDynamicInstruction) instruction;
-				TypeName typeName = StringStuff.parseForReturnTypeName(instruction2.getMethodSignature());
+				// TODO How to create an InvokeDynamicInstruction from external? Only
+				// package-visible methods are available.
+				throw new UnexpectedException("Cannot create instruction source for InvokeDynamicInstruction");
+//				InvokeDynamicInstruction.make(null, index, index);
+//				InvokeDynamicInstruction instruction2 = (InvokeDynamicInstruction) instruction;
+//				TypeName returnTypeName = StringStuff.parseForReturnTypeName(instruction2.getMethodSignature());
+//				instructionSource = String.format("new InvokeDynamicInstruction(%s, %s, %s, %s)",
+//						instruction2.getOpcode(), instruction2.getBootstrap(), null,
+//						Utilities.typeToConstantFieldSource(returnTypeName.toString()));
+//				new InvokeDynamicInstruction(opcode, bootstrap, methodName, methodType)
 			} else if (instruction instanceof ConstantInstruction) {
 				ConstantInstruction instruction2 = (ConstantInstruction) instruction;
 				instructionSource = "ConstantInstruction.";
@@ -141,23 +179,49 @@ public class SliceResult {
 				instructionSource += ")";
 			} else if (instruction instanceof ConversionInstruction) {
 				ConversionInstruction instruction2 = (ConversionInstruction) instruction;
+//				ConversionInstruction.make(fromType, toType)
+				instructionSource = String.format("ConversionInstruction.make(%s, %s)",
+						Utilities.typeToConstantFieldSource(instruction2.getFromType()),
+						Utilities.typeToConstantFieldSource(instruction2.getToType()));
 			} else if (instruction instanceof ArrayLoadInstruction) {
+//				ArrayLoadInstruction.make(type)
 				ArrayLoadInstruction instruction2 = (ArrayLoadInstruction) instruction;
+				instructionSource = String.format("ArrayLoadInstruction.make(%s)",
+						Utilities.typeToConstantFieldSource(instruction2.getType()));
 			} else if (instruction instanceof GotoInstruction) {
+//				GotoInstruction.make(label)
 				GotoInstruction instruction2 = (GotoInstruction) instruction;
+				instructionSource = String.format("GotoInstruction.make(%s)", instruction2.getLabel());
 			} else if (instruction instanceof ArrayLengthInstruction) {
-				ArrayLengthInstruction instruction2 = (ArrayLengthInstruction) instruction;
+//				ArrayLengthInstruction.make();
+//				ArrayLengthInstruction instruction2 = (ArrayLengthInstruction) instruction;
+				instructionSource = "ArrayLengthInstruction.make()";
 			} else if (instruction instanceof PopInstruction) {
+//				PopInstruction.make(size)
 				PopInstruction instruction2 = (PopInstruction) instruction;
+				instructionSource = String.format("PopInstruction.make(%s)", instruction2.getPoppedCount());
 			} else if (instruction instanceof ReturnInstruction) {
+//				ReturnInstruction.make(type)
 				ReturnInstruction instruction2 = (ReturnInstruction) instruction;
+				instructionSource = String.format("ReturnInstruction.make(%s)",
+						Utilities.typeToConstantFieldSource(instruction2.getType()));
 			} else if (instruction instanceof NewInstruction) {
+//				NewInstruction.make(type, arrayBoundsCount)
 				NewInstruction instruction2 = (NewInstruction) instruction;
+				instructionSource = String.format("NewInstruction.make(%s, %s)",
+						Utilities.typeToConstantFieldSource(instruction2.getType()),
+						instruction2.getArrayBoundsCount());
 			} else if (instruction instanceof DupInstruction) {
+//				DupInstruction.make(delta)
 				DupInstruction instruction2 = (DupInstruction) instruction;
+				instructionSource = String.format("DupInstruction.make(%s)", instruction2.getDelta());
 			}
 
-			javaSource.append("  " + instructionSource.toString() + ",\n");
+			javaSource.append("  " + instructionSource.toString());
+			if (index != slice.size() - 1) {
+				javaSource.append(",");
+			}
+			javaSource.append("\n");
 		}
 		javaSource.append(");\n");
 		return javaSource.toString();
@@ -181,20 +245,12 @@ public class SliceResult {
 
 			builder.append("\n");
 			builder.append("=== Slice ===" + "\n");
-			for (int index = 0; index < instructions.length; index++) {
-				IInstruction instruction = instructions[index];
+			List<IInstruction> slice = getSlice();
+			for (int index = 0; index < slice.size(); index++) {
+				IInstruction instruction = slice.get(index);
 
 				String str = String.format("%" + padding + "s", index);
-				if (getInstructionsToKeep().contains(index)) {
-					builder.append(str + ": " + instruction + "\n");
-				} else if (getInstructionsToIgnore().contains(index)) {
-					builder.append(str + ": " + instruction + " (IGNORED)" + "\n");
-				}
-				if (instructionPopMap.containsKey(index)) {
-					for (int popCount = 0; popCount < instructionPopMap.get(index); popCount++) {
-						builder.append(str + ": " + PopInstruction.make(1) + " (ADDITIONAL)" + "\n");
-					}
-				}
+				builder.append(str + ": " + instruction + "\n");
 			}
 			return builder.toString();
 		} catch (IOException | InvalidClassFileException e) {

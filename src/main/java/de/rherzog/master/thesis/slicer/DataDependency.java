@@ -124,7 +124,8 @@ public class DataDependency {
 
 		// Only data dependencies between different instructions are interesting
 		if (focusedIndex != instructionIndex) {
-			instructionA = Utilities.rewriteVarIndex(varIndexesToRenumber, instructionA, focusedIndex);
+			// TODO Disabled for now
+//			instructionA = Utilities.rewriteVarIndex(varIndexesToRenumber, instructionA, focusedIndex);
 
 			boolean hasDataDependency = false;
 			if (instructionIndex < 0) {
@@ -135,7 +136,8 @@ public class DataDependency {
 			} else {
 				// Check dependencies for both normal instructions
 				IInstruction instructionB = instructions[instructionIndex];
-				instructionB = Utilities.rewriteVarIndex(varIndexesToRenumber, instructionB, instructionIndex);
+				// TODO Disabled for now
+//				instructionB = Utilities.rewriteVarIndex(varIndexesToRenumber, instructionB, instructionIndex);
 				if (checkDataDependency(instructionA, instructionB)) {
 					hasDataDependency = true;
 				}

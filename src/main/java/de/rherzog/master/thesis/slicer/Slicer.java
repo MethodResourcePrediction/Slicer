@@ -75,7 +75,7 @@ public class Slicer {
 		}
 		controlFlow = new ControlFlow(inputJar, methodSignature);
 		// Optional
-		controlFlow.renumberVarIndexes();
+//		controlFlow.renumberVarIndexes();
 		return controlFlow;
 	}
 
@@ -372,6 +372,11 @@ public class Slicer {
 //					continue;
 //				}
 //			}
+			// If the data dependency is higher and NOT part of the same loop (if any)
+			// => ignore it
+			if (dataDependentIndex > index && !controlFlow.inSameCycle(index, dataDependentIndex)) {
+				continue;
+			}
 			slice(controlFlow, controlDependency, blockDependency, argumentDependency, dataDependency,
 					dependendInstructions, dataDependentIndex);
 		}
