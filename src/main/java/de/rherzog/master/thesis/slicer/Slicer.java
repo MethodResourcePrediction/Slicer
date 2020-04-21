@@ -19,13 +19,12 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.codec.DecoderException;
 import org.jgrapht.graph.DefaultEdge;
 
+import com.ibm.wala.shrikeBT.ConstantInstruction;
 import com.ibm.wala.shrikeBT.GotoInstruction;
 import com.ibm.wala.shrikeBT.IConditionalBranchInstruction;
 import com.ibm.wala.shrikeBT.IInstruction;
 import com.ibm.wala.shrikeBT.IInvokeInstruction;
-import com.ibm.wala.shrikeBT.LoadInstruction;
 import com.ibm.wala.shrikeBT.ReturnInstruction;
-import com.ibm.wala.shrikeBT.StoreInstruction;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 
 import de.rherzog.master.thesis.slicer.instrumenter.export.SliceWriter.ExportFormat;
@@ -343,21 +342,27 @@ public class Slicer {
 					dependendInstructions, argumentIndex);
 		}
 
-		// Add cycle (goto)
-		List<List<Integer>> cycles = controlFlow.getCyclesForInstruction(index);
-		for (List<Integer> cycle : cycles) {
-			// Keep start block of loop
-			Integer cycleStartIndex = cycle.get(0);
-			Integer highestIndex = blockDependency.getBlockForIndex(cycleStartIndex).getHighestIndex();
-			slice(controlFlow, controlDependency, blockDependency, argumentDependency, dataDependency,
-					dependendInstructions, highestIndex);
+		// Add cycle dependencies (goto)
+		// If our current instruction is a ConstantInstruction, it cannot be affected by
+		// any loop iteration count. This is the only exception for loops here.
+		if (!(controlFlow.getMethodData().getInstructions()[index] instanceof ConstantInstruction)) {
+			List<List<Integer>> cycles = controlFlow.getCyclesForInstruction(index);
+			for (List<Integer> cycle : cycles) {
+				// TODO Keep start block of loop is not always correct. Assume there is a block
+				// at method start not affecting any further instructions in the loop. It should
+				// be sliced out.
+				Integer cycleStartIndex = cycle.get(0);
+				Integer highestIndex = blockDependency.getBlockForIndex(cycleStartIndex).getHighestIndex();
+				slice(controlFlow, controlDependency, blockDependency, argumentDependency, dataDependency,
+						dependendInstructions, highestIndex);
 
-			// Keep end block of loop
-			// NOTE: This is usually a GOTO-Instruction. Is it required to slice the index?
-			Integer cycleEndIndex = cycle.get(cycle.size() - 1);
-			highestIndex = blockDependency.getBlockForIndex(cycleEndIndex).getHighestIndex();
-			slice(controlFlow, controlDependency, blockDependency, argumentDependency, dataDependency,
-					dependendInstructions, highestIndex);
+				// Keep end block of loop
+				// NOTE: This is usually a GOTO-Instruction. Is it required to slice the index?
+				Integer cycleEndIndex = cycle.get(cycle.size() - 1);
+				highestIndex = blockDependency.getBlockForIndex(cycleEndIndex).getHighestIndex();
+				slice(controlFlow, controlDependency, blockDependency, argumentDependency, dataDependency,
+						dependendInstructions, highestIndex);
+			}
 		}
 
 		// Consider data dependencies
@@ -389,6 +394,22 @@ public class Slicer {
 //			slice(controlFlow, controlDependency, blockDependency, argumentDependency, dataDependency,
 //					dependendInstructions, controlDependentIndex);
 //		}
+	}
+
+	public String getMethodSummary() throws IOException, InvalidClassFileException {
+		StringBuilder builder = new StringBuilder();
+		IInstruction[] instructions = getControlFlow().getMethodData().getInstructions();
+		int padding = (instructions.length / 10) + 1;
+
+		builder.append("\n");
+		builder.append("=== Method " + getMethodSignature() + " ===" + "\n");
+		for (int index = 0; index < instructions.length; index++) {
+			IInstruction instruction = instructions[index];
+
+			String str = String.format("%" + padding + "s", index);
+			builder.append(str + ": " + instruction + "\n");
+		}
+		return builder.toString();
 	}
 
 	public SliceResult getSliceResult() throws IOException, InvalidClassFileException {

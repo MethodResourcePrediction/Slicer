@@ -24,4 +24,16 @@ public class SlicerValidation {
 			System.currentTimeMillis();
 		}
 	}
+
+//	public void twoWordPop() {
+//		Thread.activeCount();
+//		System.currentTimeMillis();
+//	}
+
+//	public void twoWordPop() {
+//		Integer.valueOf("1").intValue();
+//		Float.valueOf("1.23f").floatValue();
+//		Double.valueOf("2.34d").doubleValue();
+//		Long.valueOf("2L").longValue();
+//	}
 }

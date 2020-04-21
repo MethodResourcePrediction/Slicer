@@ -16,6 +16,7 @@ import org.jgrapht.io.ExportException;
 import org.jgrapht.io.GraphExporter;
 
 import com.ibm.wala.shrikeBT.IInstruction;
+import com.ibm.wala.shrikeBT.PopInstruction;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 
 import de.rherzog.master.thesis.utils.Utilities;

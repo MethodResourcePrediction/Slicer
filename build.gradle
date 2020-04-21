@@ -21,9 +21,9 @@ dependencies {
 	compile files('../SlicerExport.jar', '../Utils.jar')
 	
 	compile files(
-		'../WALA/com.ibm.wala.core-1.5.5-SNAPSHOT.jar',
-		'../WALA/com.ibm.wala.util-1.5.5-SNAPSHOT.jar',
-		'../WALA/com.ibm.wala.shrike-1.5.5-SNAPSHOT.jar',
+		'../WALA/com.ibm.wala.core-1.5.6-SNAPSHOT.jar',
+		'../WALA/com.ibm.wala.util-1.5.6-SNAPSHOT.jar',
+		'../WALA/com.ibm.wala.shrike-1.5.6-SNAPSHOT.jar',
 	)
 	
 	// https://mvnrepository.com/artifact/commons-io/commons-io
@@ -33,7 +33,7 @@ dependencies {
 	compile group: 'commons-cli', name: 'commons-cli', version: '1.4'
 	
 	// https://mvnrepository.com/artifact/com.ibm.wala/com.ibm.wala.core
-	// compile group: 'com.ibm.wala', name: 'com.ibm.wala.core', version: '1.5.5'
+	//compile group: 'com.ibm.wala', name: 'com.ibm.wala.core', version: '1.5.5'
 	
 	// https://mvnrepository.com/artifact/commons-codec/commons-codec
 	compile group: 'commons-codec', name: 'commons-codec', version: '1.12'

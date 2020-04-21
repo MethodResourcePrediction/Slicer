@@ -18,6 +18,7 @@ import com.ibm.wala.shrikeBT.ConversionInstruction;
 import com.ibm.wala.shrikeBT.DupInstruction;
 import com.ibm.wala.shrikeBT.GetInstruction;
 import com.ibm.wala.shrikeBT.GotoInstruction;
+import com.ibm.wala.shrikeBT.IBinaryOpInstruction;
 import com.ibm.wala.shrikeBT.IInstruction;
 import com.ibm.wala.shrikeBT.IInvokeInstruction;
 import com.ibm.wala.shrikeBT.IInvokeInstruction.Dispatch;
@@ -126,12 +127,13 @@ public class SliceResult {
 			} else if (instruction instanceof BinaryOpInstruction) {
 //				BinaryOpInstruction.make(type, operator)
 				BinaryOpInstruction instruction2 = (BinaryOpInstruction) instruction;
-				instructionSource = String.format("BinaryOpInstruction.make(%s, Operator.%s)",
+				instructionSource = String.format("BinaryOpInstruction.make(%s, IBinaryOpInstruction.Operator.%s)",
 						Utilities.typeToConstantFieldSource(instruction2.getType()), instruction2.getOperator().name());
 			} else if (instruction instanceof ConditionalBranchInstruction) {
 //				ConditionalBranchInstruction.make(arg0, arg1, arg2)
 				ConditionalBranchInstruction instruction2 = (ConditionalBranchInstruction) instruction;
-				instructionSource = String.format("ConditionalBranchInstruction.make(%s, Operator.%s, %s)",
+				instructionSource = String.format(
+						"ConditionalBranchInstruction.make(%s, ConditionalBranchInstruction.Operator.%s, %s)",
 						Utilities.typeToConstantFieldSource(instruction2.getType()), instruction2.getOperator().name(),
 						instruction2.getTarget());
 			} else if (instruction instanceof GetInstruction) {
@@ -170,6 +172,8 @@ public class SliceResult {
 					if (instruction2.getType().equals(Constants.TYPE_int)) {
 						// Default data type is always int
 						instructionSource += "make(" + instruction2.getValue();
+					} else if (instruction2.getType().equals(Constants.TYPE_long)) {
+						instructionSource += "make(" + instruction2.getValue() + "L";
 					} else {
 						instructionSource += "make(" + instruction2.getValue() + instruction2.getType();
 					}
@@ -241,7 +245,7 @@ public class SliceResult {
 			builder.append("VarIndexesToRenumber: " + getControlFlow().getVarIndexesToRenumber() + "\n");
 
 			IInstruction[] instructions = getControlFlow().getMethodData().getInstructions();
-			int padding = instructions.length / 10;
+			int padding = (instructions.length / 10) + 1;
 
 			builder.append("\n");
 			builder.append("=== Slice ===" + "\n");
