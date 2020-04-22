@@ -817,11 +817,14 @@ public class Instrumenter {
 
 //		String exportJarPath = Config.getInstance().getExport().getExportJarPath();
 		String additionalJarsBasePath = FilenameUtils.getFullPath(additionalJarsPath);
+		if (additionalJarsBasePath == null) {
+			additionalJarsBasePath = new File(".").getPath();
+		}
 
 		// Add additional jars to instrumented executable.
 		for (String exportJar : exportJars) {
-//			String exportJarPath = FilenameUtils.concat(additionalJarsBasePath, exportJar);
-			String exportJarPath = additionalJarsBasePath + exportJar;
+			String exportJarPath = FilenameUtils.concat(additionalJarsBasePath, exportJar);
+//			String exportJarPath = additionalJarsBasePath + exportJar;
 
 			jars.add(exportJarPath);
 		}

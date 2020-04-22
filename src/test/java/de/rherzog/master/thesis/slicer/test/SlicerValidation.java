@@ -3,6 +3,20 @@ package de.rherzog.master.thesis.slicer.test;
 import de.rherzog.master.thesis.slicer.instrumenter.export.Nothing;
 
 public class SlicerValidation {
+	public void simpleMethodCall() {
+		System.currentTimeMillis();
+	}
+
+	public void simpleMethodCallWithParameter(long sleep) throws InterruptedException {
+		Thread.sleep(sleep);
+	}
+
+	public void simpleMethodCallAndLoopWithParameter(long sleep) throws InterruptedException {
+		for (int i = 0; i < 5; i++) {
+			Thread.sleep(sleep);
+		}
+	}
+
 	public void reuseVariableWithoutReinitialization() {
 		int i = 0;
 		for (; i < 5; i++) {
@@ -14,7 +28,7 @@ public class SlicerValidation {
 		Nothing.doNothing();
 	}
 
-	public void reuseVariableWitReinitialization() {
+	public void reuseVariableWithReinitialization() {
 		int i = 0;
 		for (; i < 2; i++) {
 			System.currentTimeMillis();

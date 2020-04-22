@@ -8,12 +8,15 @@ import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.apache.commons.codec.DecoderException;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
@@ -40,14 +43,11 @@ import de.rherzog.master.thesis.slicer.Slicer;
 
 public class SlicerTest {
 	private Slicer slicer;
+	private String slicerValidationJarPath;
 
 	@Before
 	public void setUp() throws Exception {
-		slicer = new Slicer();
-	}
-
-	@Test
-	public void testSlice() throws IOException, InvalidClassFileException, InterruptedException {
+		// Get path to java class
 		String classFilePath = SlicerTest.class.getProtectionDomain().getCodeSource().getLocation().getPath();
 		String path = URLDecoder.decode(classFilePath, "UTF-8");
 
@@ -56,7 +56,7 @@ public class SlicerTest {
 
 		String slicerValidationClassPath = FilenameUtils.concat(path,
 				packageName + SlicerValidation.class.getSimpleName() + ".class");
-		String slicerValidationJarPath = FilenameUtils.concat(path,
+		slicerValidationJarPath = FilenameUtils.concat(path,
 				packageName + SlicerValidation.class.getSimpleName() + ".jar");
 
 		Process process = new ProcessBuilder("jar", "-cfv", slicerValidationJarPath, slicerValidationClassPath).start();
@@ -68,6 +68,44 @@ public class SlicerTest {
 			throw new IOException("Process exited with exit code " + process.exitValue());
 		}
 
+		slicer = new Slicer();
+	}
+
+	@Test
+	public void testSimpleSlice() throws IOException, InvalidClassFileException, InterruptedException,
+			IllegalStateException, DecoderException {
+		slicer.setInputJar(slicerValidationJarPath); // Path to your application.jar
+		slicer.setMethodSignature(
+				"Lde.rherzog.master.thesis.slicer.test.SlicerValidation;.simpleMethodCallAndLoopWithParameter(J)V");
+		System.out.println(slicer.getMethodSummary());
+
+		// Define you criterion's from some instruction indexes
+		// Index ... here is:
+		List<Integer> instructionIndexes = Arrays.asList(5);
+		Set<Integer> criterionSet = new HashSet<>(instructionIndexes);
+
+		slicer.setInstructionIndexes(criterionSet);
+
+		// Variant 1: Get the instruction slice as a list of instructions
+		SliceResult sliceResult = slicer.getSliceResult();
+		List<IInstruction> slice = sliceResult.getSlice();
+		System.out.println("=== Sliced method ===");
+
+		int index = 0;
+		for (IInstruction instruction : slice) {
+			System.out.println(index + ": " + instruction.toString());
+			index++;
+		}
+
+		// Variant 2: Generate a new jar with all dependencies from your original one,
+		// but with a sliced method specified above.
+		// The parameters is false by default. Given true shows all method graphs
+//		String slicedOutputJar = slicer.makeSlicedFile(true);
+//		System.out.println("Sliced output jar path" + slicedOutputJar);
+	}
+
+	@Test
+	public void testSlice() throws IOException, InvalidClassFileException, InterruptedException {
 		slicer.setInputJar(slicerValidationJarPath);
 		slicer.setMethodSignature(
 				"Lde.rherzog.master.thesis.slicer.test.SlicerValidation;.reuseVariableWithoutReinitialization()V");
@@ -76,8 +114,11 @@ public class SlicerTest {
 		System.out.println(slicer.getMethodSummary());
 
 		Map<Set<Integer>, List<IInstruction>> slicerCriterionResultMap = new HashMap<>();
-//		slicerCriterionResultMap.put(Set.of(0), Arrays.asList(ConstantInstruction.make(0), PopInstruction.make(1),
-//				ReturnInstruction.make(Constants.TYPE_void)));
+//		slicerCriterionResultMap.put(Set.of(0), Arrays.asList(
+//				ConstantInstruction.make(0),
+//				PopInstruction.make(1),
+//				ReturnInstruction.make(Constants.TYPE_void)
+//			));
 //		slicerCriterionResultMap.put(Set.of(1), Arrays.asList(ConstantInstruction.make(0),
 //				StoreInstruction.make(Constants.TYPE_int, 1), ReturnInstruction.make(Constants.TYPE_void)));
 //		slicerCriterionResultMap.put(Set.of(2),
@@ -104,21 +145,26 @@ public class SlicerTest {
 //						ConstantInstruction.make(5), ConditionalBranchInstruction.make(Constants.TYPE_int,
 //								ConditionalBranchInstruction.Operator.LT, 3),
 //						ReturnInstruction.make(Constants.TYPE_void)));
-		slicerCriterionResultMap.put(Set.of(5),
-				Arrays.asList(ConstantInstruction.make(0), StoreInstruction.make(Constants.TYPE_int, 1),
-						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
-						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(5), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 3),
-						ReturnInstruction.make(Constants.TYPE_void)));
+//		slicerCriterionResultMap.put(Set.of(5),
+//				Arrays.asList(ConstantInstruction.make(0), StoreInstruction.make(Constants.TYPE_int, 1),
+//						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
+//								"doNothing", Dispatch.STATIC),
+//						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
+//						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
+//						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
+//						ConstantInstruction.make(5), ConditionalBranchInstruction.make(Constants.TYPE_int,
+//								ConditionalBranchInstruction.Operator.LT, 3),
+//						ReturnInstruction.make(Constants.TYPE_void)
+//
+//				));
 //		slicerCriterionResultMap.put(Set.of(6), Arrays.asList(ConstantInstruction.make(1), PopInstruction.make(1),
 //				ReturnInstruction.make(Constants.TYPE_void)));
 //		slicerCriterionResultMap.put(Set.of(7),
 //				Arrays.asList(ConstantInstruction.make(0), StoreInstruction.make(Constants.TYPE_int, 1),
-//						InvokeInstruction.make("()J", "Ljava/lang/System;", "currentTimeMillis", Dispatch.STATIC),
-//						PopInstruction.make(1), LoadInstruction.make(Constants.TYPE_int, 1),
-//						ConstantInstruction.make(1),
+//						GotoInstruction.make(9),
+//						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
+//								"doNothing", Dispatch.STATIC),
+//						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
 //						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
 //						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
 //						ConstantInstruction.make(5), ConditionalBranchInstruction.make(Constants.TYPE_int,
@@ -126,9 +172,10 @@ public class SlicerTest {
 //						ReturnInstruction.make(Constants.TYPE_void)));
 //		slicerCriterionResultMap.put(Set.of(8),
 //				Arrays.asList(ConstantInstruction.make(0), StoreInstruction.make(Constants.TYPE_int, 1),
-//						InvokeInstruction.make("()J", "Ljava/lang/System;", "currentTimeMillis", Dispatch.STATIC),
-//						PopInstruction.make(1), LoadInstruction.make(Constants.TYPE_int, 1),
-//						ConstantInstruction.make(1),
+//						GotoInstruction.make(9),
+//						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
+//								"doNothing", Dispatch.STATIC),
+//						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
 //						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
 //						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
 //						ConstantInstruction.make(5), ConditionalBranchInstruction.make(Constants.TYPE_int,
@@ -136,9 +183,10 @@ public class SlicerTest {
 //						ReturnInstruction.make(Constants.TYPE_void)));
 //		slicerCriterionResultMap.put(Set.of(9),
 //				Arrays.asList(ConstantInstruction.make(0), StoreInstruction.make(Constants.TYPE_int, 1),
-//						InvokeInstruction.make("()J", "Ljava/lang/System;", "currentTimeMillis", Dispatch.STATIC),
-//						PopInstruction.make(1), LoadInstruction.make(Constants.TYPE_int, 1),
-//						ConstantInstruction.make(1),
+//						GotoInstruction.make(9),
+//						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
+//								"doNothing", Dispatch.STATIC),
+//						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
 //						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
 //						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
 //						ConstantInstruction.make(5), ConditionalBranchInstruction.make(Constants.TYPE_int,
@@ -148,18 +196,21 @@ public class SlicerTest {
 //				ReturnInstruction.make(Constants.TYPE_void)));
 //		slicerCriterionResultMap.put(Set.of(11),
 //				Arrays.asList(ConstantInstruction.make(0), StoreInstruction.make(Constants.TYPE_int, 1),
-//						InvokeInstruction.make("()J", "Ljava/lang/System;", "currentTimeMillis", Dispatch.STATIC),
-//						PopInstruction.make(1), LoadInstruction.make(Constants.TYPE_int, 1),
-//						ConstantInstruction.make(1),
+//						GotoInstruction.make(9),
+//						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
+//								"doNothing", Dispatch.STATIC),
+//						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
 //						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
 //						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
 //						ConstantInstruction.make(5), ConditionalBranchInstruction.make(Constants.TYPE_int,
 //								ConditionalBranchInstruction.Operator.LT, 3),
 //						ReturnInstruction.make(Constants.TYPE_void)));
-//		slicerCriterionResultMap.put(Set.of(6), Arrays.asList(ConstantInstruction.make(1), PopInstruction.make(1),
-//		ReturnInstruction.make(Constants.TYPE_void)));
-//		slicerCriterionResultMap.put(Set.of(6), Arrays.asList(ConstantInstruction.make(1), PopInstruction.make(1),
-//		ReturnInstruction.make(Constants.TYPE_void)));
+//		slicerCriterionResultMap.put(Set.of(12),
+//				Arrays.asList(GotoInstruction.make(19), InvokeInstruction.make("()V",
+//						"Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;", "doNothing", Dispatch.STATIC),
+//						ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(13), Arrays.asList(ConstantInstruction.make(1), PopInstruction.make(1),
+				ReturnInstruction.make(Constants.TYPE_void)));
 //		slicerCriterionResultMap.put(Set.of(6), Arrays.asList(ConstantInstruction.make(1), PopInstruction.make(1),
 //		ReturnInstruction.make(Constants.TYPE_void)));
 //		slicerCriterionResultMap.put(Set.of(6), Arrays.asList(ConstantInstruction.make(1), PopInstruction.make(1),

@@ -123,10 +123,10 @@ public class Slicer {
 
 		if (showDotPlots) {
 			final Path dir = Files.createTempDirectory("slicer-");
-//			Utilities.dotShow(dir, controlFlow.dotPrint());
-//			Utilities.dotShow(dir, controlDependency.dotPrint());
-//			Utilities.dotShow(dir, blockDependency.dotPrint());
-//			Utilities.dotShow(dir, dataDependency.dotPrint());
+			Utilities.dotShow(dir, controlFlow.dotPrint());
+			Utilities.dotShow(dir, controlDependency.dotPrint());
+			Utilities.dotShow(dir, blockDependency.dotPrint());
+			Utilities.dotShow(dir, dataDependency.dotPrint());
 			Utilities.dotShow(dir, argumentDependency.dotPrint());
 		}
 
@@ -348,18 +348,38 @@ public class Slicer {
 		if (!(controlFlow.getMethodData().getInstructions()[index] instanceof ConstantInstruction)) {
 			List<List<Integer>> cycles = controlFlow.getCyclesForInstruction(index);
 			for (List<Integer> cycle : cycles) {
-				// TODO Keep start block of loop is not always correct. Assume there is a block
-				// at method start not affecting any further instructions in the loop. It should
-				// be sliced out.
-				Integer cycleStartIndex = cycle.get(0);
-				Integer highestIndex = blockDependency.getBlockForIndex(cycleStartIndex).getHighestIndex();
-				slice(controlFlow, controlDependency, blockDependency, argumentDependency, dataDependency,
-						dependendInstructions, highestIndex);
+				// NOTE: Slicing a loop is a bit tricky. Usually, the start and the end of the
+				// loop must be kept in order to preserve its functionality. Explicitly, keeping
+				// the start of a loop can result in keeping instruction which are part of the
+				// loop but expected to be sliced out. Therefore, we assume that the java
+				// compiler always generates foot-controlled (is that the correct term?) loops,
+				// meaning, that the condition for a loop iteration is realized at the highest
+				// instruction index of the whole loop. Hope this will last for future java
+				// releases.
 
-				// Keep end block of loop
-				// NOTE: This is usually a GOTO-Instruction. Is it required to slice the index?
+				// TODO Usually a loop is compiled by jumping to the end (except for do-while)
+				// for the evaluation of the condition. If the condition is not met, it jumps
+				// back (in the control flow) to the start of the loop. If
+				Integer cycleStartIndex = cycle.get(0);
+				if (controlFlow.getMethodData().getInstructions()[cycleStartIndex - 1] instanceof GotoInstruction) {
+					GotoInstruction gotoInstruction = (GotoInstruction) controlFlow.getMethodData()
+							.getInstructions()[cycleStartIndex - 1];
+					// The jump target must definitively in between the loop begin and end.
+					if (!controlFlow.inSameCycle(gotoInstruction.getLabel(), cycleStartIndex)) {
+						// Coming here means there is a Goto-Instruction directly in front of the loop,
+						// but the jump target is somewhere outside the loop. I cannot image any case
+						// where this is possible.
+						continue;
+					}
+					slice(controlFlow, controlDependency, blockDependency, argumentDependency, dataDependency,
+							dependendInstructions, cycleStartIndex - 1);
+				}
+
+				// So, keep end block of loop
+				// NOTE: This is usually a GOTO- or ConditionalBranch-Instruction. Is it
+				// required to slice the index?
 				Integer cycleEndIndex = cycle.get(cycle.size() - 1);
-				highestIndex = blockDependency.getBlockForIndex(cycleEndIndex).getHighestIndex();
+				Integer highestIndex = blockDependency.getBlockForIndex(cycleEndIndex).getHighestIndex();
 				slice(controlFlow, controlDependency, blockDependency, argumentDependency, dataDependency,
 						dependendInstructions, highestIndex);
 			}
@@ -367,16 +387,6 @@ public class Slicer {
 
 		// Consider data dependencies
 		for (Integer dataDependentIndex : dataDependency.getDataDependencyInstructions(index)) {
-			// TODO Filter for lower data dependencies is not correct in a loop. Try to find
-			// another solution.
-			// Example: LSleep;.p([Ljava/lang/String;)V with InstructionIndexes: [12]
-//			if (dataDependentIndex >= 0) {
-//				IInstruction instruction = getControlFlow().getMethodData().getInstructions()[dataDependentIndex];
-//				if ((instruction instanceof LoadInstruction || instruction instanceof StoreInstruction)
-//						&& dataDependentIndex > index) {
-//					continue;
-//				}
-//			}
 			// If the data dependency is higher and NOT part of the same loop (if any)
 			// => ignore it
 			if (dataDependentIndex > index && !controlFlow.inSameCycle(index, dataDependentIndex)) {
@@ -386,6 +396,8 @@ public class Slicer {
 					dependendInstructions, dataDependentIndex);
 		}
 
+		// TODO Why do we not need to consider control dependencies? Implied by the
+		// argument dependencies?
 //		// Consider control dependencies
 //		for (Integer controlDependentIndex : controlDependency.getControlDependencyInstructions(index)) {
 //			if (controlDependentIndex == ControlDependency.ROOT_INDEX) {
