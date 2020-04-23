@@ -50,8 +50,8 @@ public class DataDependency {
 
 		Set<Integer> dataDependentInstructionSet = new HashSet<>();
 		for (DefaultEdge dataDependencyEdge : edges) {
-			Integer edgeSource = dataDependencyGraph.getEdgeSource(dataDependencyEdge);
-			dataDependentInstructionSet.add(edgeSource);
+//			Integer edgeSource = dataDependencyGraph.getEdgeSource(dataDependencyEdge);
+//			dataDependentInstructionSet.add(edgeSource);
 
 			Integer edgeTarget = dataDependencyGraph.getEdgeTarget(dataDependencyEdge);
 			dataDependentInstructionSet.add(edgeTarget);
@@ -93,6 +93,7 @@ public class DataDependency {
 		return dependencyGraph;
 	}
 
+	// TODO Obsolete parameter varIndexesToRenumber
 	private void buildGraphForVertex(Graph<Integer, DefaultEdge> cfg, boolean hasThis, int methodParameters,
 			int focusedIndex, int instructionIndex, Set<Integer> visitedVertices,
 			Graph<Integer, DefaultEdge> dependencyGraph, Map<Integer, Set<Integer>> varIndexesToRenumber)

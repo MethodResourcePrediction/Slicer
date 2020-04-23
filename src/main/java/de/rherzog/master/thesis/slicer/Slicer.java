@@ -48,8 +48,14 @@ public class Slicer {
 	private ArgumentDependency argumentDependency;
 
 	private boolean verbose = false;
+	private boolean renumberVariableIndexes;
 
 	public Slicer() {
+		this(false);
+	}
+
+	public Slicer(boolean renumberVariableIndexes) {
+		this.renumberVariableIndexes = renumberVariableIndexes;
 		this.instructionIndexes = new HashSet<>();
 	}
 
@@ -74,7 +80,10 @@ public class Slicer {
 		}
 		controlFlow = new ControlFlow(inputJar, methodSignature);
 		// Optional
-//		controlFlow.renumberVarIndexes();
+
+		if (renumberVariableIndexes) {
+			controlFlow.renumberVarIndexes();
+		}
 		return controlFlow;
 	}
 
@@ -572,5 +581,9 @@ public class Slicer {
 
 	public void setVerbose(boolean verbose) {
 		this.verbose = verbose;
+	}
+
+	public void setRenumberVariableIndexes(boolean renumberVariableIndexes) {
+		this.renumberVariableIndexes = renumberVariableIndexes;
 	}
 }

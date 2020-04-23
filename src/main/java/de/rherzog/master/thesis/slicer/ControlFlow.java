@@ -166,7 +166,7 @@ public class ControlFlow {
 		IInstruction[] instructions = getMethodData().getInstructions();
 		for (int index = 0; index < instructions.length; index++) {
 			IInstruction instruction = instructions[index];
-			instructions[index] = Utilities.rewriteVarIndex(varIndexesToRenumber, instruction, index);
+//			instructions[index] = Utilities.rewriteVarIndex(varIndexesToRenumber, instruction, index);
 		}
 	}
 
