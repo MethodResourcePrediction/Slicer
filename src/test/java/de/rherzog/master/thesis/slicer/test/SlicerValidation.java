@@ -33,7 +33,7 @@ public class SlicerValidation {
 		for (; i < 2; i++) {
 			System.currentTimeMillis();
 		}
-		i = 0;
+		i = i + 1;
 		for (; i < 5; i++) {
 			System.currentTimeMillis();
 		}

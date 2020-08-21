@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
@@ -24,8 +23,6 @@ import com.ibm.wala.shrikeBT.IStoreInstruction;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import com.ibm.wala.types.TypeName;
 import com.ibm.wala.util.strings.StringStuff;
-
-import de.rherzog.master.thesis.utils.Utilities;
 
 public class DataDependency {
 	private ControlFlow controlFlow;
@@ -81,23 +78,19 @@ public class DataDependency {
 		// Add a vertex for each instruction index
 		cfg.vertexSet().forEach(v -> dependencyGraph.addVertex(v));
 
-		Map<Integer, Set<Integer>> varIndexesToRenumber = controlFlow.getVarIndexesToRenumber();
-
 		// Add edges to the graph if there is a data dependency. Start with iterating
 		// for each instruction index. For each instruction, we analyze all preceding
 		// instructions if there is a data dependency.
 		for (int instructionIndex : cfg.vertexSet()) {
 			buildGraphForVertex(cfg, hasThis, methodParametersLength, instructionIndex, instructionIndex,
-					new HashSet<>(), dependencyGraph, varIndexesToRenumber);
+					new HashSet<>(), dependencyGraph);
 		}
 		return dependencyGraph;
 	}
 
-	// TODO Obsolete parameter varIndexesToRenumber
 	private void buildGraphForVertex(Graph<Integer, DefaultEdge> cfg, boolean hasThis, int methodParameters,
 			int focusedIndex, int instructionIndex, Set<Integer> visitedVertices,
-			Graph<Integer, DefaultEdge> dependencyGraph, Map<Integer, Set<Integer>> varIndexesToRenumber)
-			throws IOException, InvalidClassFileException {
+			Graph<Integer, DefaultEdge> dependencyGraph) throws IOException, InvalidClassFileException {
 		// We skip already visited instructions
 		if (!visitedVertices.add(instructionIndex)) {
 			return;
@@ -150,13 +143,11 @@ public class DataDependency {
 		}
 
 		// Check instruction dependency against "this"
-		buildGraphForVertex(cfg, hasThis, methodParameters, focusedIndex, -1, visitedVertices, dependencyGraph,
-				varIndexesToRenumber);
+		buildGraphForVertex(cfg, hasThis, methodParameters, focusedIndex, -1, visitedVertices, dependencyGraph);
 		// Check instruction dependency against method parameters
 		for (int methodParameterIndex = 1; methodParameterIndex <= methodParameters; methodParameterIndex++) {
 			int index = -(methodParameterIndex + (hasThis ? 1 : 0));
-			buildGraphForVertex(cfg, hasThis, methodParameters, focusedIndex, index, visitedVertices, dependencyGraph,
-					varIndexesToRenumber);
+			buildGraphForVertex(cfg, hasThis, methodParameters, focusedIndex, index, visitedVertices, dependencyGraph);
 		}
 
 		if (instructionIndex < 0) {
@@ -168,7 +159,7 @@ public class DataDependency {
 		for (DefaultEdge edge : cfg.incomingEdgesOf(instructionIndex)) {
 			int sourceInstructionIndex = cfg.getEdgeSource(edge);
 			buildGraphForVertex(cfg, hasThis, methodParameters, focusedIndex, sourceInstructionIndex, visitedVertices,
-					dependencyGraph, varIndexesToRenumber);
+					dependencyGraph);
 		}
 	}
 

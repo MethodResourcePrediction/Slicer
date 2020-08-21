@@ -48,14 +48,8 @@ public class Slicer {
 	private ArgumentDependency argumentDependency;
 
 	private boolean verbose = false;
-	private boolean renumberVariableIndexes;
 
 	public Slicer() {
-		this(false);
-	}
-
-	public Slicer(boolean renumberVariableIndexes) {
-		this.renumberVariableIndexes = renumberVariableIndexes;
 		this.instructionIndexes = new HashSet<>();
 	}
 
@@ -79,11 +73,6 @@ public class Slicer {
 			return controlFlow;
 		}
 		controlFlow = new ControlFlow(inputJar, methodSignature);
-		// Optional
-
-		if (renumberVariableIndexes) {
-			controlFlow.renumberVarIndexes();
-		}
 		return controlFlow;
 	}
 
@@ -127,7 +116,7 @@ public class Slicer {
 		DataDependency dataDependency = getDataDependency();
 		ArgumentDependency argumentDependency = getArgumentDependency();
 
-		Map<Integer, Set<Integer>> varIndexesToRenumber = controlFlow.getVarIndexesToRenumber();
+		Map<Integer, Set<Integer>> varIndexesToRenumber = argumentDependency.getVarIndexesToRenumber();
 		Set<Integer> instructionsInCycles = controlFlow.getInstructionsInCycles();
 
 		if (showDotPlots) {
@@ -416,6 +405,10 @@ public class Slicer {
 //					dependendInstructions, controlDependentIndex);
 //		}
 	}
+	
+	public Map<Integer, Set<Integer>> getVariableIndexesToRenumber() throws IOException, InvalidClassFileException {
+		return getArgumentDependency().getVarIndexesToRenumber();
+	}
 
 	public String getMethodSummary() throws IOException, InvalidClassFileException {
 		StringBuilder builder = new StringBuilder();
@@ -581,9 +574,5 @@ public class Slicer {
 
 	public void setVerbose(boolean verbose) {
 		this.verbose = verbose;
-	}
-
-	public void setRenumberVariableIndexes(boolean renumberVariableIndexes) {
-		this.renumberVariableIndexes = renumberVariableIndexes;
 	}
 }

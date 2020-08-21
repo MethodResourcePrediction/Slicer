@@ -43,6 +43,7 @@ public class SliceResult {
 	private Set<Integer> instructionIndex, instructionsToKeep, instructionsToIgnore;
 	private Map<Integer, Integer> instructionPopMap;
 	private ControlFlow controlFlow;
+	private ArgumentDependency argumentDependency;
 
 	public SliceResult(String methodSignature, Set<Integer> instructionIndex, Set<Integer> instructionsToKeep,
 			Set<Integer> instructionsToIgnore, Map<Integer, Integer> instructionPopMap, ControlFlow controlFlow) {
@@ -52,6 +53,7 @@ public class SliceResult {
 		this.instructionsToIgnore = instructionsToIgnore;
 		this.instructionPopMap = instructionPopMap;
 		this.controlFlow = controlFlow;
+		this.argumentDependency = new ArgumentDependency(controlFlow);
 	}
 
 	public Set<Integer> getInstructionIndex() {
@@ -242,7 +244,7 @@ public class SliceResult {
 			builder.append("InstructionIndexesToKeep: " + getInstructionsToKeep() + "\n");
 			builder.append("instructionIndexesToIgnore: " + getInstructionsToIgnore() + "\n");
 			builder.append("instructionPopMap: " + getInstructionPopMap() + "\n");
-			builder.append("VarIndexesToRenumber: " + getControlFlow().getVarIndexesToRenumber() + "\n");
+			builder.append("VarIndexesToRenumber: " + argumentDependency.getVarIndexesToRenumber() + "\n");
 
 			IInstruction[] instructions = getControlFlow().getMethodData().getInstructions();
 			int padding = (instructions.length / 10) + 1;

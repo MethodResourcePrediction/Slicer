@@ -39,6 +39,7 @@ import com.ibm.wala.shrikeCT.InvalidClassFileException;
 
 import de.rherzog.master.thesis.slicer.SliceResult;
 import de.rherzog.master.thesis.slicer.Slicer;
+import de.rherzog.master.thesis.utils.Utilities;
 
 public class SlicerTest {
 	private Slicer slicer;
@@ -67,8 +68,7 @@ public class SlicerTest {
 			throw new IOException("Process exited with exit code " + process.exitValue());
 		}
 
-//		slicer = new Slicer();
-		slicer = new Slicer(true);
+		slicer = new Slicer();
 	}
 
 	@Test
@@ -105,11 +105,24 @@ public class SlicerTest {
 	}
 
 	@Test
-	public void testSliceReuseVariableWithoutReinitialization() throws IOException, InvalidClassFileException, InterruptedException {
+	public void testSliceReuseVariableWithReinitialization()
+			throws IOException, InvalidClassFileException, InterruptedException {
+		slicer.setInputJar(slicerValidationJarPath);
+		slicer.setMethodSignature(
+				"Lde.rherzog.master.thesis.slicer.test.SlicerValidation;.reuseVariableWithReinitialization()V");
+		System.out.println(slicer.getMethodSummary());
+		
+		slicer.getVariableIndexesToRenumber();
+	}
+
+	@Test
+	public void testSliceReuseVariableWithoutReinitialization()
+			throws IOException, InvalidClassFileException, InterruptedException {
 		slicer.setInputJar(slicerValidationJarPath);
 		slicer.setMethodSignature(
 				"Lde.rherzog.master.thesis.slicer.test.SlicerValidation;.reuseVariableWithoutReinitialization()V");
 		System.out.println(slicer.getMethodSummary());
+//		Utilities.dotShow(slicer.getControlFlow().dotPrint());
 
 		Map<Set<Integer>, List<IInstruction>> slicerCriterionResultMap = new HashMap<>();
 		slicerCriterionResultMap.put(Set.of(0), Arrays.asList(ConstantInstruction.make(0), PopInstruction.make(1),
