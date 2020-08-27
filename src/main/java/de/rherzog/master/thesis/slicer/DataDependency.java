@@ -16,10 +16,12 @@ import org.jgrapht.io.ExportException;
 import org.jgrapht.io.GraphExporter;
 
 import com.ibm.wala.shrikeBT.ArrayStoreInstruction;
+import com.ibm.wala.shrikeBT.Constants;
 import com.ibm.wala.shrikeBT.DupInstruction;
 import com.ibm.wala.shrikeBT.IInstruction;
 import com.ibm.wala.shrikeBT.ILoadInstruction;
 import com.ibm.wala.shrikeBT.IStoreInstruction;
+import com.ibm.wala.shrikeBT.ReturnInstruction;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import com.ibm.wala.types.TypeName;
 import com.ibm.wala.util.strings.StringStuff;
@@ -114,6 +116,19 @@ public class DataDependency {
 			Integer elementInstructionIndex = poppedStack.pop();
 
 			dependencyGraph.addEdge(focusedIndex, elementInstructionIndex);
+		}
+
+		// Check data dependency for ReturnInstruction using stack simulation
+		if (instructionA instanceof ReturnInstruction) {
+			ReturnInstruction instruction = (ReturnInstruction) instructionA;
+			// Exclude void return type since there cannot be an object on the stack to
+			// which a data dependency could exist
+			if (!instruction.getType().contentEquals(Constants.TYPE_void)) {
+				Stack<Integer> poppedStack = controlFlow.getStackTrace().getPoppedStackAtInstructionIndex(focusedIndex);
+				Integer elementInstructionIndex = poppedStack.pop();
+
+				dependencyGraph.addEdge(focusedIndex, elementInstructionIndex);
+			}
 		}
 
 		// Only data dependencies between different instructions are interesting

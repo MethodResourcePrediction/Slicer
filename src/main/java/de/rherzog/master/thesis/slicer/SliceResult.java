@@ -139,7 +139,7 @@ public class SliceResult {
 //				GetInstruction.make(type, className, fieldName, isStatic)
 				GetInstruction instruction2 = (GetInstruction) instruction;
 				// TODO Check parameters
-				instructionSource = String.format("GetInstruction.make(%s, %s, %s, %s)",
+				instructionSource = String.format("GetInstruction.make(%s, \"%s\", \"%s\", %s)",
 						Utilities.typeToConstantFieldSource(instruction2.getFieldType()), instruction2.getClassType(),
 						instruction2.getFieldName(), instruction2.isStatic());
 			} else if (instruction instanceof InvokeInstruction) {

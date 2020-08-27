@@ -27,6 +27,7 @@ import com.ibm.wala.shrikeBT.ComparisonInstruction;
 import com.ibm.wala.shrikeBT.ConditionalBranchInstruction;
 import com.ibm.wala.shrikeBT.ConstantInstruction;
 import com.ibm.wala.shrikeBT.Constants;
+import com.ibm.wala.shrikeBT.GetInstruction;
 import com.ibm.wala.shrikeBT.GotoInstruction;
 import com.ibm.wala.shrikeBT.IBinaryOpInstruction;
 import com.ibm.wala.shrikeBT.IComparisonInstruction;
@@ -993,7 +994,7 @@ public class SlicerTest {
 		validateSliceResults(slicerCriterionResultMap);
 	}
 
-//	@Test
+	@Test
 	public void testSimpleReturnValue() throws IOException, InvalidClassFileException, InterruptedException,
 			IllegalStateException, DecoderException {
 		slicer.setInputJar(slicerValidationJarPath);
@@ -1010,16 +1011,81 @@ public class SlicerTest {
 		validateSliceResults(slicerCriterionResultMap);
 	}
 
+	@Test
+	public void testSimpleReturnValue2() throws IOException, InvalidClassFileException, InterruptedException,
+			IllegalStateException, DecoderException {
+		slicer.setInputJar(slicerValidationJarPath);
+		slicer.setMethodSignature("Lde.rherzog.master.thesis.slicer.test.SlicerValidation;.simpleReturnValue2()J");
+		System.out.println(slicer.getMethodSummary());
+
+		Map<Set<Integer>, List<IInstruction>> slicerCriterionResultMap = new HashMap<>();
+
+		slicerCriterionResultMap.put(Set.of(0),
+				Arrays.asList(InvokeInstruction.make("()J", "Ljava/lang/System;", "currentTimeMillis", Dispatch.STATIC),
+						ReturnInstruction.make(Constants.TYPE_long)));
+		slicerCriterionResultMap.put(Set.of(1),
+				Arrays.asList(InvokeInstruction.make("()J", "Ljava/lang/System;", "currentTimeMillis", Dispatch.STATIC),
+						ReturnInstruction.make(Constants.TYPE_long)));
+
+		validateSliceResults(slicerCriterionResultMap);
+	}
+
+	@Test
+	public void testSimpleReturnValue3() throws IOException, InvalidClassFileException, InterruptedException,
+			IllegalStateException, DecoderException {
+		slicer.setInputJar(slicerValidationJarPath);
+		slicer.setMethodSignature("Lde.rherzog.master.thesis.slicer.test.SlicerValidation;.simpleReturnValue3()J");
+		System.out.println(slicer.getMethodSummary());
+
+		Map<Set<Integer>, List<IInstruction>> slicerCriterionResultMap = new HashMap<>();
+
+		slicerCriterionResultMap.put(Set.of(0),
+				Arrays.asList(InvokeInstruction.make("()J", "Ljava/lang/System;", "currentTimeMillis", Dispatch.STATIC),
+						PopInstruction.make(2), ConstantInstruction.make(0L),
+						ReturnInstruction.make(Constants.TYPE_long)));
+		slicerCriterionResultMap.put(Set.of(1),
+				Arrays.asList(InvokeInstruction.make("()J", "Ljava/lang/System;", "currentTimeMillis", Dispatch.STATIC),
+						PopInstruction.make(2), ConstantInstruction.make(0L),
+						ReturnInstruction.make(Constants.TYPE_long)));
+		slicerCriterionResultMap.put(Set.of(2),
+				Arrays.asList(ConstantInstruction.make(0L), ReturnInstruction.make(Constants.TYPE_long)));
+		slicerCriterionResultMap.put(Set.of(3),
+				Arrays.asList(ConstantInstruction.make(0L), ReturnInstruction.make(Constants.TYPE_long)));
+
+		validateSliceResults(slicerCriterionResultMap);
+	}
+
+	@Test
+	public void testReturnObject() throws IOException, InvalidClassFileException, InterruptedException,
+			IllegalStateException, DecoderException {
+		slicer.setInputJar(slicerValidationJarPath);
+		slicer.setMethodSignature(
+				"Lde.rherzog.master.thesis.slicer.test.SlicerValidation;.returnObject()Ljava/io/PrintStream;");
+		System.out.println(slicer.getMethodSummary());
+
+		Map<Set<Integer>, List<IInstruction>> slicerCriterionResultMap = new HashMap<>();
+
+		slicerCriterionResultMap.put(Set.of(0),
+				Arrays.asList(GetInstruction.make("Ljava/io/PrintStream;", "Ljava/lang/System;", "out", true),
+						ReturnInstruction.make(Constants.TYPE_Object)));
+		slicerCriterionResultMap.put(Set.of(1),
+				Arrays.asList(GetInstruction.make("Ljava/io/PrintStream;", "Ljava/lang/System;", "out", true),
+						ReturnInstruction.make(Constants.TYPE_Object)));
+
+		validateSliceResults(slicerCriterionResultMap);
+	}
+
 	private void validateSliceResults(Map<Set<Integer>, List<IInstruction>> slicerCriterionResultMap)
 			throws IOException, InvalidClassFileException {
 		// Debug code generation output
-		for (Entry<Set<Integer>, List<IInstruction>> slicerCriterionResultEntry : slicerCriterionResultMap.entrySet()) {
-			Set<Integer> criterionSet = slicerCriterionResultEntry.getKey();
+		for (int instructionIndex = 0; instructionIndex < slicer.getControlFlow().getMethodData()
+				.getInstructions().length; instructionIndex++) {
+			Set<Integer> criterionSet = Set.of(instructionIndex);
 
 			slicer.setInstructionIndexes(criterionSet);
 			SliceResult sliceResult = slicer.getSliceResult();
 
-			System.out.println("slicerCriterionResultMap.put(Set.of(" + criterionSet.iterator().next() + "), "
+			System.out.println("slicerCriterionResultMap.put(Set.of(" + instructionIndex + "), "
 					+ sliceResult.toJavaSource() + ");");
 		}
 

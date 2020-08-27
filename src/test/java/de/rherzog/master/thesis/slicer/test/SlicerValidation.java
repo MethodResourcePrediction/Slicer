@@ -1,5 +1,7 @@
 package de.rherzog.master.thesis.slicer.test;
 
+import java.io.PrintStream;
+
 import de.rherzog.master.thesis.slicer.instrumenter.export.Nothing;
 
 public class SlicerValidation {
@@ -67,5 +69,19 @@ public class SlicerValidation {
 
 	public int simpleReturnValue() {
 		return 0;
+	}
+
+	public long simpleReturnValue2() {
+		return System.currentTimeMillis();
+	}
+
+	public long simpleReturnValue3() {
+		// Something that could be sliced
+		System.currentTimeMillis();
+		return 0L;
+	}
+
+	public PrintStream returnObject() {
+		return System.out;
 	}
 }

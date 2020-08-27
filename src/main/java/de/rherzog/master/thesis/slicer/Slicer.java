@@ -189,9 +189,18 @@ public class Slicer {
 			BlockDependency blockDependency, ArgumentDependency argumentDependency, DataDependency dataDependency)
 			throws IOException, InvalidClassFileException {
 		IInstruction[] instructions = controlFlow.getMethodData().getInstructions();
+		Set<Integer> indexesToKeep = new HashSet<>();
+
+		// Keep the return values
+		for (int index = 0; index < instructions.length; index++) {
+			IInstruction instruction = instructions[index];
+			if (instruction instanceof ReturnInstruction) {
+				slice(controlFlow, controlDependency, blockDependency, argumentDependency, dataDependency,
+						indexesToKeep, index);
+			}
+		}
 
 		// Add all provided indexes to the slice
-		Set<Integer> indexesToKeep = new HashSet<>();
 		for (int instructionIndex : getInstructionIndexes()) {
 			slice(controlFlow, controlDependency, blockDependency, argumentDependency, dataDependency, indexesToKeep,
 					instructionIndex);

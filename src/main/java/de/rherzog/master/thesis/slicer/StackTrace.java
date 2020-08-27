@@ -72,7 +72,7 @@ public class StackTrace implements Iterable<Entry<Integer, Stack<Integer>>> {
 		// Iterate all instructions and build the control flow
 		// TODO Can we simply go though all instructions from front to end
 		// or should it follow the control flow?
-		for (int index = 0; index < instructions.length - 1; index++) {
+		for (int index = 0; index < instructions.length; index++) {
 			IInstruction instruction = instructions[index];
 
 			int pushedElementCount = Utilities.getPushedElementCount(instruction);
