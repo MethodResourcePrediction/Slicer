@@ -234,7 +234,7 @@ public class SliceResult {
 			}
 			javaSource.append("\n");
 		}
-		javaSource.append(");\n");
+		javaSource.append(")");
 		return javaSource.toString();
 	}
 

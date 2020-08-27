@@ -3,6 +3,10 @@ package de.rherzog.master.thesis.slicer.test;
 import de.rherzog.master.thesis.slicer.instrumenter.export.Nothing;
 
 public class SlicerValidation {
+	// DO NOT CHANGE THESE METHODS
+	//
+	// Used for slice validation tests
+
 	public void simpleMethodCall() {
 		System.currentTimeMillis();
 	}
@@ -61,7 +65,7 @@ public class SlicerValidation {
 		}
 	}
 
-	public void twoWordPop() {
-		System.currentTimeMillis();
+	public int simpleReturnValue() {
+		return 0;
 	}
 }

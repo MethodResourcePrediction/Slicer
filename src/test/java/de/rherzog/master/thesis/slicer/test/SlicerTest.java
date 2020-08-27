@@ -1,5 +1,7 @@
 package de.rherzog.master.thesis.slicer.test;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -7,7 +9,6 @@ import java.io.StringWriter;
 import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -16,9 +17,10 @@ import java.util.Set;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
 
 import com.ibm.wala.shrikeBT.BinaryOpInstruction;
 import com.ibm.wala.shrikeBT.ComparisonInstruction;
@@ -40,11 +42,12 @@ import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import de.rherzog.master.thesis.slicer.SliceResult;
 import de.rherzog.master.thesis.slicer.Slicer;
 
+@TestInstance(Lifecycle.PER_CLASS)
 public class SlicerTest {
 	private Slicer slicer;
 	private String slicerValidationJarPath;
 
-	@Before
+	@BeforeEach
 	public void setUp() throws Exception {
 		// Get path to java class
 		String classFilePath = SlicerTest.class.getProtectionDomain().getCodeSource().getLocation().getPath();
@@ -71,36 +74,125 @@ public class SlicerTest {
 	}
 
 	@Test
-	public void testSimpleSlice() throws IOException, InvalidClassFileException, InterruptedException,
+	public void testSimpleMethodCall() throws IOException, InvalidClassFileException, InterruptedException,
 			IllegalStateException, DecoderException {
-		slicer.setInputJar(slicerValidationJarPath); // Path to your application.jar
+		slicer.setInputJar(slicerValidationJarPath);
+		slicer.setMethodSignature("Lde.rherzog.master.thesis.slicer.test.SlicerValidation;.simpleMethodCall()V");
+		System.out.println(slicer.getMethodSummary());
+
+		Map<Set<Integer>, List<IInstruction>> slicerCriterionResultMap = new HashMap<>();
+
+		slicerCriterionResultMap.put(Set.of(0),
+				Arrays.asList(InvokeInstruction.make("()J", "Ljava/lang/System;", "currentTimeMillis", Dispatch.STATIC),
+						PopInstruction.make(2), ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(1),
+				Arrays.asList(InvokeInstruction.make("()J", "Ljava/lang/System;", "currentTimeMillis", Dispatch.STATIC),
+						PopInstruction.make(2), ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(2), Arrays.asList(ReturnInstruction.make(Constants.TYPE_void)));
+
+		validateSliceResults(slicerCriterionResultMap);
+	}
+
+	@Test
+	public void testSimpleMethodCallWithParameter() throws IOException, InvalidClassFileException, InterruptedException,
+			IllegalStateException, DecoderException {
+		slicer.setInputJar(slicerValidationJarPath);
+		slicer.setMethodSignature(
+				"Lde.rherzog.master.thesis.slicer.test.SlicerValidation;.simpleMethodCallWithParameter(J)V");
+		System.out.println(slicer.getMethodSummary());
+
+		Map<Set<Integer>, List<IInstruction>> slicerCriterionResultMap = new HashMap<>();
+
+		slicerCriterionResultMap.put(Set.of(0), Arrays.asList(LoadInstruction.make(Constants.TYPE_long, 1),
+				PopInstruction.make(2), ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(1),
+				Arrays.asList(LoadInstruction.make(Constants.TYPE_long, 1),
+						InvokeInstruction.make("(J)V", "Ljava/lang/Thread;", "sleep", Dispatch.STATIC),
+						ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(2), Arrays.asList(ReturnInstruction.make(Constants.TYPE_void)));
+
+		validateSliceResults(slicerCriterionResultMap);
+	}
+
+	@Test
+	public void testSimpleMethodCallAndLoopWithParameter() throws IOException, InvalidClassFileException,
+			InterruptedException, IllegalStateException, DecoderException {
+		slicer.setInputJar(slicerValidationJarPath);
 		slicer.setMethodSignature(
 				"Lde.rherzog.master.thesis.slicer.test.SlicerValidation;.simpleMethodCallAndLoopWithParameter(J)V");
 		System.out.println(slicer.getMethodSummary());
 
-		// Define you criterion's from some instruction indexes
-		// Index ... here is:
-		List<Integer> instructionIndexes = Arrays.asList(5);
-		Set<Integer> criterionSet = new HashSet<>(instructionIndexes);
+		Map<Set<Integer>, List<IInstruction>> slicerCriterionResultMap = new HashMap<>();
 
-		slicer.setInstructionIndexes(criterionSet);
+		slicerCriterionResultMap.put(Set.of(0), Arrays.asList(ConstantInstruction.make(0), PopInstruction.make(1),
+				ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(1), Arrays.asList(ConstantInstruction.make(0),
+				StoreInstruction.make(Constants.TYPE_int, 3), ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(2),
+				Arrays.asList(ConstantInstruction.make(0), StoreInstruction.make(Constants.TYPE_int, 3),
+						LoadInstruction.make(Constants.TYPE_int, 3), PopInstruction.make(1),
+						LoadInstruction.make(Constants.TYPE_int, 3), ConstantInstruction.make(1),
+						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
+						StoreInstruction.make(Constants.TYPE_int, 3), GotoInstruction.make(2),
+						ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(3), Arrays.asList(ConstantInstruction.make(5), PopInstruction.make(1),
+				ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(4),
+				Arrays.asList(ConstantInstruction.make(0), StoreInstruction.make(Constants.TYPE_int, 3),
+						LoadInstruction.make(Constants.TYPE_int, 3), ConstantInstruction.make(5),
+						ConditionalBranchInstruction.make(Constants.TYPE_int, ConditionalBranchInstruction.Operator.GE,
+								12),
+						LoadInstruction.make(Constants.TYPE_int, 3), ConstantInstruction.make(1),
+						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
+						StoreInstruction.make(Constants.TYPE_int, 3), GotoInstruction.make(2),
+						ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(5),
+				Arrays.asList(
+						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
+								"doNothing", Dispatch.STATIC),
+						LoadInstruction.make(Constants.TYPE_long, 1), PopInstruction.make(2), GotoInstruction.make(2),
+						ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(6),
+				Arrays.asList(
+						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
+								"doNothing", Dispatch.STATIC),
+						LoadInstruction.make(Constants.TYPE_long, 1),
+						InvokeInstruction.make("(J)V", "Ljava/lang/Thread;", "sleep", Dispatch.STATIC),
+						GotoInstruction.make(2), ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(7),
+				Arrays.asList(ConstantInstruction.make(0), StoreInstruction.make(Constants.TYPE_int, 3),
+						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
+								"doNothing", Dispatch.STATIC),
+						LoadInstruction.make(Constants.TYPE_int, 3), ConstantInstruction.make(1),
+						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
+						StoreInstruction.make(Constants.TYPE_int, 3), GotoInstruction.make(2),
+						ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(8), Arrays.asList(ConstantInstruction.make(1), PopInstruction.make(1),
+				ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(9),
+				Arrays.asList(ConstantInstruction.make(0), StoreInstruction.make(Constants.TYPE_int, 3),
+						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
+								"doNothing", Dispatch.STATIC),
+						LoadInstruction.make(Constants.TYPE_int, 3), ConstantInstruction.make(1),
+						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
+						StoreInstruction.make(Constants.TYPE_int, 3), GotoInstruction.make(2),
+						ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(10),
+				Arrays.asList(ConstantInstruction.make(0), StoreInstruction.make(Constants.TYPE_int, 3),
+						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
+								"doNothing", Dispatch.STATIC),
+						LoadInstruction.make(Constants.TYPE_int, 3), ConstantInstruction.make(1),
+						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
+						StoreInstruction.make(Constants.TYPE_int, 3), GotoInstruction.make(2),
+						ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(11),
+				Arrays.asList(
+						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
+								"doNothing", Dispatch.STATIC),
+						GotoInstruction.make(2), ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(12), Arrays.asList(ReturnInstruction.make(Constants.TYPE_void)));
 
-		// Variant 1: Get the instruction slice as a list of instructions
-		SliceResult sliceResult = slicer.getSliceResult();
-		List<IInstruction> slice = sliceResult.getSlice();
-		System.out.println("=== Sliced method ===");
-
-		int index = 0;
-		for (IInstruction instruction : slice) {
-			System.out.println(index + ": " + instruction.toString());
-			index++;
-		}
-
-		// Variant 2: Generate a new jar with all dependencies from your original one,
-		// but with a sliced method specified above.
-		// The parameter is false by default. Given true shows all method graphs
-//		String slicedOutputJar = slicer.makeSlicedFile(true);
-//		System.out.println("Sliced output jar path" + slicedOutputJar);
+		validateSliceResults(slicerCriterionResultMap);
 	}
 
 	@Test
@@ -118,295 +210,198 @@ public class SlicerTest {
 		slicerCriterionResultMap.put(Set.of(1), Arrays.asList(ConstantInstruction.make(0),
 				StoreInstruction.make(Constants.TYPE_int, 1), ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(2),
-				Arrays.asList(GotoInstruction.make(9), InvokeInstruction.make("()V",
-						"Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;", "doNothing", Dispatch.STATIC),
-						ReturnInstruction.make(Constants.TYPE_void)));
-		slicerCriterionResultMap.put(Set.of(3),
 				Arrays.asList(ConstantInstruction.make(0), StoreInstruction.make(Constants.TYPE_int, 1),
-						GotoInstruction.make(9),
-						InvokeInstruction.make("()J", "Ljava/lang/System;", "currentTimeMillis", Dispatch.STATIC),
-						PopInstruction.make(2), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(1),
-						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(2), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 3),
-						ReturnInstruction.make(Constants.TYPE_void)));
-		slicerCriterionResultMap.put(Set.of(4),
-				Arrays.asList(ConstantInstruction.make(0), StoreInstruction.make(Constants.TYPE_int, 1),
-						GotoInstruction.make(9),
-						InvokeInstruction.make("()J", "Ljava/lang/System;", "currentTimeMillis", Dispatch.STATIC),
-						PopInstruction.make(2), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(1),
-						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(2), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 3),
-						ReturnInstruction.make(Constants.TYPE_void)));
-		slicerCriterionResultMap.put(Set.of(5),
-				Arrays.asList(ConstantInstruction.make(0), StoreInstruction.make(Constants.TYPE_int, 1),
-						GotoInstruction.make(9),
-						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
-								"doNothing", Dispatch.STATIC),
+						LoadInstruction.make(Constants.TYPE_int, 1), PopInstruction.make(1),
 						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
 						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(2), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 3),
+						StoreInstruction.make(Constants.TYPE_int, 1), GotoInstruction.make(2),
 						ReturnInstruction.make(Constants.TYPE_void)));
-		slicerCriterionResultMap.put(Set.of(6), Arrays.asList(ConstantInstruction.make(1), PopInstruction.make(1),
+		slicerCriterionResultMap.put(Set.of(3), Arrays.asList(ConstantInstruction.make(2), PopInstruction.make(1),
 				ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(4), Arrays.asList(ConstantInstruction.make(0),
+				StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
+				ConstantInstruction.make(2),
+				ConditionalBranchInstruction.make(Constants.TYPE_int, ConditionalBranchInstruction.Operator.GE, 12),
+				LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
+				BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
+				StoreInstruction.make(Constants.TYPE_int, 1), GotoInstruction.make(2), InvokeInstruction.make("()V",
+						"Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;", "doNothing", Dispatch.STATIC),
+				ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(5),
+				Arrays.asList(
+						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
+								"doNothing", Dispatch.STATIC),
+						InvokeInstruction.make("()J", "Ljava/lang/System;", "currentTimeMillis", Dispatch.STATIC),
+						PopInstruction.make(2), GotoInstruction.make(2), ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(6),
+				Arrays.asList(
+						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
+								"doNothing", Dispatch.STATIC),
+						InvokeInstruction.make("()J", "Ljava/lang/System;", "currentTimeMillis", Dispatch.STATIC),
+						PopInstruction.make(2), GotoInstruction.make(2), ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(7),
 				Arrays.asList(ConstantInstruction.make(0), StoreInstruction.make(Constants.TYPE_int, 1),
-						GotoInstruction.make(9),
 						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
 								"doNothing", Dispatch.STATIC),
 						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
 						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(2), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 3),
+						StoreInstruction.make(Constants.TYPE_int, 1), GotoInstruction.make(2),
 						ReturnInstruction.make(Constants.TYPE_void)));
-		slicerCriterionResultMap.put(Set.of(8),
-				Arrays.asList(ConstantInstruction.make(0), StoreInstruction.make(Constants.TYPE_int, 1),
-						GotoInstruction.make(9),
-						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
-								"doNothing", Dispatch.STATIC),
-						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
-						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(2), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 3),
-						ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(8), Arrays.asList(ConstantInstruction.make(1), PopInstruction.make(1),
+				ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(9),
 				Arrays.asList(ConstantInstruction.make(0), StoreInstruction.make(Constants.TYPE_int, 1),
-						GotoInstruction.make(9),
 						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
 								"doNothing", Dispatch.STATIC),
 						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
 						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(2), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 3),
+						StoreInstruction.make(Constants.TYPE_int, 1), GotoInstruction.make(2),
 						ReturnInstruction.make(Constants.TYPE_void)));
-		slicerCriterionResultMap.put(Set.of(10), Arrays.asList(ConstantInstruction.make(2), PopInstruction.make(1),
-				ReturnInstruction.make(Constants.TYPE_void)));
-		slicerCriterionResultMap.put(Set.of(11),
+		slicerCriterionResultMap.put(Set.of(10),
 				Arrays.asList(ConstantInstruction.make(0), StoreInstruction.make(Constants.TYPE_int, 1),
-						GotoInstruction.make(9),
 						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
 								"doNothing", Dispatch.STATIC),
 						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
 						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(2), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 3),
+						StoreInstruction.make(Constants.TYPE_int, 1), GotoInstruction.make(2),
 						ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(11),
+				Arrays.asList(
+						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
+								"doNothing", Dispatch.STATIC),
+						GotoInstruction.make(2), ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(12),
 				Arrays.asList(ConstantInstruction.make(0), StoreInstruction.make(Constants.TYPE_int, 1),
-						GotoInstruction.make(9),
 						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
 								"doNothing", Dispatch.STATIC),
 						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
 						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(2),
-						ConditionalBranchInstruction.make(Constants.TYPE_int, ConditionalBranchInstruction.Operator.LT,
-								3),
+						StoreInstruction.make(Constants.TYPE_int, 1), GotoInstruction.make(2),
 						LoadInstruction.make(Constants.TYPE_int, 1), PopInstruction.make(1),
 						ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(13), Arrays.asList(ConstantInstruction.make(1), PopInstruction.make(1),
 				ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(14),
 				Arrays.asList(ConstantInstruction.make(0), StoreInstruction.make(Constants.TYPE_int, 1),
-						GotoInstruction.make(9),
 						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
 								"doNothing", Dispatch.STATIC),
 						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
 						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(2),
-						ConditionalBranchInstruction.make(Constants.TYPE_int, ConditionalBranchInstruction.Operator.LT,
-								3),
+						StoreInstruction.make(Constants.TYPE_int, 1), GotoInstruction.make(2),
 						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
 						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
 						PopInstruction.make(1), ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(15),
 				Arrays.asList(ConstantInstruction.make(0), StoreInstruction.make(Constants.TYPE_int, 1),
-						GotoInstruction.make(9),
 						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
 								"doNothing", Dispatch.STATIC),
 						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
 						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(2),
-						ConditionalBranchInstruction.make(Constants.TYPE_int, ConditionalBranchInstruction.Operator.LT,
-								3),
+						StoreInstruction.make(Constants.TYPE_int, 1), GotoInstruction.make(2),
 						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
 						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
 						StoreInstruction.make(Constants.TYPE_int, 1), ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(16),
-				Arrays.asList(GotoInstruction.make(23), InvokeInstruction.make("()V",
-						"Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;", "doNothing", Dispatch.STATIC),
-						ReturnInstruction.make(Constants.TYPE_void)));
-		slicerCriterionResultMap.put(Set.of(17),
 				Arrays.asList(ConstantInstruction.make(0), StoreInstruction.make(Constants.TYPE_int, 1),
-						GotoInstruction.make(9),
 						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
 								"doNothing", Dispatch.STATIC),
 						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
 						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(2),
-						ConditionalBranchInstruction.make(Constants.TYPE_int, ConditionalBranchInstruction.Operator.LT,
-								3),
+						StoreInstruction.make(Constants.TYPE_int, 1), GotoInstruction.make(2),
 						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
 						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_int, 1), GotoInstruction.make(23),
-						InvokeInstruction.make("()J", "Ljava/lang/System;", "currentTimeMillis", Dispatch.STATIC),
-						PopInstruction.make(2), LoadInstruction.make(Constants.TYPE_int, 1),
+						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
+						PopInstruction.make(1), LoadInstruction.make(Constants.TYPE_int, 1),
 						ConstantInstruction.make(1),
 						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(5), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 17),
+						StoreInstruction.make(Constants.TYPE_int, 1), GotoInstruction.make(16),
 						ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(17), Arrays.asList(ConstantInstruction.make(5), PopInstruction.make(1),
+				ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(18),
 				Arrays.asList(ConstantInstruction.make(0), StoreInstruction.make(Constants.TYPE_int, 1),
-						GotoInstruction.make(9),
 						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
 								"doNothing", Dispatch.STATIC),
 						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
 						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(2),
-						ConditionalBranchInstruction.make(Constants.TYPE_int, ConditionalBranchInstruction.Operator.LT,
-								3),
+						StoreInstruction.make(Constants.TYPE_int, 1), GotoInstruction.make(2),
 						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
 						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_int, 1), GotoInstruction.make(23),
-						InvokeInstruction.make("()J", "Ljava/lang/System;", "currentTimeMillis", Dispatch.STATIC),
-						PopInstruction.make(2), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(1),
-						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
 						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(5), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 17),
+						ConstantInstruction.make(5),
+						ConditionalBranchInstruction.make(Constants.TYPE_int, ConditionalBranchInstruction.Operator.GE,
+								26),
+						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
+						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
+						StoreInstruction.make(Constants.TYPE_int, 1), GotoInstruction.make(16),
 						ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(19),
-				Arrays.asList(ConstantInstruction.make(0), StoreInstruction.make(Constants.TYPE_int, 1),
-						GotoInstruction.make(9),
+				Arrays.asList(
 						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
 								"doNothing", Dispatch.STATIC),
-						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
-						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(2),
-						ConditionalBranchInstruction.make(Constants.TYPE_int, ConditionalBranchInstruction.Operator.LT,
-								3),
-						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
-						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_int, 1), GotoInstruction.make(23),
+						InvokeInstruction.make("()J", "Ljava/lang/System;", "currentTimeMillis", Dispatch.STATIC),
+						PopInstruction.make(2), GotoInstruction.make(16), ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(20),
+				Arrays.asList(
 						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
 								"doNothing", Dispatch.STATIC),
-						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
-						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(5), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 17),
-						ReturnInstruction.make(Constants.TYPE_void)));
-		slicerCriterionResultMap.put(Set.of(20), Arrays.asList(ConstantInstruction.make(1), PopInstruction.make(1),
-				ReturnInstruction.make(Constants.TYPE_void)));
+						InvokeInstruction.make("()J", "Ljava/lang/System;", "currentTimeMillis", Dispatch.STATIC),
+						PopInstruction.make(2), GotoInstruction.make(16), ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(21),
 				Arrays.asList(ConstantInstruction.make(0), StoreInstruction.make(Constants.TYPE_int, 1),
-						GotoInstruction.make(9),
 						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
 								"doNothing", Dispatch.STATIC),
 						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
 						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(2),
-						ConditionalBranchInstruction.make(Constants.TYPE_int, ConditionalBranchInstruction.Operator.LT,
-								3),
+						StoreInstruction.make(Constants.TYPE_int, 1), GotoInstruction.make(2),
 						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
 						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_int, 1), GotoInstruction.make(23),
+						StoreInstruction.make(Constants.TYPE_int, 1),
 						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
 								"doNothing", Dispatch.STATIC),
 						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
 						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(5), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 17),
+						StoreInstruction.make(Constants.TYPE_int, 1), GotoInstruction.make(16),
 						ReturnInstruction.make(Constants.TYPE_void)));
-		slicerCriterionResultMap.put(Set.of(22),
-				Arrays.asList(ConstantInstruction.make(0), StoreInstruction.make(Constants.TYPE_int, 1),
-						GotoInstruction.make(9),
-						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
-								"doNothing", Dispatch.STATIC),
-						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
-						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(2),
-						ConditionalBranchInstruction.make(Constants.TYPE_int, ConditionalBranchInstruction.Operator.LT,
-								3),
-						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
-						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_int, 1), GotoInstruction.make(23),
-						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
-								"doNothing", Dispatch.STATIC),
-						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
-						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(5), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 17),
-						ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(22), Arrays.asList(ConstantInstruction.make(1), PopInstruction.make(1),
+				ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(23),
 				Arrays.asList(ConstantInstruction.make(0), StoreInstruction.make(Constants.TYPE_int, 1),
-						GotoInstruction.make(9),
 						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
 								"doNothing", Dispatch.STATIC),
 						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
 						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(2),
-						ConditionalBranchInstruction.make(Constants.TYPE_int, ConditionalBranchInstruction.Operator.LT,
-								3),
+						StoreInstruction.make(Constants.TYPE_int, 1), GotoInstruction.make(2),
 						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
 						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_int, 1), GotoInstruction.make(23),
+						StoreInstruction.make(Constants.TYPE_int, 1),
 						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
 								"doNothing", Dispatch.STATIC),
 						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
 						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(5), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 17),
+						StoreInstruction.make(Constants.TYPE_int, 1), GotoInstruction.make(16),
 						ReturnInstruction.make(Constants.TYPE_void)));
-		slicerCriterionResultMap.put(Set.of(24), Arrays.asList(ConstantInstruction.make(5), PopInstruction.make(1),
-				ReturnInstruction.make(Constants.TYPE_void)));
-		slicerCriterionResultMap.put(Set.of(25),
+		slicerCriterionResultMap.put(Set.of(24),
 				Arrays.asList(ConstantInstruction.make(0), StoreInstruction.make(Constants.TYPE_int, 1),
-						GotoInstruction.make(9),
 						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
 								"doNothing", Dispatch.STATIC),
 						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
 						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(2),
-						ConditionalBranchInstruction.make(Constants.TYPE_int, ConditionalBranchInstruction.Operator.LT,
-								3),
+						StoreInstruction.make(Constants.TYPE_int, 1), GotoInstruction.make(2),
 						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
 						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_int, 1), GotoInstruction.make(23),
+						StoreInstruction.make(Constants.TYPE_int, 1),
 						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
 								"doNothing", Dispatch.STATIC),
 						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
 						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(5), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 17),
+						StoreInstruction.make(Constants.TYPE_int, 1), GotoInstruction.make(16),
 						ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(25),
+				Arrays.asList(
+						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
+								"doNothing", Dispatch.STATIC),
+						GotoInstruction.make(16), ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(26), Arrays.asList(ReturnInstruction.make(Constants.TYPE_void)));
 
 		validateSliceResults(slicerCriterionResultMap);
@@ -427,386 +422,232 @@ public class SlicerTest {
 		slicerCriterionResultMap.put(Set.of(1), Arrays.asList(ConstantInstruction.make(0L),
 				StoreInstruction.make(Constants.TYPE_long, 1), ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(2),
-				Arrays.asList(GotoInstruction.make(9), InvokeInstruction.make("()V",
-						"Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;", "doNothing", Dispatch.STATIC),
-						ReturnInstruction.make(Constants.TYPE_void)));
-		slicerCriterionResultMap.put(Set.of(3),
 				Arrays.asList(ConstantInstruction.make(0L), StoreInstruction.make(Constants.TYPE_long, 1),
-						GotoInstruction.make(9),
-						InvokeInstruction.make("()J", "Ljava/lang/System;", "currentTimeMillis", Dispatch.STATIC),
-						PopInstruction.make(2), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(1L),
+						LoadInstruction.make(Constants.TYPE_long, 1), PopInstruction.make(2),
+						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
 						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(2L),
-						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 3),
+						StoreInstruction.make(Constants.TYPE_long, 1), GotoInstruction.make(2),
 						ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(3), Arrays.asList(ConstantInstruction.make(2L), PopInstruction.make(2),
+				ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(4),
 				Arrays.asList(ConstantInstruction.make(0L), StoreInstruction.make(Constants.TYPE_long, 1),
-						GotoInstruction.make(9),
-						InvokeInstruction.make("()J", "Ljava/lang/System;", "currentTimeMillis", Dispatch.STATIC),
-						PopInstruction.make(2), LoadInstruction.make(Constants.TYPE_long, 1),
+						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(2L),
+						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
+						PopInstruction.make(1), LoadInstruction.make(Constants.TYPE_long, 1),
 						ConstantInstruction.make(1L),
 						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(2L),
-						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 3),
+						StoreInstruction.make(Constants.TYPE_long, 1), GotoInstruction.make(2),
 						ReturnInstruction.make(Constants.TYPE_void)));
-		slicerCriterionResultMap.put(Set.of(5),
-				Arrays.asList(ConstantInstruction.make(0L), StoreInstruction.make(Constants.TYPE_long, 1),
-						GotoInstruction.make(9),
-						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
-								"doNothing", Dispatch.STATIC),
-						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
-						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(2L),
-						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 3),
-						ReturnInstruction.make(Constants.TYPE_void)));
-		slicerCriterionResultMap.put(Set.of(6), Arrays.asList(ConstantInstruction.make(1L), PopInstruction.make(2),
+		slicerCriterionResultMap.put(Set.of(5), Arrays.asList(ConstantInstruction.make(0), PopInstruction.make(1),
+				ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(6), Arrays.asList(ConstantInstruction.make(0L),
+				StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
+				ConstantInstruction.make(2L),
+				ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
+				ConstantInstruction.make(0),
+				ConditionalBranchInstruction.make(Constants.TYPE_int, ConditionalBranchInstruction.Operator.GE, 14),
+				LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
+				BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
+				StoreInstruction.make(Constants.TYPE_long, 1), GotoInstruction.make(2), InvokeInstruction.make("()V",
+						"Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;", "doNothing", Dispatch.STATIC),
 				ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(7),
-				Arrays.asList(ConstantInstruction.make(0L), StoreInstruction.make(Constants.TYPE_long, 1),
-						GotoInstruction.make(9),
+				Arrays.asList(
 						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
 								"doNothing", Dispatch.STATIC),
-						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
-						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(2L),
-						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 3),
-						ReturnInstruction.make(Constants.TYPE_void)));
+						InvokeInstruction.make("()J", "Ljava/lang/System;", "currentTimeMillis", Dispatch.STATIC),
+						PopInstruction.make(2), GotoInstruction.make(2), ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(8),
-				Arrays.asList(ConstantInstruction.make(0L), StoreInstruction.make(Constants.TYPE_long, 1),
-						GotoInstruction.make(9),
+				Arrays.asList(
 						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
 								"doNothing", Dispatch.STATIC),
-						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
-						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(2L),
-						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 3),
-						ReturnInstruction.make(Constants.TYPE_void)));
+						InvokeInstruction.make("()J", "Ljava/lang/System;", "currentTimeMillis", Dispatch.STATIC),
+						PopInstruction.make(2), GotoInstruction.make(2), ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(9),
 				Arrays.asList(ConstantInstruction.make(0L), StoreInstruction.make(Constants.TYPE_long, 1),
-						GotoInstruction.make(9),
 						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
 								"doNothing", Dispatch.STATIC),
 						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
 						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(2L),
-						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 3),
+						StoreInstruction.make(Constants.TYPE_long, 1), GotoInstruction.make(2),
 						ReturnInstruction.make(Constants.TYPE_void)));
-		slicerCriterionResultMap.put(Set.of(10), Arrays.asList(ConstantInstruction.make(2L), PopInstruction.make(2),
+		slicerCriterionResultMap.put(Set.of(10), Arrays.asList(ConstantInstruction.make(1L), PopInstruction.make(2),
 				ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(11),
 				Arrays.asList(ConstantInstruction.make(0L), StoreInstruction.make(Constants.TYPE_long, 1),
-						GotoInstruction.make(9),
 						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
 								"doNothing", Dispatch.STATIC),
 						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
 						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(2L),
-						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 3),
+						StoreInstruction.make(Constants.TYPE_long, 1), GotoInstruction.make(2),
 						ReturnInstruction.make(Constants.TYPE_void)));
-		slicerCriterionResultMap.put(Set.of(12), Arrays.asList(ConstantInstruction.make(0), PopInstruction.make(1),
-				ReturnInstruction.make(Constants.TYPE_void)));
-		slicerCriterionResultMap.put(Set.of(13),
+		slicerCriterionResultMap.put(Set.of(12),
 				Arrays.asList(ConstantInstruction.make(0L), StoreInstruction.make(Constants.TYPE_long, 1),
-						GotoInstruction.make(9),
 						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
 								"doNothing", Dispatch.STATIC),
 						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
 						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(2L),
-						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 3),
+						StoreInstruction.make(Constants.TYPE_long, 1), GotoInstruction.make(2),
 						ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(13),
+				Arrays.asList(
+						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
+								"doNothing", Dispatch.STATIC),
+						GotoInstruction.make(2), ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(14),
 				Arrays.asList(ConstantInstruction.make(0L), StoreInstruction.make(Constants.TYPE_long, 1),
-						GotoInstruction.make(9),
 						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
 								"doNothing", Dispatch.STATIC),
 						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
 						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(2L),
-						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0),
-						ConditionalBranchInstruction.make(Constants.TYPE_int, ConditionalBranchInstruction.Operator.LT,
-								3),
+						StoreInstruction.make(Constants.TYPE_long, 1), GotoInstruction.make(2),
 						LoadInstruction.make(Constants.TYPE_long, 1), PopInstruction.make(2),
 						ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(15), Arrays.asList(ConstantInstruction.make(1L), PopInstruction.make(2),
 				ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(16),
 				Arrays.asList(ConstantInstruction.make(0L), StoreInstruction.make(Constants.TYPE_long, 1),
-						GotoInstruction.make(9),
 						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
 								"doNothing", Dispatch.STATIC),
 						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
 						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(2L),
-						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0),
-						ConditionalBranchInstruction.make(Constants.TYPE_int, ConditionalBranchInstruction.Operator.LT,
-								3),
+						StoreInstruction.make(Constants.TYPE_long, 1), GotoInstruction.make(2),
 						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
 						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
 						PopInstruction.make(2), ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(17),
 				Arrays.asList(ConstantInstruction.make(0L), StoreInstruction.make(Constants.TYPE_long, 1),
-						GotoInstruction.make(9),
 						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
 								"doNothing", Dispatch.STATIC),
 						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
 						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(2L),
-						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0),
-						ConditionalBranchInstruction.make(Constants.TYPE_int, ConditionalBranchInstruction.Operator.LT,
-								3),
+						StoreInstruction.make(Constants.TYPE_long, 1), GotoInstruction.make(2),
 						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
 						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
 						StoreInstruction.make(Constants.TYPE_long, 1), ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(18),
-				Arrays.asList(GotoInstruction.make(25), InvokeInstruction.make("()V",
-						"Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;", "doNothing", Dispatch.STATIC),
-						ReturnInstruction.make(Constants.TYPE_void)));
-		slicerCriterionResultMap.put(Set.of(19),
 				Arrays.asList(ConstantInstruction.make(0L), StoreInstruction.make(Constants.TYPE_long, 1),
-						GotoInstruction.make(9),
 						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
 								"doNothing", Dispatch.STATIC),
 						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
 						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(2L),
-						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0),
-						ConditionalBranchInstruction.make(Constants.TYPE_int, ConditionalBranchInstruction.Operator.LT,
-								3),
+						StoreInstruction.make(Constants.TYPE_long, 1), GotoInstruction.make(2),
 						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
 						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), GotoInstruction.make(25),
-						InvokeInstruction.make("()J", "Ljava/lang/System;", "currentTimeMillis", Dispatch.STATIC),
+						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
 						PopInstruction.make(2), LoadInstruction.make(Constants.TYPE_long, 1),
 						ConstantInstruction.make(1L),
 						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(5L),
-						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 19),
+						StoreInstruction.make(Constants.TYPE_long, 1), GotoInstruction.make(18),
 						ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(19), Arrays.asList(ConstantInstruction.make(5L), PopInstruction.make(2),
+				ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(20),
 				Arrays.asList(ConstantInstruction.make(0L), StoreInstruction.make(Constants.TYPE_long, 1),
-						GotoInstruction.make(9),
 						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
 								"doNothing", Dispatch.STATIC),
 						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
 						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(2L),
-						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0),
-						ConditionalBranchInstruction.make(Constants.TYPE_int, ConditionalBranchInstruction.Operator.LT,
-								3),
+						StoreInstruction.make(Constants.TYPE_long, 1), GotoInstruction.make(2),
 						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
 						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), GotoInstruction.make(25),
-						InvokeInstruction.make("()J", "Ljava/lang/System;", "currentTimeMillis", Dispatch.STATIC),
-						PopInstruction.make(2), LoadInstruction.make(Constants.TYPE_long, 1),
+						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
+						ConstantInstruction.make(5L),
+						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
+						PopInstruction.make(1), LoadInstruction.make(Constants.TYPE_long, 1),
 						ConstantInstruction.make(1L),
 						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(5L),
-						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 19),
+						StoreInstruction.make(Constants.TYPE_long, 1), GotoInstruction.make(18),
 						ReturnInstruction.make(Constants.TYPE_void)));
-		slicerCriterionResultMap.put(Set.of(21),
-				Arrays.asList(ConstantInstruction.make(0L), StoreInstruction.make(Constants.TYPE_long, 1),
-						GotoInstruction.make(9),
-						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
-								"doNothing", Dispatch.STATIC),
-						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
-						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(2L),
-						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0),
-						ConditionalBranchInstruction.make(Constants.TYPE_int, ConditionalBranchInstruction.Operator.LT,
-								3),
-						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
-						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), GotoInstruction.make(25),
-						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
-								"doNothing", Dispatch.STATIC),
-						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
-						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(5L),
-						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 19),
-						ReturnInstruction.make(Constants.TYPE_void)));
-		slicerCriterionResultMap.put(Set.of(22), Arrays.asList(ConstantInstruction.make(1L), PopInstruction.make(2),
+		slicerCriterionResultMap.put(Set.of(21), Arrays.asList(ConstantInstruction.make(0), PopInstruction.make(1),
 				ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(22),
+				Arrays.asList(ConstantInstruction.make(0L), StoreInstruction.make(Constants.TYPE_long, 1),
+						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
+								"doNothing", Dispatch.STATIC),
+						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
+						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
+						StoreInstruction.make(Constants.TYPE_long, 1), GotoInstruction.make(2),
+						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
+						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
+						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
+						ConstantInstruction.make(5L),
+						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
+						ConstantInstruction.make(0),
+						ConditionalBranchInstruction.make(Constants.TYPE_int, ConditionalBranchInstruction.Operator.GE,
+								30),
+						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
+						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
+						StoreInstruction.make(Constants.TYPE_long, 1), GotoInstruction.make(18),
+						ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(23),
-				Arrays.asList(ConstantInstruction.make(0L), StoreInstruction.make(Constants.TYPE_long, 1),
-						GotoInstruction.make(9),
+				Arrays.asList(
 						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
 								"doNothing", Dispatch.STATIC),
-						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
-						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(2L),
-						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0),
-						ConditionalBranchInstruction.make(Constants.TYPE_int, ConditionalBranchInstruction.Operator.LT,
-								3),
-						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
-						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), GotoInstruction.make(25),
-						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
-								"doNothing", Dispatch.STATIC),
-						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
-						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(5L),
-						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 19),
-						ReturnInstruction.make(Constants.TYPE_void)));
+						InvokeInstruction.make("()J", "Ljava/lang/System;", "currentTimeMillis", Dispatch.STATIC),
+						PopInstruction.make(2), GotoInstruction.make(18), ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(24),
-				Arrays.asList(ConstantInstruction.make(0L), StoreInstruction.make(Constants.TYPE_long, 1),
-						GotoInstruction.make(9),
+				Arrays.asList(
 						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
 								"doNothing", Dispatch.STATIC),
-						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
-						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(2L),
-						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0),
-						ConditionalBranchInstruction.make(Constants.TYPE_int, ConditionalBranchInstruction.Operator.LT,
-								3),
-						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
-						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), GotoInstruction.make(25),
-						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
-								"doNothing", Dispatch.STATIC),
-						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
-						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(5L),
-						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 19),
-						ReturnInstruction.make(Constants.TYPE_void)));
+						InvokeInstruction.make("()J", "Ljava/lang/System;", "currentTimeMillis", Dispatch.STATIC),
+						PopInstruction.make(2), GotoInstruction.make(18), ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(25),
 				Arrays.asList(ConstantInstruction.make(0L), StoreInstruction.make(Constants.TYPE_long, 1),
-						GotoInstruction.make(9),
 						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
 								"doNothing", Dispatch.STATIC),
 						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
 						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(2L),
-						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0),
-						ConditionalBranchInstruction.make(Constants.TYPE_int, ConditionalBranchInstruction.Operator.LT,
-								3),
+						StoreInstruction.make(Constants.TYPE_long, 1), GotoInstruction.make(2),
 						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
 						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), GotoInstruction.make(25),
+						StoreInstruction.make(Constants.TYPE_long, 1),
 						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
 								"doNothing", Dispatch.STATIC),
 						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
 						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(5L),
-						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 19),
+						StoreInstruction.make(Constants.TYPE_long, 1), GotoInstruction.make(18),
 						ReturnInstruction.make(Constants.TYPE_void)));
-		slicerCriterionResultMap.put(Set.of(26), Arrays.asList(ConstantInstruction.make(5L), PopInstruction.make(2),
+		slicerCriterionResultMap.put(Set.of(26), Arrays.asList(ConstantInstruction.make(1L), PopInstruction.make(2),
 				ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(27),
 				Arrays.asList(ConstantInstruction.make(0L), StoreInstruction.make(Constants.TYPE_long, 1),
-						GotoInstruction.make(9),
 						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
 								"doNothing", Dispatch.STATIC),
 						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
 						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(2L),
-						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0),
-						ConditionalBranchInstruction.make(Constants.TYPE_int, ConditionalBranchInstruction.Operator.LT,
-								3),
+						StoreInstruction.make(Constants.TYPE_long, 1), GotoInstruction.make(2),
 						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
 						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), GotoInstruction.make(25),
+						StoreInstruction.make(Constants.TYPE_long, 1),
 						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
 								"doNothing", Dispatch.STATIC),
 						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
 						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(5L),
-						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 19),
+						StoreInstruction.make(Constants.TYPE_long, 1), GotoInstruction.make(18),
 						ReturnInstruction.make(Constants.TYPE_void)));
-		slicerCriterionResultMap.put(Set.of(28), Arrays.asList(ConstantInstruction.make(0), PopInstruction.make(1),
-				ReturnInstruction.make(Constants.TYPE_void)));
-		slicerCriterionResultMap.put(Set.of(29),
+		slicerCriterionResultMap.put(Set.of(28),
 				Arrays.asList(ConstantInstruction.make(0L), StoreInstruction.make(Constants.TYPE_long, 1),
-						GotoInstruction.make(9),
 						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
 								"doNothing", Dispatch.STATIC),
 						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
 						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(2L),
-						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0),
-						ConditionalBranchInstruction.make(Constants.TYPE_int, ConditionalBranchInstruction.Operator.LT,
-								3),
+						StoreInstruction.make(Constants.TYPE_long, 1), GotoInstruction.make(2),
 						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
 						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), GotoInstruction.make(25),
+						StoreInstruction.make(Constants.TYPE_long, 1),
 						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
 								"doNothing", Dispatch.STATIC),
 						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
 						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(5L),
-						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 19),
+						StoreInstruction.make(Constants.TYPE_long, 1), GotoInstruction.make(18),
 						ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(29),
+				Arrays.asList(
+						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
+								"doNothing", Dispatch.STATIC),
+						GotoInstruction.make(18), ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(30), Arrays.asList(ReturnInstruction.make(Constants.TYPE_void)));
 
 		validateSliceResults(slicerCriterionResultMap);
@@ -822,245 +663,142 @@ public class SlicerTest {
 //		Utilities.dotShow(slicer.getControlFlow().dotPrint());
 
 		Map<Set<Integer>, List<IInstruction>> slicerCriterionResultMap = new HashMap<>();
+
 		slicerCriterionResultMap.put(Set.of(0), Arrays.asList(ConstantInstruction.make(0), PopInstruction.make(1),
 				ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(1), Arrays.asList(ConstantInstruction.make(0),
 				StoreInstruction.make(Constants.TYPE_int, 1), ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(2),
-				Arrays.asList(GotoInstruction.make(9), InvokeInstruction.make("()V",
-						"Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;", "doNothing", Dispatch.STATIC),
-						ReturnInstruction.make(Constants.TYPE_void)));
-		slicerCriterionResultMap.put(Set.of(3),
 				Arrays.asList(ConstantInstruction.make(0), StoreInstruction.make(Constants.TYPE_int, 1),
-						GotoInstruction.make(9),
-						InvokeInstruction.make("()J", "Ljava/lang/System;", "currentTimeMillis", Dispatch.STATIC),
-						PopInstruction.make(2), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(1),
-						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(5), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 3),
-						ReturnInstruction.make(Constants.TYPE_void)));
-		slicerCriterionResultMap.put(Set.of(4),
-				Arrays.asList(ConstantInstruction.make(0), StoreInstruction.make(Constants.TYPE_int, 1),
-						GotoInstruction.make(9),
-						InvokeInstruction.make("()J", "Ljava/lang/System;", "currentTimeMillis", Dispatch.STATIC),
-						PopInstruction.make(2), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(1),
-						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(5), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 3),
-						ReturnInstruction.make(Constants.TYPE_void)));
-		slicerCriterionResultMap.put(Set.of(5),
-				Arrays.asList(ConstantInstruction.make(0), StoreInstruction.make(Constants.TYPE_int, 1),
-						GotoInstruction.make(9),
-						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
-								"doNothing", Dispatch.STATIC),
+						LoadInstruction.make(Constants.TYPE_int, 1), PopInstruction.make(1),
 						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
 						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(5), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 3),
-						ReturnInstruction.make(Constants.TYPE_void)
-
-				));
-		slicerCriterionResultMap.put(Set.of(6), Arrays.asList(ConstantInstruction.make(1), PopInstruction.make(1),
+						StoreInstruction.make(Constants.TYPE_int, 1), GotoInstruction.make(2),
+						ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(3), Arrays.asList(ConstantInstruction.make(5), PopInstruction.make(1),
 				ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(4), Arrays.asList(ConstantInstruction.make(0),
+				StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
+				ConstantInstruction.make(5),
+				ConditionalBranchInstruction.make(Constants.TYPE_int, ConditionalBranchInstruction.Operator.GE, 12),
+				LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
+				BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
+				StoreInstruction.make(Constants.TYPE_int, 1), GotoInstruction.make(2), InvokeInstruction.make("()V",
+						"Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;", "doNothing", Dispatch.STATIC),
+				ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(5),
+				Arrays.asList(
+						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
+								"doNothing", Dispatch.STATIC),
+						InvokeInstruction.make("()J", "Ljava/lang/System;", "currentTimeMillis", Dispatch.STATIC),
+						PopInstruction.make(2), GotoInstruction.make(2), ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(6),
+				Arrays.asList(
+						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
+								"doNothing", Dispatch.STATIC),
+						InvokeInstruction.make("()J", "Ljava/lang/System;", "currentTimeMillis", Dispatch.STATIC),
+						PopInstruction.make(2), GotoInstruction.make(2), ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(7),
 				Arrays.asList(ConstantInstruction.make(0), StoreInstruction.make(Constants.TYPE_int, 1),
-						GotoInstruction.make(9),
 						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
 								"doNothing", Dispatch.STATIC),
 						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
 						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(5), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 3),
+						StoreInstruction.make(Constants.TYPE_int, 1), GotoInstruction.make(2),
 						ReturnInstruction.make(Constants.TYPE_void)));
-		slicerCriterionResultMap.put(Set.of(8),
-				Arrays.asList(ConstantInstruction.make(0), StoreInstruction.make(Constants.TYPE_int, 1),
-						GotoInstruction.make(9),
-						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
-								"doNothing", Dispatch.STATIC),
-						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
-						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(5), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 3),
-						ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(8), Arrays.asList(ConstantInstruction.make(1), PopInstruction.make(1),
+				ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(9),
 				Arrays.asList(ConstantInstruction.make(0), StoreInstruction.make(Constants.TYPE_int, 1),
-						GotoInstruction.make(9),
 						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
 								"doNothing", Dispatch.STATIC),
 						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
 						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(5), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 3),
+						StoreInstruction.make(Constants.TYPE_int, 1), GotoInstruction.make(2),
 						ReturnInstruction.make(Constants.TYPE_void)));
-		slicerCriterionResultMap.put(Set.of(10), Arrays.asList(ConstantInstruction.make(5), PopInstruction.make(1),
-				ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(10),
+				Arrays.asList(ConstantInstruction.make(0), StoreInstruction.make(Constants.TYPE_int, 1),
+						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
+								"doNothing", Dispatch.STATIC),
+						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
+						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
+						StoreInstruction.make(Constants.TYPE_int, 1), GotoInstruction.make(2),
+						ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(11),
-				Arrays.asList(ConstantInstruction.make(0), StoreInstruction.make(Constants.TYPE_int, 1),
-						GotoInstruction.make(9),
+				Arrays.asList(
 						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
 								"doNothing", Dispatch.STATIC),
-						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
-						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(5), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 3),
-						ReturnInstruction.make(Constants.TYPE_void)));
+						GotoInstruction.make(2), ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(12),
-				Arrays.asList(GotoInstruction.make(19), InvokeInstruction.make("()V",
-						"Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;", "doNothing", Dispatch.STATIC),
-						ReturnInstruction.make(Constants.TYPE_void)));
-		slicerCriterionResultMap.put(Set.of(13),
 				Arrays.asList(ConstantInstruction.make(0), StoreInstruction.make(Constants.TYPE_int, 1),
-						GotoInstruction.make(9),
 						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
 								"doNothing", Dispatch.STATIC),
 						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
 						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(5),
-						ConditionalBranchInstruction.make(Constants.TYPE_int, ConditionalBranchInstruction.Operator.LT,
-								3),
-						GotoInstruction.make(19),
-						InvokeInstruction.make("()J", "Ljava/lang/System;", "currentTimeMillis", Dispatch.STATIC),
-						PopInstruction.make(2), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(1),
-						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(10), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 13),
-						ReturnInstruction.make(Constants.TYPE_void)));
-		slicerCriterionResultMap.put(Set.of(14),
-				Arrays.asList(ConstantInstruction.make(0), StoreInstruction.make(Constants.TYPE_int, 1),
-						GotoInstruction.make(9),
-						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
-								"doNothing", Dispatch.STATIC),
+						StoreInstruction.make(Constants.TYPE_int, 1), GotoInstruction.make(2),
+						LoadInstruction.make(Constants.TYPE_int, 1), PopInstruction.make(1),
 						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
 						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(5),
-						ConditionalBranchInstruction.make(Constants.TYPE_int, ConditionalBranchInstruction.Operator.LT,
-								3),
-						GotoInstruction.make(19),
-						InvokeInstruction.make("()J", "Ljava/lang/System;", "currentTimeMillis", Dispatch.STATIC),
-						PopInstruction.make(2), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(1),
-						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(10), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 13),
-						ReturnInstruction.make(Constants.TYPE_void)));
-		slicerCriterionResultMap.put(Set.of(15),
-				Arrays.asList(ConstantInstruction.make(0), StoreInstruction.make(Constants.TYPE_int, 1),
-						GotoInstruction.make(9),
-						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
-								"doNothing", Dispatch.STATIC),
-						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
-						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(5),
-						ConditionalBranchInstruction
-								.make(Constants.TYPE_int, ConditionalBranchInstruction.Operator.LT, 3),
-						GotoInstruction.make(19),
-						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
-								"doNothing", Dispatch.STATIC),
-						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
-						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(10), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 13),
-						ReturnInstruction.make(Constants.TYPE_void)));
-		slicerCriterionResultMap.put(Set.of(16), Arrays.asList(ConstantInstruction.make(1), PopInstruction.make(1),
+						StoreInstruction.make(Constants.TYPE_int, 1), ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(13), Arrays.asList(ConstantInstruction.make(10), PopInstruction.make(1),
 				ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(14), Arrays.asList(ConstantInstruction.make(0),
+				StoreInstruction.make(Constants.TYPE_int, 1),
+				InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
+						"doNothing", Dispatch.STATIC),
+				LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
+				BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
+				StoreInstruction.make(Constants.TYPE_int, 1), GotoInstruction.make(2),
+				LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(10),
+				ConditionalBranchInstruction.make(Constants.TYPE_int, ConditionalBranchInstruction.Operator.GE, 22),
+				LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
+				BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
+				StoreInstruction.make(Constants.TYPE_int, 1), InvokeInstruction.make("()V",
+						"Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;", "doNothing", Dispatch.STATIC),
+				ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(15),
+				Arrays.asList(InvokeInstruction.make("()J", "Ljava/lang/System;", "currentTimeMillis", Dispatch.STATIC),
+						PopInstruction.make(2), ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(16),
+				Arrays.asList(InvokeInstruction.make("()J", "Ljava/lang/System;", "currentTimeMillis", Dispatch.STATIC),
+						PopInstruction.make(2), ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(17),
 				Arrays.asList(ConstantInstruction.make(0), StoreInstruction.make(Constants.TYPE_int, 1),
-						GotoInstruction.make(9),
 						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
 								"doNothing", Dispatch.STATIC),
 						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
 						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(5),
-						ConditionalBranchInstruction
-								.make(Constants.TYPE_int, ConditionalBranchInstruction.Operator.LT, 3),
-						GotoInstruction.make(19),
-						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
-								"doNothing", Dispatch.STATIC),
+						StoreInstruction.make(Constants.TYPE_int, 1), GotoInstruction.make(2),
 						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
 						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(10), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 13),
-						ReturnInstruction.make(Constants.TYPE_void)));
-		slicerCriterionResultMap.put(Set.of(18),
-				Arrays.asList(ConstantInstruction.make(0), StoreInstruction.make(Constants.TYPE_int, 1),
-						GotoInstruction.make(9),
-						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
-								"doNothing", Dispatch.STATIC),
-						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
-						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(5),
-						ConditionalBranchInstruction
-								.make(Constants.TYPE_int, ConditionalBranchInstruction.Operator.LT, 3),
-						GotoInstruction.make(19),
-						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
-								"doNothing", Dispatch.STATIC),
-						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
-						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(10), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 13),
-						ReturnInstruction.make(Constants.TYPE_void)));
+						StoreInstruction.make(Constants.TYPE_int, 1), ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(18), Arrays.asList(ConstantInstruction.make(1), PopInstruction.make(1),
+				ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(19),
 				Arrays.asList(ConstantInstruction.make(0), StoreInstruction.make(Constants.TYPE_int, 1),
-						GotoInstruction.make(9),
 						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
 								"doNothing", Dispatch.STATIC),
 						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
 						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(5),
-						ConditionalBranchInstruction
-								.make(Constants.TYPE_int, ConditionalBranchInstruction.Operator.LT, 3),
-						GotoInstruction.make(19),
-						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
-								"doNothing", Dispatch.STATIC),
+						StoreInstruction.make(Constants.TYPE_int, 1), GotoInstruction.make(2),
 						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
 						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(10), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 13),
-						ReturnInstruction.make(Constants.TYPE_void)));
-		slicerCriterionResultMap.put(Set.of(20), Arrays.asList(ConstantInstruction.make(10), PopInstruction.make(1),
-				ReturnInstruction.make(Constants.TYPE_void)));
-		slicerCriterionResultMap.put(Set.of(21),
+						StoreInstruction.make(Constants.TYPE_int, 1), ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(20),
 				Arrays.asList(ConstantInstruction.make(0), StoreInstruction.make(Constants.TYPE_int, 1),
-						GotoInstruction.make(9),
 						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
 								"doNothing", Dispatch.STATIC),
 						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
 						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(5),
-						ConditionalBranchInstruction
-								.make(Constants.TYPE_int, ConditionalBranchInstruction.Operator.LT, 3),
-						GotoInstruction.make(19),
-						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
-								"doNothing", Dispatch.STATIC),
+						StoreInstruction.make(Constants.TYPE_int, 1), GotoInstruction.make(2),
 						LoadInstruction.make(Constants.TYPE_int, 1), ConstantInstruction.make(1),
 						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
-						ConstantInstruction.make(10), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 13),
-						ReturnInstruction.make(Constants.TYPE_void)));
+						StoreInstruction.make(Constants.TYPE_int, 1), ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(21),
+				Arrays.asList(
+						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
+								"doNothing", Dispatch.STATIC),
+						GotoInstruction.make(12), ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(22),
 				Arrays.asList(InvokeInstruction.make("()V",
 						"Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;", "doNothing", Dispatch.STATIC),
@@ -1080,350 +818,172 @@ public class SlicerTest {
 //		Utilities.dotShow(slicer.getControlFlow().dotPrint());
 
 		Map<Set<Integer>, List<IInstruction>> slicerCriterionResultMap = new HashMap<>();
+
 		slicerCriterionResultMap.put(Set.of(0), Arrays.asList(ConstantInstruction.make(0L), PopInstruction.make(2),
 				ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(1), Arrays.asList(ConstantInstruction.make(0L),
 				StoreInstruction.make(Constants.TYPE_long, 1), ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(2),
-				Arrays.asList(GotoInstruction.make(9), InvokeInstruction.make("()V",
-						"Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;", "doNothing", Dispatch.STATIC),
-						ReturnInstruction.make(Constants.TYPE_void)));
-		slicerCriterionResultMap.put(Set.of(3),
 				Arrays.asList(ConstantInstruction.make(0L), StoreInstruction.make(Constants.TYPE_long, 1),
-						GotoInstruction.make(9),
-						InvokeInstruction.make("()J", "Ljava/lang/System;", "currentTimeMillis", Dispatch.STATIC),
-						PopInstruction.make(2), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(1L),
+						LoadInstruction.make(Constants.TYPE_long, 1), PopInstruction.make(2),
+						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
 						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(5L),
-						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 3),
+						StoreInstruction.make(Constants.TYPE_long, 1), GotoInstruction.make(2),
 						ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(3), Arrays.asList(ConstantInstruction.make(5L), PopInstruction.make(2),
+				ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(4),
 				Arrays.asList(ConstantInstruction.make(0L), StoreInstruction.make(Constants.TYPE_long, 1),
-						GotoInstruction.make(9),
-						InvokeInstruction.make("()J", "Ljava/lang/System;", "currentTimeMillis", Dispatch.STATIC),
-						PopInstruction.make(2), LoadInstruction.make(Constants.TYPE_long, 1),
+						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(5L),
+						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
+						PopInstruction.make(1), LoadInstruction.make(Constants.TYPE_long, 1),
 						ConstantInstruction.make(1L),
 						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(5L),
-						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 3),
+						StoreInstruction.make(Constants.TYPE_long, 1), GotoInstruction.make(2),
 						ReturnInstruction.make(Constants.TYPE_void)));
-		slicerCriterionResultMap.put(Set.of(5),
-				Arrays.asList(ConstantInstruction.make(0L), StoreInstruction.make(Constants.TYPE_long, 1),
-						GotoInstruction.make(9),
-						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
-								"doNothing", Dispatch.STATIC),
-						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
-						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(5L),
-						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 3),
-						ReturnInstruction.make(Constants.TYPE_void)));
-		slicerCriterionResultMap.put(Set.of(6), Arrays.asList(ConstantInstruction.make(1L), PopInstruction.make(2),
+		slicerCriterionResultMap.put(Set.of(5), Arrays.asList(ConstantInstruction.make(0), PopInstruction.make(1),
+				ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(6), Arrays.asList(ConstantInstruction.make(0L),
+				StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
+				ConstantInstruction.make(5L),
+				ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
+				ConstantInstruction.make(0),
+				ConditionalBranchInstruction.make(Constants.TYPE_int, ConditionalBranchInstruction.Operator.GE, 14),
+				LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
+				BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
+				StoreInstruction.make(Constants.TYPE_long, 1), GotoInstruction.make(2), InvokeInstruction.make("()V",
+						"Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;", "doNothing", Dispatch.STATIC),
 				ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(7),
-				Arrays.asList(ConstantInstruction.make(0L), StoreInstruction.make(Constants.TYPE_long, 1),
-						GotoInstruction.make(9),
+				Arrays.asList(
 						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
 								"doNothing", Dispatch.STATIC),
-						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
-						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(5L),
-						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 3),
-						ReturnInstruction.make(Constants.TYPE_void)));
+						InvokeInstruction.make("()J", "Ljava/lang/System;", "currentTimeMillis", Dispatch.STATIC),
+						PopInstruction.make(2), GotoInstruction.make(2), ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(8),
-				Arrays.asList(ConstantInstruction.make(0L), StoreInstruction.make(Constants.TYPE_long, 1),
-						GotoInstruction.make(9),
+				Arrays.asList(
 						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
 								"doNothing", Dispatch.STATIC),
-						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
-						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(5L),
-						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 3),
-						ReturnInstruction.make(Constants.TYPE_void)));
+						InvokeInstruction.make("()J", "Ljava/lang/System;", "currentTimeMillis", Dispatch.STATIC),
+						PopInstruction.make(2), GotoInstruction.make(2), ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(9),
 				Arrays.asList(ConstantInstruction.make(0L), StoreInstruction.make(Constants.TYPE_long, 1),
-						GotoInstruction.make(9),
 						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
 								"doNothing", Dispatch.STATIC),
 						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
 						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(5L),
-						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 3),
+						StoreInstruction.make(Constants.TYPE_long, 1), GotoInstruction.make(2),
 						ReturnInstruction.make(Constants.TYPE_void)));
-		slicerCriterionResultMap.put(Set.of(10), Arrays.asList(ConstantInstruction.make(5L), PopInstruction.make(2),
+		slicerCriterionResultMap.put(Set.of(10), Arrays.asList(ConstantInstruction.make(1L), PopInstruction.make(2),
 				ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(11),
 				Arrays.asList(ConstantInstruction.make(0L), StoreInstruction.make(Constants.TYPE_long, 1),
-						GotoInstruction.make(9),
 						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
 								"doNothing", Dispatch.STATIC),
 						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
 						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(5L),
-						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 3),
+						StoreInstruction.make(Constants.TYPE_long, 1), GotoInstruction.make(2),
 						ReturnInstruction.make(Constants.TYPE_void)));
-		slicerCriterionResultMap.put(Set.of(12), Arrays.asList(ConstantInstruction.make(0), PopInstruction.make(1),
-				ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(12),
+				Arrays.asList(ConstantInstruction.make(0L), StoreInstruction.make(Constants.TYPE_long, 1),
+						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
+								"doNothing", Dispatch.STATIC),
+						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
+						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
+						StoreInstruction.make(Constants.TYPE_long, 1), GotoInstruction.make(2),
+						ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(13),
-				Arrays.asList(ConstantInstruction.make(0L), StoreInstruction.make(Constants.TYPE_long, 1),
-						GotoInstruction.make(9),
+				Arrays.asList(
 						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
 								"doNothing", Dispatch.STATIC),
-						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
-						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(5L),
-						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 3),
-						ReturnInstruction.make(Constants.TYPE_void)));
+						GotoInstruction.make(2), ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(14),
-				Arrays.asList(GotoInstruction.make(21), InvokeInstruction.make("()V",
-						"Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;", "doNothing", Dispatch.STATIC),
-						ReturnInstruction.make(Constants.TYPE_void)));
-		slicerCriterionResultMap.put(Set.of(15),
 				Arrays.asList(ConstantInstruction.make(0L), StoreInstruction.make(Constants.TYPE_long, 1),
-						GotoInstruction.make(9),
 						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
 								"doNothing", Dispatch.STATIC),
 						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
 						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(5L),
-						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0),
-						ConditionalBranchInstruction.make(Constants.TYPE_int, ConditionalBranchInstruction.Operator.LT,
-								3),
-						GotoInstruction.make(21),
-						InvokeInstruction.make("()J", "Ljava/lang/System;", "currentTimeMillis", Dispatch.STATIC),
-						PopInstruction.make(2), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(1L),
+						StoreInstruction.make(Constants.TYPE_long, 1), GotoInstruction.make(2),
+						LoadInstruction.make(Constants.TYPE_long, 1), PopInstruction.make(2),
+						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
 						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(10L),
-						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 15),
-						ReturnInstruction.make(Constants.TYPE_void)));
+						StoreInstruction.make(Constants.TYPE_long, 1), ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(15), Arrays.asList(ConstantInstruction.make(10L), PopInstruction.make(2),
+				ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(16),
 				Arrays.asList(ConstantInstruction.make(0L), StoreInstruction.make(Constants.TYPE_long, 1),
-						GotoInstruction.make(9),
 						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
 								"doNothing", Dispatch.STATIC),
 						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
 						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(5L),
+						StoreInstruction.make(Constants.TYPE_long, 1), GotoInstruction.make(2),
+						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(10L),
 						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0),
-						ConditionalBranchInstruction.make(Constants.TYPE_int, ConditionalBranchInstruction.Operator.LT,
-								3),
-						GotoInstruction.make(21),
-						InvokeInstruction.make("()J", "Ljava/lang/System;", "currentTimeMillis", Dispatch.STATIC),
-						PopInstruction.make(2), LoadInstruction.make(Constants.TYPE_long, 1),
+						PopInstruction.make(1), LoadInstruction.make(Constants.TYPE_long, 1),
 						ConstantInstruction.make(1L),
 						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(10L),
-						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 15),
-						ReturnInstruction.make(Constants.TYPE_void)));
-		slicerCriterionResultMap.put(Set.of(17),
-				Arrays.asList(ConstantInstruction.make(0L), StoreInstruction.make(Constants.TYPE_long, 1),
-						GotoInstruction.make(9),
-						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
-								"doNothing", Dispatch.STATIC),
-						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
-						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(5L),
-						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0),
-						ConditionalBranchInstruction
-								.make(Constants.TYPE_int, ConditionalBranchInstruction.Operator.LT, 3),
-						GotoInstruction.make(21),
-						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
-								"doNothing", Dispatch.STATIC),
-						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
-						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(10L),
-						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 15),
-						ReturnInstruction.make(Constants.TYPE_void)));
-		slicerCriterionResultMap.put(Set.of(18), Arrays.asList(ConstantInstruction.make(1L), PopInstruction.make(2),
+						StoreInstruction.make(Constants.TYPE_long, 1), ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(17), Arrays.asList(ConstantInstruction.make(0), PopInstruction.make(1),
+				ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(18), Arrays.asList(ConstantInstruction.make(0L),
+				StoreInstruction.make(Constants.TYPE_long, 1),
+				InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
+						"doNothing", Dispatch.STATIC),
+				LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
+				BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
+				StoreInstruction.make(Constants.TYPE_long, 1), GotoInstruction.make(2),
+				LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(10L),
+				ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
+				ConstantInstruction.make(0),
+				ConditionalBranchInstruction.make(Constants.TYPE_int, ConditionalBranchInstruction.Operator.GE, 26),
+				LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
+				BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
+				StoreInstruction.make(Constants.TYPE_long, 1), InvokeInstruction.make("()V",
+						"Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;", "doNothing", Dispatch.STATIC),
 				ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(19),
-				Arrays.asList(ConstantInstruction.make(0L), StoreInstruction.make(Constants.TYPE_long, 1),
-						GotoInstruction.make(9),
-						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
-								"doNothing", Dispatch.STATIC),
-						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
-						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(5L),
-						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0),
-						ConditionalBranchInstruction
-								.make(Constants.TYPE_int, ConditionalBranchInstruction.Operator.LT, 3),
-						GotoInstruction.make(21),
-						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
-								"doNothing", Dispatch.STATIC),
-						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
-						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(10L),
-						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 15),
-						ReturnInstruction.make(Constants.TYPE_void)));
+				Arrays.asList(InvokeInstruction.make("()J", "Ljava/lang/System;", "currentTimeMillis", Dispatch.STATIC),
+						PopInstruction.make(2), ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(20),
-				Arrays.asList(ConstantInstruction.make(0L), StoreInstruction.make(Constants.TYPE_long, 1),
-						GotoInstruction.make(9),
-						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
-								"doNothing", Dispatch.STATIC),
-						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
-						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(5L),
-						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0),
-						ConditionalBranchInstruction
-								.make(Constants.TYPE_int, ConditionalBranchInstruction.Operator.LT, 3),
-						GotoInstruction.make(21),
-						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
-								"doNothing", Dispatch.STATIC),
-						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
-						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(10L),
-						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 15),
-						ReturnInstruction.make(Constants.TYPE_void)));
+				Arrays.asList(InvokeInstruction.make("()J", "Ljava/lang/System;", "currentTimeMillis", Dispatch.STATIC),
+						PopInstruction.make(2), ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(21),
 				Arrays.asList(ConstantInstruction.make(0L), StoreInstruction.make(Constants.TYPE_long, 1),
-						GotoInstruction.make(9),
 						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
 								"doNothing", Dispatch.STATIC),
 						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
 						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(5L),
-						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0),
-						ConditionalBranchInstruction
-								.make(Constants.TYPE_int, ConditionalBranchInstruction.Operator.LT, 3),
-						GotoInstruction.make(21),
-						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
-								"doNothing", Dispatch.STATIC),
+						StoreInstruction.make(Constants.TYPE_long, 1), GotoInstruction.make(2),
 						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
 						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(10L),
-						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 15),
-						ReturnInstruction.make(Constants.TYPE_void)));
-		slicerCriterionResultMap.put(Set.of(22), Arrays.asList(ConstantInstruction.make(10L), PopInstruction.make(2),
+						StoreInstruction.make(Constants.TYPE_long, 1), ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(22), Arrays.asList(ConstantInstruction.make(1L), PopInstruction.make(2),
 				ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(23),
 				Arrays.asList(ConstantInstruction.make(0L), StoreInstruction.make(Constants.TYPE_long, 1),
-						GotoInstruction.make(9),
 						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
 								"doNothing", Dispatch.STATIC),
 						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
 						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(5L),
-						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0),
-						ConditionalBranchInstruction
-								.make(Constants.TYPE_int, ConditionalBranchInstruction.Operator.LT, 3),
-						GotoInstruction.make(21),
-						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
-								"doNothing", Dispatch.STATIC),
+						StoreInstruction.make(Constants.TYPE_long, 1), GotoInstruction.make(2),
 						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
 						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(10L),
-						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 15),
-						ReturnInstruction.make(Constants.TYPE_void)));
-		slicerCriterionResultMap.put(Set.of(23),
+						StoreInstruction.make(Constants.TYPE_long, 1), ReturnInstruction.make(Constants.TYPE_void)));
+		slicerCriterionResultMap.put(Set.of(24),
 				Arrays.asList(ConstantInstruction.make(0L), StoreInstruction.make(Constants.TYPE_long, 1),
-						GotoInstruction.make(9),
 						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
 								"doNothing", Dispatch.STATIC),
 						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
 						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(5L),
-						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0),
-						ConditionalBranchInstruction
-								.make(Constants.TYPE_int, ConditionalBranchInstruction.Operator.LT, 3),
-						GotoInstruction.make(21),
-						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
-								"doNothing", Dispatch.STATIC),
+						StoreInstruction.make(Constants.TYPE_long, 1), GotoInstruction.make(2),
 						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
 						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(10L),
-						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 15),
-						ReturnInstruction.make(Constants.TYPE_void)));
-		slicerCriterionResultMap.put(Set.of(24), Arrays.asList(ConstantInstruction.make(0), PopInstruction.make(1),
-				ReturnInstruction.make(Constants.TYPE_void)));
+						StoreInstruction.make(Constants.TYPE_long, 1), ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(25),
-				Arrays.asList(ConstantInstruction.make(0L), StoreInstruction.make(Constants.TYPE_long, 1),
-						GotoInstruction.make(9),
+				Arrays.asList(
 						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
 								"doNothing", Dispatch.STATIC),
-						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
-						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(5L),
-						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0),
-						ConditionalBranchInstruction
-								.make(Constants.TYPE_int, ConditionalBranchInstruction.Operator.LT, 3),
-						GotoInstruction.make(21),
-						InvokeInstruction.make("()V", "Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;",
-								"doNothing", Dispatch.STATIC),
-						LoadInstruction.make(Constants.TYPE_long, 1), ConstantInstruction.make(1L),
-						BinaryOpInstruction.make(Constants.TYPE_long, IBinaryOpInstruction.Operator.ADD),
-						StoreInstruction.make(Constants.TYPE_long, 1), LoadInstruction.make(Constants.TYPE_long, 1),
-						ConstantInstruction.make(10L),
-						ComparisonInstruction.make(Constants.TYPE_long, IComparisonInstruction.Operator.CMP),
-						ConstantInstruction.make(0), ConditionalBranchInstruction.make(Constants.TYPE_int,
-								ConditionalBranchInstruction.Operator.LT, 15),
-						ReturnInstruction.make(Constants.TYPE_void)));
+						GotoInstruction.make(14), ReturnInstruction.make(Constants.TYPE_void)));
 		slicerCriterionResultMap.put(Set.of(26),
 				Arrays.asList(InvokeInstruction.make("()V",
 						"Lde/rherzog/master/thesis/slicer/instrumenter/export/Nothing;", "doNothing", Dispatch.STATIC),
@@ -1433,8 +993,36 @@ public class SlicerTest {
 		validateSliceResults(slicerCriterionResultMap);
 	}
 
+//	@Test
+	public void testSimpleReturnValue() throws IOException, InvalidClassFileException, InterruptedException,
+			IllegalStateException, DecoderException {
+		slicer.setInputJar(slicerValidationJarPath);
+		slicer.setMethodSignature("Lde.rherzog.master.thesis.slicer.test.SlicerValidation;.simpleReturnValue()I");
+		System.out.println(slicer.getMethodSummary());
+
+		Map<Set<Integer>, List<IInstruction>> slicerCriterionResultMap = new HashMap<>();
+
+		slicerCriterionResultMap.put(Set.of(0),
+				Arrays.asList(ConstantInstruction.make(0), ReturnInstruction.make(Constants.TYPE_int)));
+		slicerCriterionResultMap.put(Set.of(1),
+				Arrays.asList(ConstantInstruction.make(0), ReturnInstruction.make(Constants.TYPE_int)));
+
+		validateSliceResults(slicerCriterionResultMap);
+	}
+
 	private void validateSliceResults(Map<Set<Integer>, List<IInstruction>> slicerCriterionResultMap)
 			throws IOException, InvalidClassFileException {
+		// Debug code generation output
+		for (Entry<Set<Integer>, List<IInstruction>> slicerCriterionResultEntry : slicerCriterionResultMap.entrySet()) {
+			Set<Integer> criterionSet = slicerCriterionResultEntry.getKey();
+
+			slicer.setInstructionIndexes(criterionSet);
+			SliceResult sliceResult = slicer.getSliceResult();
+
+			System.out.println("slicerCriterionResultMap.put(Set.of(" + criterionSet.iterator().next() + "), "
+					+ sliceResult.toJavaSource() + ");");
+		}
+
 		for (Entry<Set<Integer>, List<IInstruction>> slicerCriterionResultEntry : slicerCriterionResultMap.entrySet()) {
 			Set<Integer> criterionSet = slicerCriterionResultEntry.getKey();
 			List<IInstruction> resultList = slicerCriterionResultEntry.getValue();
@@ -1443,16 +1031,15 @@ public class SlicerTest {
 			SliceResult sliceResult = slicer.getSliceResult();
 
 			System.out.println(sliceResult);
-			System.out.println(sliceResult.toJavaSource());
 
-			Assert.assertTrue("Expected slice from " + criterionSet + " \n  " + resultList + "\nbut is\n  "
-					+ sliceResult.getSlice(), resultList.equals(sliceResult.getSlice()));
+			assertTrue(resultList.equals(sliceResult.getSlice()), "Expected slice from " + criterionSet + " \n  "
+					+ resultList + "\nbut is\n  " + sliceResult.getSlice());
 		}
 
 		for (int instructionIndex = 0; instructionIndex < slicer.getControlFlow().getMethodData()
 				.getInstructions().length; instructionIndex++) {
-			Assert.assertTrue("slice instruction index test missing for instruction index: [" + instructionIndex + "]",
-					slicerCriterionResultMap.keySet().contains(Set.of(instructionIndex)));
+			assertTrue(slicerCriterionResultMap.keySet().contains(Set.of(instructionIndex)),
+					"slice instruction index test missing for instruction index: [" + instructionIndex + "]");
 		}
 	}
 
