@@ -28,6 +28,17 @@ public class SlicerValidation {
 		Nothing.doNothing();
 	}
 
+	public void reuseVariableWithoutReinitializationDoubleSized() {
+		long i = 0;
+		for (; i < 5; i++) {
+			System.currentTimeMillis();
+		}
+		for (; i < 10; i++) {
+			System.currentTimeMillis();
+		}
+		Nothing.doNothing();
+	}
+
 	public void reuseVariableWithReinitialization() {
 		int i = 0;
 		for (; i < 2; i++) {
@@ -39,15 +50,18 @@ public class SlicerValidation {
 		}
 	}
 
-//	public void twoWordPop() {
-//		Thread.activeCount();
-//		System.currentTimeMillis();
-//	}
+	public void reuseVariableWithReinitializationDoubleSized() {
+		long i = 0;
+		for (; i < 2; i++) {
+			System.currentTimeMillis();
+		}
+		i = i + 1;
+		for (; i < 5; i++) {
+			System.currentTimeMillis();
+		}
+	}
 
-//	public void twoWordPop() {
-//		Integer.valueOf("1").intValue();
-//		Float.valueOf("1.23f").floatValue();
-//		Double.valueOf("2.34d").doubleValue();
-//		Long.valueOf("2L").longValue();
-//	}
+	public void twoWordPop() {
+		System.currentTimeMillis();
+	}
 }

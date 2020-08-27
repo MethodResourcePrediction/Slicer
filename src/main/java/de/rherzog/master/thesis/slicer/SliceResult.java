@@ -11,6 +11,7 @@ import java.util.Set;
 import com.ibm.wala.shrikeBT.ArrayLengthInstruction;
 import com.ibm.wala.shrikeBT.ArrayLoadInstruction;
 import com.ibm.wala.shrikeBT.BinaryOpInstruction;
+import com.ibm.wala.shrikeBT.ComparisonInstruction;
 import com.ibm.wala.shrikeBT.ConditionalBranchInstruction;
 import com.ibm.wala.shrikeBT.ConstantInstruction;
 import com.ibm.wala.shrikeBT.Constants;
@@ -18,9 +19,8 @@ import com.ibm.wala.shrikeBT.ConversionInstruction;
 import com.ibm.wala.shrikeBT.DupInstruction;
 import com.ibm.wala.shrikeBT.GetInstruction;
 import com.ibm.wala.shrikeBT.GotoInstruction;
-import com.ibm.wala.shrikeBT.IBinaryOpInstruction;
+import com.ibm.wala.shrikeBT.IComparisonInstruction;
 import com.ibm.wala.shrikeBT.IInstruction;
-import com.ibm.wala.shrikeBT.IInvokeInstruction;
 import com.ibm.wala.shrikeBT.IInvokeInstruction.Dispatch;
 import com.ibm.wala.shrikeBT.InvokeDynamicInstruction;
 import com.ibm.wala.shrikeBT.InvokeInstruction;
@@ -32,7 +32,7 @@ import com.ibm.wala.shrikeBT.StoreInstruction;
 import com.ibm.wala.shrikeBT.Util;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import com.ibm.wala.types.TypeName;
-import com.ibm.wala.types.TypeReference;
+import com.ibm.wala.util.debug.UnimplementedError;
 import com.ibm.wala.util.strings.StringStuff;
 
 import de.rherzog.master.thesis.slicer.instrumenter.export.Nothing;
@@ -218,6 +218,14 @@ public class SliceResult {
 //				DupInstruction.make(delta)
 				DupInstruction instruction2 = (DupInstruction) instruction;
 				instructionSource = String.format("DupInstruction.make(%s)", instruction2.getDelta());
+			} else if (instruction instanceof IComparisonInstruction) {
+//				ComparisonInstruction.make(type, operator)
+				ComparisonInstruction instruction2 = (ComparisonInstruction) instruction;
+				instructionSource = String.format("ComparisonInstruction.make(%s, %s)",
+						Utilities.typeToConstantFieldSource(instruction2.getType()),
+						"IComparisonInstruction.Operator." + instruction2.getOperator().name());
+			} else {
+				throw new UnimplementedError("Unhandled instruction type " + instruction);
 			}
 
 			javaSource.append("  " + instructionSource.toString());
