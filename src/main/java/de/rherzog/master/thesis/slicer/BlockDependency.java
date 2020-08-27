@@ -16,7 +16,6 @@ import org.jgrapht.io.ExportException;
 import org.jgrapht.io.GraphExporter;
 
 import com.ibm.wala.shrikeBT.IInstruction;
-import com.ibm.wala.shrikeBT.PopInstruction;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 
 import de.rherzog.master.thesis.utils.Utilities;
@@ -123,5 +122,18 @@ public class BlockDependency {
 			}
 		}
 		return null;
+	}
+
+	@Override
+	public String toString() {
+		try {
+			return getGraph().toString();
+		} catch (IOException e) {
+			e.printStackTrace();
+			return e.getMessage();
+		} catch (InvalidClassFileException e) {
+			e.printStackTrace();
+			return e.getMessage();
+		}
 	}
 }

@@ -90,7 +90,6 @@ public class ArgumentDependency {
 		}
 		return argumentInstructionSet;
 	}
-	
 
 	public Map<Integer, Set<Integer>> getVarIndexesToRenumber() throws IOException, InvalidClassFileException {
 		Map<Integer, Set<Integer>> varIndexesToRenumber = new HashMap<>();
@@ -103,7 +102,7 @@ public class ArgumentDependency {
 		// instruction indexes.
 		MethodData methodData = controlFlow.getMethodData();
 		int maxVarIndex = Utilities.getMaxLocalVarIndex(methodData);
-		
+
 		IInstruction[] instructions = methodData.getInstructions();
 		for (int index = 0; index < instructions.length - 1; index++) {
 			IInstruction instruction = instructions[index];
@@ -221,7 +220,6 @@ public class ArgumentDependency {
 		}
 	}
 
-
 	public String dotPrint() throws IOException, InvalidClassFileException {
 		IInstruction[] instructions = controlFlow.getMethodData().getInstructions();
 
@@ -245,5 +243,18 @@ public class ArgumentDependency {
 			e.printStackTrace();
 		}
 		return writer.toString();
+	}
+
+	@Override
+	public String toString() {
+		try {
+			return getGraph().toString();
+		} catch (IOException e) {
+			e.printStackTrace();
+			return e.getMessage();
+		} catch (InvalidClassFileException e) {
+			e.printStackTrace();
+			return e.getMessage();
+		}
 	}
 }

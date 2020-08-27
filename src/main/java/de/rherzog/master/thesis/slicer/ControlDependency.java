@@ -131,4 +131,17 @@ public class ControlDependency {
 		simpleCycles = johnsonSimpleCycles.findSimpleCycles();
 		return simpleCycles;
 	}
+
+	@Override
+	public String toString() {
+		try {
+			return getGraph().toString();
+		} catch (IOException e) {
+			e.printStackTrace();
+			return e.getMessage();
+		} catch (InvalidClassFileException e) {
+			e.printStackTrace();
+			return e.getMessage();
+		}
+	}
 }

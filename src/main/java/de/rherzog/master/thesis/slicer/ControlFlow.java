@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -251,6 +250,19 @@ public class ControlFlow {
 		for (int index = 0; index < instructions.length; index++) {
 			IInstruction instruction = instructions[index];
 //			instructions[index] = Utilities.rewriteVarIndex(varIndexesToRenumber, instruction, index);
+		}
+	}
+
+	@Override
+	public String toString() {
+		try {
+			return getGraph().toString();
+		} catch (IOException e) {
+			e.printStackTrace();
+			return e.getMessage();
+		} catch (InvalidClassFileException e) {
+			e.printStackTrace();
+			return e.getMessage();
 		}
 	}
 }

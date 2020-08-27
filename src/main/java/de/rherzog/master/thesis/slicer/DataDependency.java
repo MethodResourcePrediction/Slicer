@@ -26,18 +26,18 @@ import com.ibm.wala.util.strings.StringStuff;
 
 public class DataDependency {
 	private ControlFlow controlFlow;
-	private Graph<Integer, DefaultEdge> dataDependencyGraph;
+	private Graph<Integer, DefaultEdge> graph;
 
 	public DataDependency(ControlFlow controlFlowGraph) throws IOException, InvalidClassFileException {
 		this.controlFlow = controlFlowGraph;
 	}
 
 	public Graph<Integer, DefaultEdge> getGraph() throws IOException, InvalidClassFileException {
-		if (dataDependencyGraph != null) {
-			return dataDependencyGraph;
+		if (graph != null) {
+			return graph;
 		}
-		dataDependencyGraph = getDependencyGraph(controlFlow.getGraph());
-		return dataDependencyGraph;
+		graph = getDependencyGraph(controlFlow.getGraph());
+		return graph;
 	}
 
 	public Set<Integer> getDataDependencyInstructions(int index) throws IOException, InvalidClassFileException {
@@ -256,5 +256,18 @@ public class DataDependency {
 			e.printStackTrace();
 		}
 		return writer.toString();
+	}
+
+	@Override
+	public String toString() {
+		try {
+			return getGraph().toString();
+		} catch (IOException e) {
+			e.printStackTrace();
+			return e.getMessage();
+		} catch (InvalidClassFileException e) {
+			e.printStackTrace();
+			return e.getMessage();
+		}
 	}
 }

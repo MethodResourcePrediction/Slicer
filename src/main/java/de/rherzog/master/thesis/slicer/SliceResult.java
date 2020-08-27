@@ -98,10 +98,7 @@ public class SliceResult {
 				slice.add(InvokeInstruction.make("()V", Util.makeType(Nothing.class), "doNothing", Dispatch.STATIC));
 			}
 			if (getInstructionPopMap().containsKey(index) && index != instructions.length - 1) {
-				for (int popCount = 0; popCount < getInstructionPopMap().get(index); popCount++) {
-					// TODO Assumed last pushed data type is 1 word sized
-					slice.add(PopInstruction.make(1));
-				}
+				slice.add(PopInstruction.make(getInstructionPopMap().get(index)));
 			}
 		}
 		return slice;

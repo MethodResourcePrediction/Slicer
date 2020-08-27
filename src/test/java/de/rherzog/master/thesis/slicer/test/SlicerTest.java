@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.net.URLDecoder;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -39,7 +37,6 @@ import com.ibm.wala.shrikeCT.InvalidClassFileException;
 
 import de.rherzog.master.thesis.slicer.SliceResult;
 import de.rherzog.master.thesis.slicer.Slicer;
-import de.rherzog.master.thesis.utils.Utilities;
 
 public class SlicerTest {
 	private Slicer slicer;
@@ -111,7 +108,7 @@ public class SlicerTest {
 		slicer.setMethodSignature(
 				"Lde.rherzog.master.thesis.slicer.test.SlicerValidation;.reuseVariableWithReinitialization()V");
 		System.out.println(slicer.getMethodSummary());
-		
+
 		slicer.getVariableIndexesToRenumber();
 	}
 
@@ -137,7 +134,7 @@ public class SlicerTest {
 				Arrays.asList(ConstantInstruction.make(0), StoreInstruction.make(Constants.TYPE_int, 1),
 						GotoInstruction.make(9),
 						InvokeInstruction.make("()J", "Ljava/lang/System;", "currentTimeMillis", Dispatch.STATIC),
-						PopInstruction.make(1), LoadInstruction.make(Constants.TYPE_int, 1),
+						PopInstruction.make(2), LoadInstruction.make(Constants.TYPE_int, 1),
 						ConstantInstruction.make(1),
 						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
 						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
@@ -148,7 +145,7 @@ public class SlicerTest {
 				Arrays.asList(ConstantInstruction.make(0), StoreInstruction.make(Constants.TYPE_int, 1),
 						GotoInstruction.make(9),
 						InvokeInstruction.make("()J", "Ljava/lang/System;", "currentTimeMillis", Dispatch.STATIC),
-						PopInstruction.make(1), LoadInstruction.make(Constants.TYPE_int, 1),
+						PopInstruction.make(2), LoadInstruction.make(Constants.TYPE_int, 1),
 						ConstantInstruction.make(1),
 						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
 						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
@@ -233,7 +230,7 @@ public class SlicerTest {
 								3),
 						GotoInstruction.make(19),
 						InvokeInstruction.make("()J", "Ljava/lang/System;", "currentTimeMillis", Dispatch.STATIC),
-						PopInstruction.make(1), LoadInstruction.make(Constants.TYPE_int, 1),
+						PopInstruction.make(2), LoadInstruction.make(Constants.TYPE_int, 1),
 						ConstantInstruction.make(1),
 						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
 						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
@@ -253,7 +250,7 @@ public class SlicerTest {
 								3),
 						GotoInstruction.make(19),
 						InvokeInstruction.make("()J", "Ljava/lang/System;", "currentTimeMillis", Dispatch.STATIC),
-						PopInstruction.make(1), LoadInstruction.make(Constants.TYPE_int, 1),
+						PopInstruction.make(2), LoadInstruction.make(Constants.TYPE_int, 1),
 						ConstantInstruction.make(1),
 						BinaryOpInstruction.make(Constants.TYPE_int, IBinaryOpInstruction.Operator.ADD),
 						StoreInstruction.make(Constants.TYPE_int, 1), LoadInstruction.make(Constants.TYPE_int, 1),
@@ -380,8 +377,8 @@ public class SlicerTest {
 			System.out.println(sliceResult);
 			System.out.println(sliceResult.toJavaSource());
 
-			Assert.assertTrue("Expected slice\n  " + resultList + "\nbut is\n  " + sliceResult.getSlice(),
-					resultList.equals(sliceResult.getSlice()));
+			Assert.assertTrue("Expected slice from " + criterionSet + " \n  " + resultList + "\nbut is\n  "
+					+ sliceResult.getSlice(), resultList.equals(sliceResult.getSlice()));
 		}
 	}
 

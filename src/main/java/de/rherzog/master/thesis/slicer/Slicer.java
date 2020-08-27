@@ -313,8 +313,13 @@ public class Slicer {
 			}
 
 			// The remaining elements on the stack are the ones to be popped
-			if (stack.size() > 0) {
-				instructionPopAfterMap.put(block.getHighestIndex(), stack.size());
+			int popSize = 0;
+			while (stack.size() > 0) {
+				int stackInstructionIndex = stack.pop();
+				popSize += Utilities.getPushedSize(instructions[stackInstructionIndex]);
+			}
+			if (popSize > 0) {
+				instructionPopAfterMap.put(block.getHighestIndex(), popSize);
 			}
 		}
 		return instructionPopAfterMap;
@@ -405,7 +410,7 @@ public class Slicer {
 //					dependendInstructions, controlDependentIndex);
 //		}
 	}
-	
+
 	public Map<Integer, Set<Integer>> getVariableIndexesToRenumber() throws IOException, InvalidClassFileException {
 		return getArgumentDependency().getVarIndexesToRenumber();
 	}
