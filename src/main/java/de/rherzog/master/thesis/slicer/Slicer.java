@@ -46,6 +46,7 @@ public class Slicer {
 	private BlockDependency blockDependency;
 	private DataDependency dataDependency;
 	private ArgumentDependency argumentDependency;
+	private ClassObjectDependency classObjectDependency;
 
 	private boolean verbose = false;
 
@@ -59,53 +60,13 @@ public class Slicer {
 		mySlicer.setVerbose(true);
 		mySlicer.parseArgs(args);
 //		mySlicer.setExportFormat(null);
-//		mySlicer.makeSlicedFile(true);
-		mySlicer.makeSlicedFile(false);
+		mySlicer.makeSlicedFile(true);
+//		mySlicer.makeSlicedFile(false);
 	}
 
 	public String makeSlicedFile() throws IOException, InvalidClassFileException, IllegalStateException,
 			DecoderException, InterruptedException {
 		return makeSlicedFile(false);
-	}
-
-	public ControlFlow getControlFlow() throws IOException, InvalidClassFileException {
-		if (controlFlow != null) {
-			return controlFlow;
-		}
-		controlFlow = new ControlFlow(inputJar, methodSignature);
-		return controlFlow;
-	}
-
-	public ControlDependency getControlDependency() throws IOException, InvalidClassFileException {
-		if (controlDependency != null) {
-			return controlDependency;
-		}
-		controlDependency = new ControlDependency(getControlFlow());
-		return controlDependency;
-	}
-
-	public BlockDependency getBlockDependency() throws IOException, InvalidClassFileException {
-		if (blockDependency != null) {
-			return blockDependency;
-		}
-		blockDependency = new BlockDependency(getControlFlow());
-		return blockDependency;
-	}
-
-	public DataDependency getDataDependency() throws IOException, InvalidClassFileException {
-		if (dataDependency != null) {
-			return dataDependency;
-		}
-		dataDependency = new DataDependency(getControlFlow());
-		return dataDependency;
-	}
-
-	public ArgumentDependency getArgumentDependency() throws IOException, InvalidClassFileException {
-		if (argumentDependency != null) {
-			return argumentDependency;
-		}
-		argumentDependency = new ArgumentDependency(getControlFlow());
-		return argumentDependency;
 	}
 
 	public String makeSlicedFile(boolean showDotPlots) throws IOException, InvalidClassFileException,
@@ -115,6 +76,7 @@ public class Slicer {
 		BlockDependency blockDependency = getBlockDependency();
 		DataDependency dataDependency = getDataDependency();
 		ArgumentDependency argumentDependency = getArgumentDependency();
+		ClassObjectDependency classObjectDependency = getClassObjectDependency();
 
 		Map<Integer, Set<Integer>> varIndexesToRenumber = argumentDependency.getVarIndexesToRenumber();
 		Set<Integer> instructionsInCycles = controlFlow.getInstructionsInCycles();
@@ -126,6 +88,7 @@ public class Slicer {
 			Utilities.dotShow(dir, blockDependency.dotPrint());
 			Utilities.dotShow(dir, dataDependency.dotPrint());
 			Utilities.dotShow(dir, argumentDependency.dotPrint());
+			Utilities.dotShow(dir, classObjectDependency.dotPrint());
 		}
 
 		Set<Integer> instructionIndexesToKeep = getInstructionIndexesToKeep(controlFlow, controlDependency,
@@ -424,6 +387,54 @@ public class Slicer {
 			slice(controlFlow, controlDependency, blockDependency, argumentDependency, dataDependency,
 					dependendInstructions, controlDependentIndex);
 		}
+	}
+
+	public ControlFlow getControlFlow() throws IOException, InvalidClassFileException {
+		if (controlFlow != null) {
+			return controlFlow;
+		}
+		controlFlow = new ControlFlow(inputJar, methodSignature);
+		return controlFlow;
+	}
+
+	public ControlDependency getControlDependency() throws IOException, InvalidClassFileException {
+		if (controlDependency != null) {
+			return controlDependency;
+		}
+		controlDependency = new ControlDependency(getControlFlow());
+		return controlDependency;
+	}
+
+	public BlockDependency getBlockDependency() throws IOException, InvalidClassFileException {
+		if (blockDependency != null) {
+			return blockDependency;
+		}
+		blockDependency = new BlockDependency(getControlFlow());
+		return blockDependency;
+	}
+
+	public DataDependency getDataDependency() throws IOException, InvalidClassFileException {
+		if (dataDependency != null) {
+			return dataDependency;
+		}
+		dataDependency = new DataDependency(getControlFlow());
+		return dataDependency;
+	}
+
+	public ArgumentDependency getArgumentDependency() throws IOException, InvalidClassFileException {
+		if (argumentDependency != null) {
+			return argumentDependency;
+		}
+		argumentDependency = new ArgumentDependency(getControlFlow());
+		return argumentDependency;
+	}
+
+	public ClassObjectDependency getClassObjectDependency() throws IOException, InvalidClassFileException {
+		if (classObjectDependency != null) {
+			return classObjectDependency;
+		}
+		classObjectDependency = new ClassObjectDependency(getBlockDependency());
+		return classObjectDependency;
 	}
 
 	public Map<Integer, Set<Integer>> getVariableIndexesToRenumber() throws IOException, InvalidClassFileException {

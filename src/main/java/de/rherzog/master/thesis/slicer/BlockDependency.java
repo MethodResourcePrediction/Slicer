@@ -136,4 +136,8 @@ public class BlockDependency {
 			return e.getMessage();
 		}
 	}
+
+	public ControlFlow getControlFlow() {
+		return controlFlow;
+	}
 }

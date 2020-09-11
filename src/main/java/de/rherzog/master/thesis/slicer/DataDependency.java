@@ -30,7 +30,7 @@ public class DataDependency {
 	private ControlFlow controlFlow;
 	private Graph<Integer, DefaultEdge> graph;
 
-	public DataDependency(ControlFlow controlFlowGraph) throws IOException, InvalidClassFileException {
+	public DataDependency(ControlFlow controlFlowGraph) {
 		this.controlFlow = controlFlowGraph;
 	}
 
