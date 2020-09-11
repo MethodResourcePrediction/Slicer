@@ -74,7 +74,7 @@ public class Instrumenter {
 
 	// Filter for duplicate entries.
 	private Set<String> duplicateEntrySet = new HashSet<>();
-	private String[] exportJars = new String[] { "SlicerExport.jar", "Utils.jar" };
+	private String[] exportJars = new String[] { "SlicerExport/build/libs/SlicerExport.jar", "Utils/build/libs/Utils.jar" };
 	private boolean verbose = false;
 
 	/**
@@ -823,8 +823,8 @@ public class Instrumenter {
 
 		// Add additional jars to instrumented executable.
 		for (String exportJar : exportJars) {
-			String exportJarPath = FilenameUtils.concat(additionalJarsBasePath, exportJar);
-//			String exportJarPath = additionalJarsBasePath + exportJar;
+//			String exportJarPath = FilenameUtils.concat(additionalJarsBasePath, exportJar);
+			String exportJarPath = additionalJarsBasePath + exportJar;
 
 			jars.add(exportJarPath);
 		}

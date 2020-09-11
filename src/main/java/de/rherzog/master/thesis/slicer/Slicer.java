@@ -134,6 +134,8 @@ public class Slicer {
 				argumentDependency, dataDependency);
 		Map<Integer, Integer> instructionPopMap = getInstructionPopMap();
 
+		System.out.println(getSliceResult());
+
 		// Instrument a new program with a modified method which we analyze
 		Instrumenter instrumenter = new Instrumenter(additionalJarsPath, inputJar, outputJar, methodSignature,
 				mainClass, resultFilePath, exportFormat);
@@ -325,7 +327,11 @@ public class Slicer {
 			int popSize = 0;
 			while (stack.size() > 0) {
 				int stackInstructionIndex = stack.pop();
-				popSize += Utilities.getPushedSize(instructions[stackInstructionIndex]);
+				// TODO There is at least one issue here when a remaining dup-instruction
+				// element should be popped. The instruction pushed size will not be the number
+				// of elements on the stack. Is 1 to use here always correct?
+				popSize += 1;
+//				popSize += Utilities.getPushedSize(instructions[stackInstructionIndex]);
 			}
 			if (popSize > 0) {
 				instructionPopAfterMap.put(block.getHighestIndex(), popSize);
@@ -410,14 +416,14 @@ public class Slicer {
 
 		// TODO Why do we not need to consider control dependencies? Implied by the
 		// argument dependencies?
-//		// Consider control dependencies
-//		for (Integer controlDependentIndex : controlDependency.getControlDependencyInstructions(index)) {
-//			if (controlDependentIndex == ControlDependency.ROOT_INDEX) {
-//				continue;
-//			}
-//			slice(controlFlow, controlDependency, blockDependency, argumentDependency, dataDependency,
-//					dependendInstructions, controlDependentIndex);
-//		}
+		// Consider control dependencies
+		for (Integer controlDependentIndex : controlDependency.getControlDependencyInstructions(index)) {
+			if (controlDependentIndex == ControlDependency.ROOT_INDEX) {
+				continue;
+			}
+			slice(controlFlow, controlDependency, blockDependency, argumentDependency, dataDependency,
+					dependendInstructions, controlDependentIndex);
+		}
 	}
 
 	public Map<Integer, Set<Integer>> getVariableIndexesToRenumber() throws IOException, InvalidClassFileException {
