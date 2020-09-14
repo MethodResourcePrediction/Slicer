@@ -2,8 +2,6 @@ package de.rherzog.master.thesis.slicer;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -15,7 +13,7 @@ import org.jgrapht.alg.cycle.JohnsonSimpleCycles;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.io.ComponentNameProvider;
-import org.jgrapht.io.DOTExporter;
+import org.jgrapht.io.ExportException;
 
 import com.ibm.wala.shrikeBT.ConditionalBranchInstruction;
 import com.ibm.wala.shrikeBT.GotoInstruction;
@@ -29,7 +27,7 @@ import com.ibm.wala.util.collections.Pair;
 
 import de.rherzog.master.thesis.utils.InstrumenterComparator;
 
-public class ControlFlow implements SlicerGraph<Integer> {
+public class ControlFlow extends SlicerGraph<Integer> {
 	private String inputPath;
 	private String methodSignature;
 
@@ -145,7 +143,7 @@ public class ControlFlow implements SlicerGraph<Integer> {
 	}
 
 	@Override
-	public String dotPrint() throws IOException, InvalidClassFileException {
+	protected String dotPrint() throws IOException, InvalidClassFileException, ExportException {
 		IInstruction[] instructions = getMethodData().getInstructions();
 
 		// use helper classes to define how vertices should be rendered,
@@ -160,14 +158,7 @@ public class ControlFlow implements SlicerGraph<Integer> {
 				return index + ": " + instructions[index].toString();
 			}
 		};
-		DOTExporter<Integer, DefaultEdge> exporter = new DOTExporter<>(vertexIdProvider, vertexLabelProvider, null);
-		exporter.putGraphAttribute("label", this.getClass().getSimpleName());
-		exporter.putGraphAttribute("labelloc", "t");
-		exporter.putGraphAttribute("fontsize", "30");
-
-		Writer writer = new StringWriter();
-		exporter.exportGraph(getGraph(), writer);
-		return writer.toString();
+		return getExporterGraphString(vertexIdProvider, vertexLabelProvider);
 	}
 
 	public MethodData getMethodData() throws IOException, InvalidClassFileException {

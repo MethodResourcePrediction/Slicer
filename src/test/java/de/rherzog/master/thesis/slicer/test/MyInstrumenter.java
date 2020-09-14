@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.codec.DecoderException;
+import org.jgrapht.io.ExportException;
 
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 
@@ -12,7 +13,7 @@ import de.rherzog.master.thesis.slicer.Slicer;
 public class MyInstrumenter {
 //	@Test
 	public void instrumenter() throws IOException, ParseException, IllegalStateException, InvalidClassFileException,
-			DecoderException, InterruptedException {
+			DecoderException, InterruptedException, ExportException {
 //		// --inputJar ../EvaluationPrograms.jar --methodSignature --mainClass
 //		// --instructionIndexes 8 --outputJar generated/2_50/sliced.jar
 //		Instrumenter instrumenter = new Instrumenter("../", "../EvaluationPrograms.jar", "generated/sliced.jar",

@@ -18,6 +18,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.codec.DecoderException;
 import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.io.ExportException;
 
 import com.ibm.wala.shrikeBT.ConstantInstruction;
 import com.ibm.wala.shrikeBT.GotoInstruction;
@@ -55,7 +56,7 @@ public class Slicer {
 	}
 
 	public static void main(String[] args) throws ParseException, IllegalStateException, IOException,
-			InvalidClassFileException, DecoderException, InterruptedException {
+			InvalidClassFileException, DecoderException, InterruptedException, ExportException {
 		Slicer mySlicer = new Slicer();
 		mySlicer.setVerbose(true);
 		mySlicer.parseArgs(args);
@@ -65,12 +66,12 @@ public class Slicer {
 	}
 
 	public String makeSlicedFile() throws IOException, InvalidClassFileException, IllegalStateException,
-			DecoderException, InterruptedException {
+			DecoderException, InterruptedException, ExportException {
 		return makeSlicedFile(false);
 	}
 
 	public String makeSlicedFile(boolean showDotPlots) throws IOException, InvalidClassFileException,
-			IllegalStateException, DecoderException, InterruptedException {
+			IllegalStateException, DecoderException, InterruptedException, ExportException {
 		ControlFlow controlFlow = getControlFlow();
 		ControlDependency controlDependency = getControlDependency();
 		BlockDependency blockDependency = getBlockDependency();
@@ -104,7 +105,7 @@ public class Slicer {
 		return outputJar;
 	}
 
-	public void showPlots() throws IOException, InterruptedException, InvalidClassFileException {
+	public void showPlots() throws IOException, InterruptedException, InvalidClassFileException, ExportException {
 		showPlots(getControlFlow(), getControlDependency(), getBlockDependency(), getArgumentDependency(),
 				getDataDependency(), getClassObjectDependency());
 	}
@@ -112,15 +113,14 @@ public class Slicer {
 	public static void showPlots(ControlFlow controlFlow, ControlDependency controlDependency,
 			BlockDependency blockDependency, ArgumentDependency argumentDependency, DataDependency dataDependency,
 			ClassObjectDependency classObjectDependency)
-			throws IOException, InterruptedException, InvalidClassFileException {
+			throws IOException, InterruptedException, InvalidClassFileException, ExportException {
 		final Path dir = Files.createTempDirectory("slicer-");
-		Utilities.dotShow(dir, controlFlow.dotPrint());
-		Utilities.dotShow(dir, controlDependency.dotPrint());
-		Utilities.dotShow(dir, blockDependency.dotPrint());
-		Utilities.dotShow(dir, dataDependency.dotPrint());
-		Utilities.dotShow(dir, argumentDependency.dotPrint());
-		Utilities.dotShow(dir, classObjectDependency.dotPrint());
-
+		controlFlow.showPlot(dir);
+		controlDependency.showPlot(dir);
+		blockDependency.showPlot(dir);
+		dataDependency.showPlot(dir);
+		argumentDependency.showPlot(dir);
+		classObjectDependency.showPlot(dir);
 	}
 
 	public Set<Integer> getInstructionIndexesToIgnore() throws IOException, InvalidClassFileException {

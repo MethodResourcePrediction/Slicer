@@ -1,8 +1,6 @@
 package de.rherzog.master.thesis.slicer;
 
 import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
 import java.util.List;
 import java.util.Set;
 
@@ -11,14 +9,14 @@ import org.jgrapht.alg.cycle.JohnsonSimpleCycles;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.io.ComponentNameProvider;
-import org.jgrapht.io.DOTExporter;
+import org.jgrapht.io.ExportException;
 
 import com.ibm.wala.shrikeBT.IInstruction;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 
 import de.rherzog.master.thesis.utils.Utilities;
 
-public class BlockDependency implements SlicerGraph<Block> {
+public class BlockDependency extends SlicerGraph<Block> {
 	private ControlFlow controlFlow;
 	private Graph<Block, DefaultEdge> graph;
 	private List<List<Block>> simpleCycles;
@@ -78,7 +76,7 @@ public class BlockDependency implements SlicerGraph<Block> {
 	}
 
 	@Override
-	public String dotPrint() throws IOException, InvalidClassFileException {
+	protected String dotPrint() throws IOException, InvalidClassFileException, ExportException {
 		// use helper classes to define how vertices should be rendered,
 		// adhering to the DOT language restrictions
 		ComponentNameProvider<Block> vertexIdProvider = new ComponentNameProvider<>() {
@@ -91,14 +89,7 @@ public class BlockDependency implements SlicerGraph<Block> {
 				return block.toString();
 			}
 		};
-		DOTExporter<Block, DefaultEdge> exporter = new DOTExporter<>(vertexIdProvider, vertexLabelProvider, null);
-		exporter.putGraphAttribute("label", this.getClass().getSimpleName());
-		exporter.putGraphAttribute("labelloc", "t");
-		exporter.putGraphAttribute("fontsize", "30");
-
-		Writer writer = new StringWriter();
-		exporter.exportGraph(getGraph(), writer);
-		return writer.toString();
+		return getExporterGraphString(vertexIdProvider, vertexLabelProvider);
 	}
 
 	public List<List<Block>> getSimpleCycles() throws IOException, InvalidClassFileException {

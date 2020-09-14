@@ -17,6 +17,7 @@ import java.util.Set;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
+import org.jgrapht.io.ExportException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -42,7 +43,6 @@ import com.ibm.wala.shrikeCT.InvalidClassFileException;
 
 import de.rherzog.master.thesis.slicer.SliceResult;
 import de.rherzog.master.thesis.slicer.Slicer;
-import de.rherzog.master.thesis.utils.Utilities;
 
 @TestInstance(Lifecycle.PER_CLASS)
 public class SlicerTest {
@@ -657,13 +657,13 @@ public class SlicerTest {
 
 	@Test
 	public void testSliceReuseVariableWithoutReinitialization()
-			throws IOException, InvalidClassFileException, InterruptedException {
+			throws IOException, InvalidClassFileException, InterruptedException, ExportException {
 		slicer.setInputJar(slicerValidationJarPath);
 		slicer.setMethodSignature(
 				"Lde.rherzog.master.thesis.slicer.test.SlicerValidation;.reuseVariableWithoutReinitialization()V");
 		System.out.println(slicer.getMethodSummary());
 //		slicer.showPlots();
-		Utilities.dotShow(slicer.getControlDependency().dotPrint());
+		slicer.getControlDependency().showPlot();
 
 		Map<Set<Integer>, List<IInstruction>> slicerCriterionResultMap = new HashMap<>();
 

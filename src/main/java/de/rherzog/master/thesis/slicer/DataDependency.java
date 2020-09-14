@@ -1,8 +1,6 @@
 package de.rherzog.master.thesis.slicer;
 
 import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Stack;
@@ -11,7 +9,7 @@ import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.io.ComponentNameProvider;
-import org.jgrapht.io.DOTExporter;
+import org.jgrapht.io.ExportException;
 
 import com.ibm.wala.shrikeBT.ArrayStoreInstruction;
 import com.ibm.wala.shrikeBT.Constants;
@@ -24,7 +22,7 @@ import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import com.ibm.wala.types.TypeName;
 import com.ibm.wala.util.strings.StringStuff;
 
-public class DataDependency implements SlicerGraph<Integer> {
+public class DataDependency extends SlicerGraph<Integer> {
 	private ControlFlow controlFlow;
 	private Graph<Integer, DefaultEdge> graph;
 
@@ -240,7 +238,7 @@ public class DataDependency implements SlicerGraph<Integer> {
 	}
 
 	@Override
-	public String dotPrint() throws IOException, InvalidClassFileException {
+	protected String dotPrint() throws IOException, InvalidClassFileException, ExportException {
 		IInstruction[] instructions = controlFlow.getMethodData().getInstructions();
 		boolean hasThis = !controlFlow.getMethodData().getIsStatic();
 
@@ -263,14 +261,7 @@ public class DataDependency implements SlicerGraph<Integer> {
 				return index + ": " + instruction.toString();
 			}
 		};
-		DOTExporter<Integer, DefaultEdge> exporter = new DOTExporter<>(vertexIdProvider, vertexLabelProvider, null);
-		exporter.putGraphAttribute("label", this.getClass().getSimpleName());
-		exporter.putGraphAttribute("labelloc", "t");
-		exporter.putGraphAttribute("fontsize", "30");
-
-		Writer writer = new StringWriter();
-		exporter.exportGraph(getGraph(), writer);
-		return writer.toString();
+		return getExporterGraphString(vertexIdProvider, vertexLabelProvider);
 	}
 
 	@Override

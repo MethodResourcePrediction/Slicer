@@ -1,8 +1,6 @@
 package de.rherzog.master.thesis.slicer;
 
 import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -15,7 +13,7 @@ import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.io.ComponentNameProvider;
-import org.jgrapht.io.DOTExporter;
+import org.jgrapht.io.ExportException;
 
 import com.ibm.wala.shrikeBT.IInstruction;
 import com.ibm.wala.shrikeBT.ILoadInstruction;
@@ -25,7 +23,7 @@ import com.ibm.wala.shrikeCT.InvalidClassFileException;
 
 import de.rherzog.master.thesis.utils.Utilities;
 
-public class ArgumentDependency implements SlicerGraph<Integer> {
+public class ArgumentDependency extends SlicerGraph<Integer> {
 	private ControlFlow controlFlow;
 	private Graph<Integer, DefaultEdge> graph;
 
@@ -220,7 +218,7 @@ public class ArgumentDependency implements SlicerGraph<Integer> {
 	}
 
 	@Override
-	public String dotPrint() throws IOException, InvalidClassFileException {
+	protected String dotPrint() throws IOException, InvalidClassFileException, ExportException {
 		IInstruction[] instructions = controlFlow.getMethodData().getInstructions();
 
 		// use helper classes to define how vertices should be rendered,
@@ -235,14 +233,7 @@ public class ArgumentDependency implements SlicerGraph<Integer> {
 				return index + ": " + instructions[index].toString();
 			}
 		};
-		DOTExporter<Integer, DefaultEdge> exporter = new DOTExporter<>(vertexIdProvider, vertexLabelProvider, null);
-		exporter.putGraphAttribute("label", this.getClass().getSimpleName());
-		exporter.putGraphAttribute("labelloc", "t");
-		exporter.putGraphAttribute("fontsize", "30");
-
-		Writer writer = new StringWriter();
-		exporter.exportGraph(getGraph(), writer);
-		return writer.toString();
+		return getExporterGraphString(vertexIdProvider, vertexLabelProvider);
 	}
 
 	@Override
