@@ -12,15 +12,13 @@ import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.io.ComponentNameProvider;
 import org.jgrapht.io.DOTExporter;
-import org.jgrapht.io.ExportException;
-import org.jgrapht.io.GraphExporter;
 
 import com.ibm.wala.shrikeBT.IInstruction;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 
 import de.rherzog.master.thesis.utils.Utilities;
 
-public class BlockDependency {
+public class BlockDependency implements SlicerGraph<Block> {
 	private ControlFlow controlFlow;
 	private Graph<Block, DefaultEdge> graph;
 	private List<List<Block>> simpleCycles;
@@ -29,6 +27,7 @@ public class BlockDependency {
 		this.controlFlow = controlFlowGraph;
 	}
 
+	@Override
 	public Graph<Block, DefaultEdge> getGraph() throws IOException, InvalidClassFileException {
 		if (graph != null) {
 			return graph;
@@ -78,6 +77,7 @@ public class BlockDependency {
 		return graph;
 	}
 
+	@Override
 	public String dotPrint() throws IOException, InvalidClassFileException {
 		// use helper classes to define how vertices should be rendered,
 		// adhering to the DOT language restrictions
@@ -91,13 +91,13 @@ public class BlockDependency {
 				return block.toString();
 			}
 		};
-		GraphExporter<Block, DefaultEdge> exporter = new DOTExporter<>(vertexIdProvider, vertexLabelProvider, null);
+		DOTExporter<Block, DefaultEdge> exporter = new DOTExporter<>(vertexIdProvider, vertexLabelProvider, null);
+		exporter.putGraphAttribute("label", this.getClass().getSimpleName());
+		exporter.putGraphAttribute("labelloc", "t");
+		exporter.putGraphAttribute("fontsize", "30");
+
 		Writer writer = new StringWriter();
-		try {
-			exporter.exportGraph(getGraph(), writer);
-		} catch (ExportException e) {
-			e.printStackTrace();
-		}
+		exporter.exportGraph(getGraph(), writer);
 		return writer.toString();
 	}
 

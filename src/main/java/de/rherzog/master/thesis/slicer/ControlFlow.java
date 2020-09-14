@@ -16,8 +16,6 @@ import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.io.ComponentNameProvider;
 import org.jgrapht.io.DOTExporter;
-import org.jgrapht.io.ExportException;
-import org.jgrapht.io.GraphExporter;
 
 import com.ibm.wala.shrikeBT.ConditionalBranchInstruction;
 import com.ibm.wala.shrikeBT.GotoInstruction;
@@ -31,7 +29,7 @@ import com.ibm.wala.util.collections.Pair;
 
 import de.rherzog.master.thesis.utils.InstrumenterComparator;
 
-public class ControlFlow {
+public class ControlFlow implements SlicerGraph<Integer> {
 	private String inputPath;
 	private String methodSignature;
 
@@ -62,6 +60,7 @@ public class ControlFlow {
 		return stackTrace;
 	}
 
+	@Override
 	public Graph<Integer, DefaultEdge> getGraph() throws IOException, InvalidClassFileException {
 		if (graph != null) {
 			return graph;
@@ -145,6 +144,7 @@ public class ControlFlow {
 		return instructionsInCycleSet;
 	}
 
+	@Override
 	public String dotPrint() throws IOException, InvalidClassFileException {
 		IInstruction[] instructions = getMethodData().getInstructions();
 
@@ -160,13 +160,13 @@ public class ControlFlow {
 				return index + ": " + instructions[index].toString();
 			}
 		};
-		GraphExporter<Integer, DefaultEdge> exporter = new DOTExporter<>(vertexIdProvider, vertexLabelProvider, null);
+		DOTExporter<Integer, DefaultEdge> exporter = new DOTExporter<>(vertexIdProvider, vertexLabelProvider, null);
+		exporter.putGraphAttribute("label", this.getClass().getSimpleName());
+		exporter.putGraphAttribute("labelloc", "t");
+		exporter.putGraphAttribute("fontsize", "30");
+
 		Writer writer = new StringWriter();
-		try {
-			exporter.exportGraph(getGraph(), writer);
-		} catch (ExportException e) {
-			e.printStackTrace();
-		}
+		exporter.exportGraph(getGraph(), writer);
 		return writer.toString();
 	}
 

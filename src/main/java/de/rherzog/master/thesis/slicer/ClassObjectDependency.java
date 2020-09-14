@@ -3,6 +3,8 @@ package de.rherzog.master.thesis.slicer;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map.Entry;
 
 import org.jgrapht.Graph;
@@ -10,8 +12,6 @@ import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.io.ComponentNameProvider;
 import org.jgrapht.io.DOTExporter;
-import org.jgrapht.io.ExportException;
-import org.jgrapht.io.GraphExporter;
 
 import com.ibm.wala.shrikeBT.IInstruction;
 import com.ibm.wala.shrikeBT.InvokeInstruction;
@@ -20,7 +20,7 @@ import com.ibm.wala.shrikeCT.InvalidClassFileException;
 
 import de.rherzog.master.thesis.utils.Utilities;
 
-public class ClassObjectDependency {
+public class ClassObjectDependency implements SlicerGraph<Integer> {
 	private BlockDependency blockDependency;
 	private Graph<Integer, DefaultEdge> graph;
 
@@ -28,6 +28,7 @@ public class ClassObjectDependency {
 		this.blockDependency = blockDependency;
 	}
 
+	@Override
 	public Graph<Integer, DefaultEdge> getGraph() throws IOException, InvalidClassFileException {
 		if (graph != null) {
 			return graph;
@@ -42,6 +43,8 @@ public class ClassObjectDependency {
 			for (Entry<Integer, IInstruction> entry : block.getInstructions().entrySet()) {
 				final Integer instructionIndex = entry.getKey();
 				final IInstruction instruction = entry.getValue();
+
+				graph.addVertex(instructionIndex);
 
 				// Check if the instruction creates a new object
 				if (instruction instanceof NewInstruction) {
@@ -60,7 +63,6 @@ public class ClassObjectDependency {
 							if (Utilities.isConstructorInvokeInstruction(newInstruction, succeedingInvokeInstruction)) {
 								// Finally the constructor instruction to any New-Instruction was found and
 								// added to the graph.
-								graph.addVertex(instructionIndex);
 								graph.addVertex(succeedingInstructionIndex);
 								graph.addEdge(instructionIndex, succeedingInstructionIndex);
 							}
@@ -72,6 +74,16 @@ public class ClassObjectDependency {
 		return graph;
 	}
 
+	public List<Integer> getClassObjectDependencyInstructions(int instructionIndex)
+			throws IOException, InvalidClassFileException {
+		List<Integer> classObjectDependencyInstructions = new ArrayList<>();
+		for (DefaultEdge edge : getGraph().outgoingEdgesOf(instructionIndex)) {
+			classObjectDependencyInstructions.add(getGraph().getEdgeTarget(edge));
+		}
+		return classObjectDependencyInstructions;
+	}
+
+	@Override
 	public String dotPrint() throws IOException, InvalidClassFileException {
 		IInstruction[] instructions = blockDependency.getControlFlow().getMethodData().getInstructions();
 
@@ -87,13 +99,13 @@ public class ClassObjectDependency {
 				return index + ": " + instructions[index].toString();
 			}
 		};
-		GraphExporter<Integer, DefaultEdge> exporter = new DOTExporter<>(vertexIdProvider, vertexLabelProvider, null);
+		DOTExporter<Integer, DefaultEdge> exporter = new DOTExporter<>(vertexIdProvider, vertexLabelProvider, null);
+		exporter.putGraphAttribute("label", this.getClass().getSimpleName());
+		exporter.putGraphAttribute("labelloc", "t");
+		exporter.putGraphAttribute("fontsize", "30");
+
 		Writer writer = new StringWriter();
-		try {
-			exporter.exportGraph(getGraph(), writer);
-		} catch (ExportException e) {
-			e.printStackTrace();
-		}
+		exporter.exportGraph(getGraph(), writer);
 		return writer.toString();
 	}
 

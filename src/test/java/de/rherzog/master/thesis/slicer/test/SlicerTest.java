@@ -42,6 +42,7 @@ import com.ibm.wala.shrikeCT.InvalidClassFileException;
 
 import de.rherzog.master.thesis.slicer.SliceResult;
 import de.rherzog.master.thesis.slicer.Slicer;
+import de.rherzog.master.thesis.utils.Utilities;
 
 @TestInstance(Lifecycle.PER_CLASS)
 public class SlicerTest {
@@ -661,7 +662,8 @@ public class SlicerTest {
 		slicer.setMethodSignature(
 				"Lde.rherzog.master.thesis.slicer.test.SlicerValidation;.reuseVariableWithoutReinitialization()V");
 		System.out.println(slicer.getMethodSummary());
-//		Utilities.dotShow(slicer.getControlFlow().dotPrint());
+//		slicer.showPlots();
+		Utilities.dotShow(slicer.getControlDependency().dotPrint());
 
 		Map<Set<Integer>, List<IInstruction>> slicerCriterionResultMap = new HashMap<>();
 

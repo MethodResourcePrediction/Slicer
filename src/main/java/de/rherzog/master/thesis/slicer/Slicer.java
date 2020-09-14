@@ -82,19 +82,13 @@ public class Slicer {
 		Set<Integer> instructionsInCycles = controlFlow.getInstructionsInCycles();
 
 		if (showDotPlots) {
-			final Path dir = Files.createTempDirectory("slicer-");
-			Utilities.dotShow(dir, controlFlow.dotPrint());
-			Utilities.dotShow(dir, controlDependency.dotPrint());
-			Utilities.dotShow(dir, blockDependency.dotPrint());
-			Utilities.dotShow(dir, dataDependency.dotPrint());
-			Utilities.dotShow(dir, argumentDependency.dotPrint());
-			Utilities.dotShow(dir, classObjectDependency.dotPrint());
+			showPlots();
 		}
 
 		Set<Integer> instructionIndexesToKeep = getInstructionIndexesToKeep(controlFlow, controlDependency,
-				blockDependency, argumentDependency, dataDependency);
+				blockDependency, argumentDependency, dataDependency, classObjectDependency);
 		Set<Integer> instructionIndexesToIgnore = getInstructionIndexesToIgnore(controlFlow, controlDependency,
-				argumentDependency, dataDependency);
+				argumentDependency, dataDependency, classObjectDependency);
 		Map<Integer, Integer> instructionPopMap = getInstructionPopMap();
 
 		System.out.println(getSliceResult());
@@ -110,17 +104,36 @@ public class Slicer {
 		return outputJar;
 	}
 
+	public void showPlots() throws IOException, InterruptedException, InvalidClassFileException {
+		showPlots(getControlFlow(), getControlDependency(), getBlockDependency(), getArgumentDependency(),
+				getDataDependency(), getClassObjectDependency());
+	}
+
+	public static void showPlots(ControlFlow controlFlow, ControlDependency controlDependency,
+			BlockDependency blockDependency, ArgumentDependency argumentDependency, DataDependency dataDependency,
+			ClassObjectDependency classObjectDependency)
+			throws IOException, InterruptedException, InvalidClassFileException {
+		final Path dir = Files.createTempDirectory("slicer-");
+		Utilities.dotShow(dir, controlFlow.dotPrint());
+		Utilities.dotShow(dir, controlDependency.dotPrint());
+		Utilities.dotShow(dir, blockDependency.dotPrint());
+		Utilities.dotShow(dir, dataDependency.dotPrint());
+		Utilities.dotShow(dir, argumentDependency.dotPrint());
+		Utilities.dotShow(dir, classObjectDependency.dotPrint());
+
+	}
+
 	public Set<Integer> getInstructionIndexesToIgnore() throws IOException, InvalidClassFileException {
 		return getInstructionIndexesToIgnore(getControlFlow(), getControlDependency(), getArgumentDependency(),
-				getDataDependency());
+				getDataDependency(), getClassObjectDependency());
 
 	}
 
 	public Set<Integer> getInstructionIndexesToIgnore(ControlFlow controlFlow, ControlDependency controlDependency,
-			ArgumentDependency argumentDependency, DataDependency dataDependency)
-			throws IOException, InvalidClassFileException {
+			ArgumentDependency argumentDependency, DataDependency dataDependency,
+			ClassObjectDependency classObjectDependency) throws IOException, InvalidClassFileException {
 		Set<Integer> instructionIndexesToKeep = getInstructionIndexesToKeep(controlFlow, controlDependency,
-				blockDependency, argumentDependency, dataDependency);
+				blockDependency, argumentDependency, dataDependency, classObjectDependency);
 		Set<Integer> instructionIndexesToIgnore = new HashSet<>();
 
 		IInstruction[] instructions = controlFlow.getMethodData().getInstructions();
@@ -147,12 +160,12 @@ public class Slicer {
 
 	public Set<Integer> getInstructionIndexesToKeep() throws IOException, InvalidClassFileException {
 		return getInstructionIndexesToKeep(getControlFlow(), getControlDependency(), getBlockDependency(),
-				getArgumentDependency(), getDataDependency());
+				getArgumentDependency(), getDataDependency(), getClassObjectDependency());
 	}
 
 	public Set<Integer> getInstructionIndexesToKeep(ControlFlow controlFlow, ControlDependency controlDependency,
-			BlockDependency blockDependency, ArgumentDependency argumentDependency, DataDependency dataDependency)
-			throws IOException, InvalidClassFileException {
+			BlockDependency blockDependency, ArgumentDependency argumentDependency, DataDependency dataDependency,
+			ClassObjectDependency classObjectDependency) throws IOException, InvalidClassFileException {
 		IInstruction[] instructions = controlFlow.getMethodData().getInstructions();
 		Set<Integer> indexesToKeep = new HashSet<>();
 
@@ -161,14 +174,14 @@ public class Slicer {
 			IInstruction instruction = instructions[index];
 			if (instruction instanceof ReturnInstruction) {
 				slice(controlFlow, controlDependency, blockDependency, argumentDependency, dataDependency,
-						indexesToKeep, index);
+						classObjectDependency, indexesToKeep, index);
 			}
 		}
 
 		// Add all provided indexes to the slice
 		for (int instructionIndex : getInstructionIndexes()) {
-			slice(controlFlow, controlDependency, blockDependency, argumentDependency, dataDependency, indexesToKeep,
-					instructionIndex);
+			slice(controlFlow, controlDependency, blockDependency, argumentDependency, dataDependency,
+					classObjectDependency, indexesToKeep, instructionIndex);
 		}
 
 		// Check if the slice will depend on the parameters (can be affected by
@@ -198,7 +211,7 @@ public class Slicer {
 			for (int recursiveInvokeInstructionIndex : recursiveInvokeInstructions) {
 				// Slice the recursive invoke instruction
 				slice(controlFlow, controlDependency, blockDependency, argumentDependency, dataDependency,
-						indexesToKeep, recursiveInvokeInstructionIndex);
+						classObjectDependency, indexesToKeep, recursiveInvokeInstructionIndex);
 
 				// Include all return statements that are reachable from any instruction if
 				// they are already kept in "indexesToKeep"
@@ -213,7 +226,7 @@ public class Slicer {
 							continue;
 						}
 						slice(controlFlow, controlDependency, blockDependency, argumentDependency, dataDependency,
-								indexesToKeep, index);
+								classObjectDependency, indexesToKeep, index);
 					}
 				}
 			}
@@ -231,13 +244,10 @@ public class Slicer {
 //					continue;
 //				}
 				slice(controlFlow, controlDependency, blockDependency, argumentDependency, dataDependency,
-						indexesToKeep2, recursiveInvokeInstructionIndex);
+						classObjectDependency, indexesToKeep2, recursiveInvokeInstructionIndex);
 			}
 		}
 		indexesToKeep.addAll(indexesToKeep2);
-
-		// Add last return instruction
-		indexesToKeep.add(instructions.length - 1);
 		return indexesToKeep;
 	}
 
@@ -274,14 +284,14 @@ public class Slicer {
 				// Iterate all instructions and build the control flow
 				IInstruction instruction = instructions[blockInstructionIndex];
 
-				int pushedElementCount = Utilities.getPushedElementCount(instruction);
-				int poppedElementCount = Utilities.getPoppedElementCount(instruction);
+				int pushedSize = Utilities.getPushedSize(instruction);
+				int poppedSize = Utilities.getPoppedSize(instruction);
 
 				// Simulate stack execution
-				for (int popIteration = 0; popIteration < poppedElementCount; popIteration++) {
+				for (int popIteration = 0; popIteration < poppedSize; popIteration++) {
 					stack.pop();
 				}
-				for (int pushIteration = 0; pushIteration < pushedElementCount; pushIteration++) {
+				for (int pushIteration = 0; pushIteration < pushedSize; pushIteration++) {
 					stack.push(blockInstructionIndex);
 				}
 			}
@@ -289,11 +299,12 @@ public class Slicer {
 			// The remaining elements on the stack are the ones to be popped
 			int popSize = 0;
 			while (stack.size() > 0) {
-				int stackInstructionIndex = stack.pop();
+				int pushedSize = stack.pop();
 				// TODO There is at least one issue here when a remaining dup-instruction
 				// element should be popped. The instruction pushed size will not be the number
 				// of elements on the stack. Is 1 to use here always correct?
 				popSize += 1;
+//				popSize += pushedSize;
 //				popSize += Utilities.getPushedSize(instructions[stackInstructionIndex]);
 			}
 			if (popSize > 0) {
@@ -304,8 +315,9 @@ public class Slicer {
 	}
 
 	private void slice(ControlFlow controlFlow, ControlDependency controlDependency, BlockDependency blockDependency,
-			ArgumentDependency argumentDependency, DataDependency dataDependency, Set<Integer> dependendInstructions,
-			int index) throws IOException, InvalidClassFileException {
+			ArgumentDependency argumentDependency, DataDependency dataDependency,
+			ClassObjectDependency classObjectDependency, Set<Integer> dependendInstructions, int index)
+			throws IOException, InvalidClassFileException {
 		if (index < 0) {
 			// We cannot slice indexes which represent optional "this" (-1) or method
 			// arguments (-2, -3, ...)
@@ -320,7 +332,7 @@ public class Slicer {
 		// Add dependent argument instructions
 		for (Integer argumentIndex : argumentDependency.getArgumentInstructionIndexes(index)) {
 			slice(controlFlow, controlDependency, blockDependency, argumentDependency, dataDependency,
-					dependendInstructions, argumentIndex);
+					classObjectDependency, dependendInstructions, argumentIndex);
 		}
 
 		// Add cycle dependencies (goto)
@@ -353,7 +365,7 @@ public class Slicer {
 						continue;
 					}
 					slice(controlFlow, controlDependency, blockDependency, argumentDependency, dataDependency,
-							dependendInstructions, cycleStartIndex - 1);
+							classObjectDependency, dependendInstructions, cycleStartIndex - 1);
 				}
 
 				// So, keep end block of loop
@@ -362,7 +374,7 @@ public class Slicer {
 				Integer cycleEndIndex = cycle.get(cycle.size() - 1);
 				Integer highestIndex = blockDependency.getBlockForIndex(cycleEndIndex).getHighestIndex();
 				slice(controlFlow, controlDependency, blockDependency, argumentDependency, dataDependency,
-						dependendInstructions, highestIndex);
+						classObjectDependency, dependendInstructions, highestIndex);
 			}
 		}
 
@@ -374,7 +386,7 @@ public class Slicer {
 				continue;
 			}
 			slice(controlFlow, controlDependency, blockDependency, argumentDependency, dataDependency,
-					dependendInstructions, dataDependentIndex);
+					classObjectDependency, dependendInstructions, dataDependentIndex);
 		}
 
 		// TODO Why do we not need to consider control dependencies? Implied by the
@@ -385,7 +397,13 @@ public class Slicer {
 				continue;
 			}
 			slice(controlFlow, controlDependency, blockDependency, argumentDependency, dataDependency,
-					dependendInstructions, controlDependentIndex);
+					classObjectDependency, dependendInstructions, controlDependentIndex);
+		}
+
+		// Class Object Dependencies
+		for (Integer classObjectDependentIndex : classObjectDependency.getClassObjectDependencyInstructions(index)) {
+			slice(controlFlow, controlDependency, blockDependency, argumentDependency, dataDependency,
+					classObjectDependency, dependendInstructions, classObjectDependentIndex);
 		}
 	}
 
