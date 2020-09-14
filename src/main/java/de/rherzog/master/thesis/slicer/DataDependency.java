@@ -39,22 +39,6 @@ public class DataDependency extends SlicerGraph<Integer> {
 		return graph;
 	}
 
-	public Set<Integer> getDataDependencyInstructions(int index) throws IOException, InvalidClassFileException {
-		// TODO In both directions?
-		Graph<Integer, DefaultEdge> dataDependencyGraph = getGraph();
-		Set<DefaultEdge> edges = dataDependencyGraph.edgesOf(index);
-
-		Set<Integer> dataDependentInstructionSet = new HashSet<>();
-		for (DefaultEdge dataDependencyEdge : edges) {
-//			Integer edgeSource = dataDependencyGraph.getEdgeSource(dataDependencyEdge);
-//			dataDependentInstructionSet.add(edgeSource);
-
-			Integer edgeTarget = dataDependencyGraph.getEdgeTarget(dataDependencyEdge);
-			dataDependentInstructionSet.add(edgeTarget);
-		}
-		return dataDependentInstructionSet;
-	}
-
 	private Graph<Integer, DefaultEdge> getDependencyGraph(Graph<Integer, DefaultEdge> cfg)
 			throws IOException, InvalidClassFileException {
 		// Create graph
@@ -85,6 +69,22 @@ public class DataDependency extends SlicerGraph<Integer> {
 					new HashSet<>(), dependencyGraph);
 		}
 		return dependencyGraph;
+	}
+
+	public Set<Integer> getDataDependencyInstructions(int index) throws IOException, InvalidClassFileException {
+		// TODO In both directions?
+		Graph<Integer, DefaultEdge> dataDependencyGraph = getGraph();
+		Set<DefaultEdge> edges = dataDependencyGraph.edgesOf(index);
+
+		Set<Integer> dataDependentInstructionSet = new HashSet<>();
+		for (DefaultEdge dataDependencyEdge : edges) {
+//			Integer edgeSource = dataDependencyGraph.getEdgeSource(dataDependencyEdge);
+//			dataDependentInstructionSet.add(edgeSource);
+
+			Integer edgeTarget = dataDependencyGraph.getEdgeTarget(dataDependencyEdge);
+			dataDependentInstructionSet.add(edgeTarget);
+		}
+		return dataDependentInstructionSet;
 	}
 
 	private void buildGraphForVertex(Graph<Integer, DefaultEdge> cfg, boolean hasThis, int methodParameters,

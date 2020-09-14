@@ -663,7 +663,7 @@ public class SlicerTest {
 				"Lde.rherzog.master.thesis.slicer.test.SlicerValidation;.reuseVariableWithoutReinitialization()V");
 		System.out.println(slicer.getMethodSummary());
 //		slicer.showPlots();
-		slicer.getControlDependency().showPlot();
+		slicer.getForwardDominanceTree().showPlot();
 
 		Map<Set<Integer>, List<IInstruction>> slicerCriterionResultMap = new HashMap<>();
 

@@ -33,7 +33,7 @@ public class ControlDependency extends SlicerGraph<Integer> {
 			return graph;
 		}
 
-		// Build up block graph with vertices
+		// Build up graph with vertices
 		IInstruction[] instructions = controlFlow.getMethodData().getInstructions();
 		graph = new DefaultDirectedGraph<>(DefaultEdge.class);
 

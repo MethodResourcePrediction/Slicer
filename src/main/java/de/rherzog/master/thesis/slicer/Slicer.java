@@ -48,6 +48,7 @@ public class Slicer {
 	private DataDependency dataDependency;
 	private ArgumentDependency argumentDependency;
 	private ClassObjectDependency classObjectDependency;
+	private ForwardDominanceTree forwardDominanceTree;
 
 	private boolean verbose = false;
 
@@ -78,6 +79,7 @@ public class Slicer {
 		DataDependency dataDependency = getDataDependency();
 		ArgumentDependency argumentDependency = getArgumentDependency();
 		ClassObjectDependency classObjectDependency = getClassObjectDependency();
+		ForwardDominanceTree forwardDominanceTree = getForwardDominanceTree();
 
 		Map<Integer, Set<Integer>> varIndexesToRenumber = argumentDependency.getVarIndexesToRenumber();
 		Set<Integer> instructionsInCycles = controlFlow.getInstructionsInCycles();
@@ -453,6 +455,14 @@ public class Slicer {
 		}
 		classObjectDependency = new ClassObjectDependency(getBlockDependency());
 		return classObjectDependency;
+	}
+
+	public ForwardDominanceTree getForwardDominanceTree() throws IOException, InvalidClassFileException {
+		if (forwardDominanceTree != null) {
+			return forwardDominanceTree;
+		}
+		forwardDominanceTree = new ForwardDominanceTree(getControlFlow());
+		return forwardDominanceTree;
 	}
 
 	public Map<Integer, Set<Integer>> getVariableIndexesToRenumber() throws IOException, InvalidClassFileException {
