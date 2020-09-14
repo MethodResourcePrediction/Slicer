@@ -81,6 +81,15 @@ public class SlicerValidation {
 		return 0L;
 	}
 
+	public void simpleConditional() {
+		int i = Thread.activeCount();
+		if (i == 1) {
+			i = 0;
+		}  else {
+			i = 1;
+		}
+	}
+
 	public PrintStream returnObject() {
 		return System.out;
 	}

@@ -1077,6 +1077,19 @@ public class SlicerTest {
 		validateSliceResults(slicerCriterionResultMap);
 	}
 
+
+	@Test
+	public void testSliceConditional()
+			throws IOException, InvalidClassFileException, InterruptedException, ExportException {
+		slicer.setInputJar(slicerValidationJarPath);
+		slicer.setMethodSignature(
+				"Lde.rherzog.master.thesis.slicer.test.SlicerValidation;.simpleConditional()V");
+		System.out.println(slicer.getMethodSummary());
+//		slicer.showPlots();
+		slicer.getControlFlow().showPlot();
+		slicer.getForwardDominanceTree().showPlot();
+	}
+
 	private void validateSliceResults(Map<Set<Integer>, List<IInstruction>> slicerCriterionResultMap)
 			throws IOException, InvalidClassFileException {
 		// Debug code generation output

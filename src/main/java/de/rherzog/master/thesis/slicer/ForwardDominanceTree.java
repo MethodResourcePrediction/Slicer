@@ -97,15 +97,32 @@ public class ForwardDominanceTree extends SlicerGraph<Integer> {
 			}
 		} while (changes);
 
+		for (Entry<Integer, Set<Integer>> entry : dom.entrySet()) {
+			System.out.println(entry);
+		}
+
 		// Add domination indexes to the final graph
 		for (Entry<Integer, Set<Integer>> entry : dom.entrySet()) {
+			if (entry.getKey() == 0) {
+				continue;
+			}
+
+			int maxPrevDomIndex = 0;
 			for (int domIndex : entry.getValue()) {
+				if (domIndex == entry.getKey()) {
+					continue;
+				}
+				maxPrevDomIndex = Math.max(maxPrevDomIndex, domIndex);
+
 				// Only add an edge to the graph if there is a precedence in the cfg. Instead it
 				// would yield to an absolute chaotic graph faaar away from being a tree.
-				if (controlFlow.getGraph().containsEdge(domIndex, entry.getKey())) {
-					graph.addEdge(entry.getKey(), domIndex);
-				}
+//				if (controlFlow.getGraph().containsEdge(domIndex, entry.getKey())) {
+//					graph.addEdge(entry.getKey(), domIndex); // Forward
+//					graph.addEdge(domIndex, entry.getKey()); // Reverse
+//				}
 			}
+//			graph.addEdge(entry.getKey(), maxPrevDomIndex); // Forward
+			graph.addEdge(maxPrevDomIndex, entry.getKey()); // Reverse
 		}
 		return graph;
 	}
