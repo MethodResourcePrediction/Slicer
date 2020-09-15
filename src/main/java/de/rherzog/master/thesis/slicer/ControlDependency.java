@@ -6,7 +6,9 @@ import java.util.List;
 import java.util.Set;
 
 import org.jgrapht.Graph;
+import org.jgrapht.GraphPath;
 import org.jgrapht.alg.cycle.JohnsonSimpleCycles;
+import org.jgrapht.alg.shortestpath.AllDirectedPaths;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.io.ComponentNameProvider;
@@ -18,13 +20,16 @@ import com.ibm.wala.shrikeCT.InvalidClassFileException;
 
 public class ControlDependency extends SlicerGraph<Integer> {
 	private ControlFlow controlFlow;
+	private ForwardDominanceTree forwardDominanceTree;
+
 	private Graph<Integer, DefaultEdge> graph;
 	private List<List<Integer>> simpleCycles;
 
 	public static final int ROOT_INDEX = -1;
 
-	public ControlDependency(ControlFlow controlFlowGraph) {
+	public ControlDependency(ControlFlow controlFlowGraph, ForwardDominanceTree forwardDominanceTree) {
 		this.controlFlow = controlFlowGraph;
+		this.forwardDominanceTree = forwardDominanceTree;
 	}
 
 	@Override
@@ -34,7 +39,7 @@ public class ControlDependency extends SlicerGraph<Integer> {
 		}
 
 		// Build up graph with vertices
-		IInstruction[] instructions = controlFlow.getMethodData().getInstructions();
+//		IInstruction[] instructions = controlFlow.getMethodData().getInstructions();
 		graph = new DefaultDirectedGraph<>(DefaultEdge.class);
 
 		// In a control dependency graph there is a root node which marks the program
@@ -43,13 +48,52 @@ public class ControlDependency extends SlicerGraph<Integer> {
 
 		// Every vertex in the control flow is present in the control dependency graph
 		// as well.
-		Graph<Integer, DefaultEdge> cfg = controlFlow.getGraph();
+		final Graph<Integer, DefaultEdge> cfg = controlFlow.getGraph();
+		final Graph<Integer, DefaultEdge> fdt = forwardDominanceTree.getGraph();
 		cfg.vertexSet().forEach(v -> graph.addVertex(v));
+
+		// https://www.cs.colorado.edu/~kena/classes/5828/s00/lectures/lecture15.pdf
+		// Y is control dependent on X <=> there is a path in the CFG from X to Y that
+		// doesn't contain the immediate forward dominator of X
+		AllDirectedPaths<Integer, DefaultEdge> cfgPaths = new AllDirectedPaths<>(cfg);
+		for (int x : cfg.vertexSet()) {
+			for (int y : cfg.vertexSet()) {
+				System.out.println("X: " + x + ", Y: " + y);
+//				if (x == y) {
+//					continue;
+//				}
+				final List<GraphPath<Integer, DefaultEdge>> paths = cfgPaths.getAllPaths(x, y, true, null);
+
+				boolean controlDependent = false;
+				for (GraphPath<Integer, DefaultEdge> path : paths) {
+					if (path.getLength() > 0) {
+//						System.out.println(path.toString());
+						final HashSet<Integer> vertexSetOnPath = new HashSet<>(path.getVertexList());
+
+						final Integer intermediateForwardDominator = forwardDominanceTree
+								.getImmediateForwardDominator(x);
+						if (intermediateForwardDominator == null) {
+//							controlDependent = true;
+						}
+						if (!vertexSetOnPath.contains(intermediateForwardDominator)) {
+							controlDependent = true;
+						}
+					}
+				}
+
+				System.out.println(y + " is" + (controlDependent ? "" : " NOT") + " control dependent on " + x);
+				if (controlDependent) {
+					final Integer intermediateForwardDominator = forwardDominanceTree.getImmediateForwardDominator(y);
+					graph.addEdge(x, y);
+					break;
+				}
+			}
+		}
 
 		// Build up the edges which shows the control dependencies
 		// Start with the root node (index) and begin to analyze with the first
 		// instruction (index 0)
-		iterate(new HashSet<>(), cfg, instructions, ROOT_INDEX, 0);
+//		iterate(new HashSet<>(), cfg, instructions, ROOT_INDEX, 0);
 		return graph;
 	}
 

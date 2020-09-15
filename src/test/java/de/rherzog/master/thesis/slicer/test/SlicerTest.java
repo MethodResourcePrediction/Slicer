@@ -6,7 +6,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLDecoder;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -1077,17 +1081,18 @@ public class SlicerTest {
 		validateSliceResults(slicerCriterionResultMap);
 	}
 
-
 	@Test
 	public void testSliceConditional()
-			throws IOException, InvalidClassFileException, InterruptedException, ExportException {
+			throws IOException, InvalidClassFileException, InterruptedException, ExportException, URISyntaxException {
 		slicer.setInputJar(slicerValidationJarPath);
-		slicer.setMethodSignature(
-				"Lde.rherzog.master.thesis.slicer.test.SlicerValidation;.simpleConditional()V");
+		slicer.setMethodSignature("Lde.rherzog.master.thesis.slicer.test.SlicerValidation;.simpleConditional()V");
 		System.out.println(slicer.getMethodSummary());
 //		slicer.showPlots();
-		slicer.getControlFlow().showPlot();
-		slicer.getForwardDominanceTree().showPlot();
+		Path dir = Path.of(new URI("file:///tmp/slicer"));
+//		final Path dir = Files.createTempDirectory("slicer-");
+		slicer.getControlFlow().writePlot(dir, "ControlFlow.png");
+		slicer.getForwardDominanceTree().writePlot(dir, "ForwardDominanceTree.png");
+//		slicer.getControlDependency().writePlot(dir, "ControlDependency.png");
 	}
 
 	private void validateSliceResults(Map<Set<Integer>, List<IInstruction>> slicerCriterionResultMap)

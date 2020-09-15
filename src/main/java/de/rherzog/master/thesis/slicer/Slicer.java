@@ -421,7 +421,7 @@ public class Slicer {
 		if (controlDependency != null) {
 			return controlDependency;
 		}
-		controlDependency = new ControlDependency(getControlFlow());
+		controlDependency = new ControlDependency(getControlFlow(), getForwardDominanceTree());
 		return controlDependency;
 	}
 

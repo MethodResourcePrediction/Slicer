@@ -39,6 +39,17 @@ public abstract class SlicerGraph<T> {
 		return writer.toString();
 	}
 
+	public void writePlot(Path dir, String fileName)
+			throws IOException, InterruptedException, InvalidClassFileException, ExportException {
+		final Path path = Path.of(dir.toString(), fileName);
+		Utilities.dotWriteToFile(path.toString(), dotPrint());
+	}
+
+	public void showPlot(Path dir, String fileName)
+			throws IOException, InterruptedException, InvalidClassFileException, ExportException {
+		Utilities.dotShow(dir, fileName, dotPrint());
+	}
+
 	public void showPlot(Path dir)
 			throws IOException, InterruptedException, InvalidClassFileException, ExportException {
 		Utilities.dotShow(dir, dotPrint());

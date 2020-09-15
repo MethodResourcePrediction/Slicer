@@ -82,12 +82,12 @@ public class SlicerValidation {
 	}
 
 	public void simpleConditional() {
-		int i = Thread.activeCount();
-		if (i == 1) {
-			i = 0;
-		}  else {
-			i = 1;
+		if (Thread.currentThread() != null) {
+			Thread.dumpStack();
+		} else {
+			Thread.dumpStack();
 		}
+		Thread.dumpStack();
 	}
 
 	public PrintStream returnObject() {
