@@ -48,7 +48,8 @@ public class Slicer {
 	private DataDependency dataDependency;
 	private ArgumentDependency argumentDependency;
 	private ClassObjectDependency classObjectDependency;
-	private ForwardDominanceTree forwardDominanceTree;
+	private FirstForwardDominatorTree firstForwardDominatorTree;
+	private DominanceTree dominanceTree;
 
 	private boolean verbose = false;
 
@@ -79,7 +80,8 @@ public class Slicer {
 		DataDependency dataDependency = getDataDependency();
 		ArgumentDependency argumentDependency = getArgumentDependency();
 		ClassObjectDependency classObjectDependency = getClassObjectDependency();
-		ForwardDominanceTree forwardDominanceTree = getForwardDominanceTree();
+		FirstForwardDominatorTree firstForwardDominatorTree = getFirstForwardDominatorTree();
+		DominanceTree dominanceTree = getDominanceTree();
 
 		Map<Integer, Set<Integer>> varIndexesToRenumber = argumentDependency.getVarIndexesToRenumber();
 		Set<Integer> instructionsInCycles = controlFlow.getInstructionsInCycles();
@@ -421,7 +423,7 @@ public class Slicer {
 		if (controlDependency != null) {
 			return controlDependency;
 		}
-		controlDependency = new ControlDependency(getControlFlow(), getForwardDominanceTree());
+		controlDependency = new ControlDependency(getControlFlow(), getFirstForwardDominatorTree());
 		return controlDependency;
 	}
 
@@ -457,12 +459,20 @@ public class Slicer {
 		return classObjectDependency;
 	}
 
-	public ForwardDominanceTree getForwardDominanceTree() throws IOException, InvalidClassFileException {
-		if (forwardDominanceTree != null) {
-			return forwardDominanceTree;
+	public DominanceTree getDominanceTree() throws IOException, InvalidClassFileException {
+		if (dominanceTree != null) {
+			return dominanceTree;
 		}
-		forwardDominanceTree = new ForwardDominanceTree(getControlFlow());
-		return forwardDominanceTree;
+		dominanceTree = new DominanceTree(getControlFlow(), 0);
+		return dominanceTree;
+	}
+
+	public FirstForwardDominatorTree getFirstForwardDominatorTree() throws IOException, InvalidClassFileException {
+		if (firstForwardDominatorTree != null) {
+			return firstForwardDominatorTree;
+		}
+		firstForwardDominatorTree = new FirstForwardDominatorTree(getControlFlow());
+		return firstForwardDominatorTree;
 	}
 
 	public Map<Integer, Set<Integer>> getVariableIndexesToRenumber() throws IOException, InvalidClassFileException {

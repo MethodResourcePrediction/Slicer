@@ -1,20 +1,13 @@
 package de.rherzog.master.thesis.slicer;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import org.jgrapht.Graph;
-import org.jgrapht.GraphPath;
-import org.jgrapht.alg.shortestpath.AllDirectedPaths;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.io.ComponentNameProvider;
@@ -23,12 +16,22 @@ import org.jgrapht.io.ExportException;
 import com.ibm.wala.shrikeBT.IInstruction;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 
-public class ForwardDominanceTree extends SlicerGraph<Integer> {
+public class DominanceTree extends SlicerGraph<Integer> {
 	private ControlFlow controlFlow;
-	private Graph<Integer, DefaultEdge> graph;
+	private Graph<Integer, DefaultEdge> controlFlowGraph;
 
-	public ForwardDominanceTree(ControlFlow controlFlowGraph) {
-		this.controlFlow = controlFlowGraph;
+	private Graph<Integer, DefaultEdge> graph;
+	private int startIndex;
+
+	public DominanceTree(ControlFlow controlFlow, int startIndex) throws IOException, InvalidClassFileException {
+		this.controlFlow = controlFlow;
+		this.controlFlowGraph = controlFlow.getGraph();
+		this.startIndex = startIndex;
+	}
+
+	public DominanceTree(Graph<Integer, DefaultEdge> controlFlowGraph, int startIndex) {
+		this.controlFlowGraph = controlFlowGraph;
+		this.startIndex = startIndex;
 	}
 
 	@Override
@@ -36,26 +39,25 @@ public class ForwardDominanceTree extends SlicerGraph<Integer> {
 		if (graph != null) {
 			return graph;
 		}
-		IInstruction[] instructions = controlFlow.getMethodData().getInstructions();
 		graph = new DefaultDirectedGraph<>(DefaultEdge.class);
 
 		// Every vertex in the control flow is present in the forward dominance graph
 		// as well.
-		Graph<Integer, DefaultEdge> cfg = controlFlow.getGraph();
+		Graph<Integer, DefaultEdge> cfg = controlFlowGraph;
 		cfg.vertexSet().forEach(v -> graph.addVertex(v));
 
 		Map<Integer, Set<Integer>> dom = new HashMap<>();
 
 		// https://en.wikipedia.org/wiki/Dominator_(graph_theory)
-		final int n0 = 0;
+		final int n0 = startIndex;
 //		 // dominator of the start node is the start itself
 //		 Dom(n0) = {n0}
-		dom.put(n0, new HashSet<>(Set.of(0)));
+		dom.put(n0, new HashSet<>(Set.of(n0)));
 
 //		 // for all other nodes, set all nodes as the dominators
 //		 for each n in N - {n0}
 //		     Dom(n) = N;
-		final Set<Integer> N = IntStream.range(0, instructions.length).boxed().collect(Collectors.toSet());
+		final Set<Integer> N = cfg.vertexSet();
 //		 for each n in N - {n0}
 		for (int n : N) {
 			if (n == n0) {
@@ -70,7 +72,7 @@ public class ForwardDominanceTree extends SlicerGraph<Integer> {
 //		     for each n in N - {n0}:
 //		         Dom(n) = {n} union with intersection over Dom(p) for all p in pred(n)
 
-		AllDirectedPaths<Integer, DefaultEdge> cfgPaths = new AllDirectedPaths<>(cfg);
+//		AllDirectedPaths<Integer, DefaultEdge> cfgPaths = new AllDirectedPaths<>(cfg);
 
 		// while changes in any Dom(n)
 		boolean changes = false;
@@ -87,8 +89,8 @@ public class ForwardDominanceTree extends SlicerGraph<Integer> {
 				final Set<Integer> intersection = new HashSet<>(N);
 
 				// for all p in pred(n)
-				for (DefaultEdge edge : controlFlow.getGraph().incomingEdgesOf(n)) {
-					final int p = controlFlow.getGraph().getEdgeSource(edge);
+				for (DefaultEdge edge : controlFlowGraph.incomingEdgesOf(n)) {
+					final int p = controlFlowGraph.getEdgeSource(edge);
 
 					final Set<Integer> dom_p = dom.get(p);
 					intersection.retainAll(dom_p);
@@ -130,73 +132,36 @@ public class ForwardDominanceTree extends SlicerGraph<Integer> {
 			System.out.println(entry);
 		}
 
-//		// TODO First dominator
-//		Map<Integer, Integer> firstImmediateDominators = new HashMap<>();
-//
-//		for (int vertex : dom.keySet()) {
-//			int firstImmediateDominator = -1;
-//			for (Set<Integer> dominations : dom.values()) {
-//				if (!dominations.contains(vertex)) {
-//					continue;
-//				}
-//				List<Integer> dominationList = new ArrayList<>(dominations);
-//				Collections.sort(dominationList);
-//
-//				final int indexOfVertex = dominationList.indexOf(vertex);
-//				if (dominationList.size() == indexOfVertex + 2) {
-//					firstImmediateDominator = Math.max(firstImmediateDominator,
-//							dominationList.get(indexOfVertex + 1));
-//				}
-//			}
-//			firstImmediateDominators.put(vertex, firstImmediateDominator);
-//		}
-
 //		Map<Integer, Integer> ifdom = new HashMap<>();
 //		// Add domination indexes to the final graph
 		for (Entry<Integer, Set<Integer>> entry : dom.entrySet()) {
-			if (entry.getKey() == 0) {
+			if (entry.getKey() == n0) {
 				continue;
 			}
-//
-//			int immediateForwardDominator = 0;
-//			for (int domIndex : entry.getValue()) {
-//				if (domIndex == entry.getKey()) {
-//					continue;
-//				}
-//				immediateForwardDominator = Math.max(immediateForwardDominator, domIndex);
-//
+
+			int forwardDominator = 0;
+			for (int domIndex : entry.getValue()) {
+				if (domIndex == entry.getKey()) {
+					continue;
+				}
+				forwardDominator = Math.max(forwardDominator, domIndex);
+
 //				// Only add an edge to the graph if there is a precedence in the cfg. Instead it
 //				// would yield to an absolute chaotic graph faaar away from being a tree.
-////				if (controlFlow.getGraph().containsEdge(domIndex, entry.getKey())) {
-////					graph.addEdge(entry.getKey(), domIndex); // Forward
-////					graph.addEdge(domIndex, entry.getKey()); // Reverse
-////				}
-//			}
-////			graph.addEdge(entry.getKey(), immediateForwardDominator); // Reverse
-//////			graph.addEdge(immediateForwardDominator, entry.getKey()); // Forward
+//				if (controlFlowGraph.containsEdge(domIndex, entry.getKey())) {
+//					graph.addEdge(entry.getKey(), domIndex); // Reverse
+//					graph.addEdge(domIndex, entry.getKey()); // Forward
+//				}
+				graph.addEdge(domIndex, entry.getKey()); // Forward
+			}
+//			graph.addEdge(entry.getKey(), forwardDominator); // Reverse
+//			graph.addEdge(forwardDominator, entry.getKey()); // Forward
 		}
 		return graph;
 	}
 
-	public Integer getImmediateForwardDominator(int index) throws IOException, InvalidClassFileException {
-		final Set<DefaultEdge> incomingEdges = getGraph().incomingEdgesOf(index);
-		if (incomingEdges.size() == 1) {
-			// Usual case
-			return getGraph().getEdgeSource(incomingEdges.iterator().next());
-		}
-		if (incomingEdges.size() == 0) {
-			// Unusual case
-			return null;
-		}
-		// Error
-		throw new IllegalStateException("There are " + incomingEdges.size()
-				+ " immediate forward dominators for index " + index + " which is not possible");
-	}
-
 	@Override
 	protected String dotPrint() throws IOException, InvalidClassFileException, ExportException {
-		IInstruction[] instructions = controlFlow.getMethodData().getInstructions();
-
 		// use helper classes to define how vertices should be rendered,
 		// adhering to the DOT language restrictions
 		ComponentNameProvider<Integer> vertexIdProvider = new ComponentNameProvider<Integer>() {
@@ -206,10 +171,27 @@ public class ForwardDominanceTree extends SlicerGraph<Integer> {
 		};
 		ComponentNameProvider<Integer> vertexLabelProvider = new ComponentNameProvider<Integer>() {
 			public String getName(Integer index) {
-				return index + ": " + instructions[index].toString();
+				if (controlFlow != null) {
+					try {
+						IInstruction[] instructions = controlFlow.getMethodData().getInstructions();
+						return index + ": " + instructions[index].toString();
+					} catch (IOException | InvalidClassFileException e) {
+					}
+				}
+				return String.valueOf(index);
 			}
 		};
 		return getExporterGraphString(vertexIdProvider, vertexLabelProvider);
+	}
+
+	public Map<Integer, Integer> getDominators() throws IOException, InvalidClassFileException {
+		Map<Integer, Integer> dominatorMap = new HashMap<>();
+		for (DefaultEdge edge : getGraph().edgeSet()) {
+			final Integer edgeSource = getGraph().getEdgeSource(edge);
+			final Integer edgeTarget = getGraph().getEdgeTarget(edge);
+			dominatorMap.put(edgeTarget, edgeSource);
+		}
+		return dominatorMap;
 	}
 
 }

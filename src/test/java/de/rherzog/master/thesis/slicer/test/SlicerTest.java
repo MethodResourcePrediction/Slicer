@@ -9,7 +9,6 @@ import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -666,8 +665,10 @@ public class SlicerTest {
 		slicer.setMethodSignature(
 				"Lde.rherzog.master.thesis.slicer.test.SlicerValidation;.reuseVariableWithoutReinitialization()V");
 		System.out.println(slicer.getMethodSummary());
-//		slicer.showPlots();
-		slicer.getForwardDominanceTree().showPlot();
+		slicer.getControlFlow().showPlot();
+		slicer.getDominanceTree().showPlot();
+		slicer.getFirstForwardDominatorTree().showPlot();
+		slicer.getControlDependency().showPlot();
 
 		Map<Set<Integer>, List<IInstruction>> slicerCriterionResultMap = new HashMap<>();
 
@@ -1091,7 +1092,7 @@ public class SlicerTest {
 		Path dir = Path.of(new URI("file:///tmp/slicer"));
 //		final Path dir = Files.createTempDirectory("slicer-");
 		slicer.getControlFlow().writePlot(dir, "ControlFlow.png");
-		slicer.getForwardDominanceTree().writePlot(dir, "ForwardDominanceTree.png");
+		slicer.getDominanceTree().writePlot(dir, "ForwardDominanceTree.png");
 //		slicer.getControlDependency().writePlot(dir, "ControlDependency.png");
 	}
 

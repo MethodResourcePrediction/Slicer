@@ -20,16 +20,16 @@ import com.ibm.wala.shrikeCT.InvalidClassFileException;
 
 public class ControlDependency extends SlicerGraph<Integer> {
 	private ControlFlow controlFlow;
-	private ForwardDominanceTree forwardDominanceTree;
+	private FirstForwardDominatorTree firstForwardDominatorTree;
 
 	private Graph<Integer, DefaultEdge> graph;
 	private List<List<Integer>> simpleCycles;
 
 	public static final int ROOT_INDEX = -1;
 
-	public ControlDependency(ControlFlow controlFlowGraph, ForwardDominanceTree forwardDominanceTree) {
+	public ControlDependency(ControlFlow controlFlowGraph, FirstForwardDominatorTree firstForwardDominatorTree) {
 		this.controlFlow = controlFlowGraph;
-		this.forwardDominanceTree = forwardDominanceTree;
+		this.firstForwardDominatorTree = firstForwardDominatorTree;
 	}
 
 	@Override
@@ -49,7 +49,7 @@ public class ControlDependency extends SlicerGraph<Integer> {
 		// Every vertex in the control flow is present in the control dependency graph
 		// as well.
 		final Graph<Integer, DefaultEdge> cfg = controlFlow.getGraph();
-		final Graph<Integer, DefaultEdge> fdt = forwardDominanceTree.getGraph();
+		final Graph<Integer, DefaultEdge> fdt = firstForwardDominatorTree.getGraph();
 		cfg.vertexSet().forEach(v -> graph.addVertex(v));
 
 		// https://www.cs.colorado.edu/~kena/classes/5828/s00/lectures/lecture15.pdf
@@ -58,7 +58,6 @@ public class ControlDependency extends SlicerGraph<Integer> {
 		AllDirectedPaths<Integer, DefaultEdge> cfgPaths = new AllDirectedPaths<>(cfg);
 		for (int x : cfg.vertexSet()) {
 			for (int y : cfg.vertexSet()) {
-				System.out.println("X: " + x + ", Y: " + y);
 //				if (x == y) {
 //					continue;
 //				}
@@ -70,7 +69,7 @@ public class ControlDependency extends SlicerGraph<Integer> {
 //						System.out.println(path.toString());
 						final HashSet<Integer> vertexSetOnPath = new HashSet<>(path.getVertexList());
 
-						final Integer intermediateForwardDominator = forwardDominanceTree
+						final Integer intermediateForwardDominator = firstForwardDominatorTree
 								.getImmediateForwardDominator(x);
 						if (intermediateForwardDominator == null) {
 //							controlDependent = true;
@@ -81,9 +80,10 @@ public class ControlDependency extends SlicerGraph<Integer> {
 					}
 				}
 
-				System.out.println(y + " is" + (controlDependent ? "" : " NOT") + " control dependent on " + x);
 				if (controlDependent) {
-					final Integer intermediateForwardDominator = forwardDominanceTree.getImmediateForwardDominator(y);
+					System.out.println(y + " is" + (controlDependent ? "" : " NOT") + " control dependent on " + x);
+//					final Integer intermediateForwardDominator = firstForwardDominatorTree
+//							.getImmediateForwardDominator(y);
 					graph.addEdge(x, y);
 					break;
 				}
