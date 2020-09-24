@@ -28,6 +28,9 @@ import com.ibm.wala.shrikeBT.IInvokeInstruction;
 import com.ibm.wala.shrikeBT.ReturnInstruction;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 
+import de.rherzog.master.thesis.slicer.dominance.DominanceTree;
+import de.rherzog.master.thesis.slicer.dominance.FirstForwardDominatorTree;
+import de.rherzog.master.thesis.slicer.dominance.PostDominance;
 import de.rherzog.master.thesis.slicer.instrumenter.export.SliceWriter.ExportFormat;
 import de.rherzog.master.thesis.utils.Utilities;
 
@@ -48,8 +51,11 @@ public class Slicer {
 	private DataDependency dataDependency;
 	private ArgumentDependency argumentDependency;
 	private ClassObjectDependency classObjectDependency;
+
+	// Dominance
 	private FirstForwardDominatorTree firstForwardDominatorTree;
 	private DominanceTree dominanceTree;
+	private PostDominance postDominance;
 
 	private boolean verbose = false;
 
@@ -82,6 +88,7 @@ public class Slicer {
 		ClassObjectDependency classObjectDependency = getClassObjectDependency();
 		FirstForwardDominatorTree firstForwardDominatorTree = getFirstForwardDominatorTree();
 		DominanceTree dominanceTree = getDominanceTree();
+		PostDominance postDominance = getPostDominance();
 
 		Map<Integer, Set<Integer>> varIndexesToRenumber = argumentDependency.getVarIndexesToRenumber();
 		Set<Integer> instructionsInCycles = controlFlow.getInstructionsInCycles();
@@ -423,7 +430,7 @@ public class Slicer {
 		if (controlDependency != null) {
 			return controlDependency;
 		}
-		controlDependency = new ControlDependency(getControlFlow(), getFirstForwardDominatorTree());
+		controlDependency = new ControlDependency(getControlFlow(), getPostDominance());
 		return controlDependency;
 	}
 
@@ -465,6 +472,14 @@ public class Slicer {
 		}
 		dominanceTree = new DominanceTree(getControlFlow(), 0);
 		return dominanceTree;
+	}
+
+	public PostDominance getPostDominance() throws IOException, InvalidClassFileException {
+		if (postDominance != null) {
+			return postDominance;
+		}
+		postDominance = new PostDominance(getControlFlow());
+		return postDominance;
 	}
 
 	public FirstForwardDominatorTree getFirstForwardDominatorTree() throws IOException, InvalidClassFileException {

@@ -4,27 +4,14 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.jgrapht.Graph;
-import org.jgrapht.GraphPath;
-import org.jgrapht.alg.connectivity.ConnectivityInspector;
-import org.jgrapht.alg.shortestpath.AllDirectedPaths;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.io.ComponentNameProvider;
 import org.jgrapht.io.DOTExporter;
 import org.jgrapht.io.ExportException;
-import org.jgrapht.io.GraphExporter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -32,17 +19,17 @@ import org.junit.jupiter.api.TestInstance.Lifecycle;
 
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 
-import de.rherzog.master.thesis.slicer.ControlFlow;
-import de.rherzog.master.thesis.slicer.dominance.DominanceTree;
-import de.rherzog.master.thesis.slicer.dominance.FirstForwardDominatorTree;
+import de.rherzog.master.thesis.slicer.ControlDependency;
+import de.rherzog.master.thesis.slicer.dominance.PostDominance;
 import de.rherzog.master.thesis.utils.Utilities;
 
 @TestInstance(Lifecycle.PER_CLASS)
-public class ForwardDominanceTreeTest {
-	Graph<Integer, DefaultEdge> cfg;
+public class ControlDependencyTest {
+	private Graph<Integer, DefaultEdge> cfg;
+	private PostDominance postDominance;
 
 	@BeforeEach
-	public void foo() throws IOException, InterruptedException {
+	public void setup() throws IOException, InterruptedException {
 		cfg = new DefaultDirectedGraph<Integer, DefaultEdge>(DefaultEdge.class);
 
 		// https://www.cs.colorado.edu/~kena/classes/5828/s00/lectures/lecture15.pdf
@@ -97,20 +84,13 @@ public class ForwardDominanceTreeTest {
 		dotExporter.exportGraph(cfg, writer);
 
 		Utilities.dotWriteToFile("/tmp/slicer/ControlFlowGraphTest.png", writer.toString());
+
+		postDominance = new PostDominance(cfg);
 	}
 
 	@Test
-	public void fd() throws IOException, InterruptedException, InvalidClassFileException, ExportException {
-		DominanceTree forwardDominatorTree = new DominanceTree(cfg, 1);
-		forwardDominatorTree.getDominators();
-		forwardDominatorTree.writePlot(Path.of("/tmp/slicer"), "DominanceTreeGraphTest.png");
-	}
-
-	@Test
-	public void ffd() throws IOException, InterruptedException, InvalidClassFileException, ExportException {
-		FirstForwardDominatorTree firstForwardDominatorTree = new FirstForwardDominatorTree(cfg);
-		firstForwardDominatorTree.getImmediateForwardDominators();
-
-		firstForwardDominatorTree.writePlot(Path.of("/tmp/slicer"), "FirstForwardDominatorTreeGraphTest.png");
+	public void cd() throws IOException, InterruptedException, InvalidClassFileException, ExportException {
+		ControlDependency controlDependency = new ControlDependency(cfg, postDominance);
+		controlDependency.writePlot(Path.of("/tmp/slicer"), "ControlDependencyTest.png");
 	}
 }

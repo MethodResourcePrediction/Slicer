@@ -1,4 +1,4 @@
-package de.rherzog.master.thesis.slicer;
+package de.rherzog.master.thesis.slicer.dominance;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -19,6 +19,9 @@ import org.jgrapht.io.ExportException;
 
 import com.ibm.wala.shrikeBT.IInstruction;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
+
+import de.rherzog.master.thesis.slicer.ControlFlow;
+import de.rherzog.master.thesis.slicer.SlicerGraph;
 
 public class FirstForwardDominatorTree extends SlicerGraph<Integer> {
 	private ControlFlow controlFlow;
@@ -48,8 +51,15 @@ public class FirstForwardDominatorTree extends SlicerGraph<Integer> {
 
 		AllDirectedPaths<Integer, DefaultEdge> cfgPaths = new AllDirectedPaths<>(controlFlowGraph);
 
+		
+//		final int root = -1;
+//		graph.addVertex(root);
 		controlFlowGraph.vertexSet().forEach(v -> graph.addVertex(v));
+
 		for (int x : graph.vertexSet()) {
+//			if (x == root) {
+//				continue;
+//			}
 			final List<GraphPath<Integer, DefaultEdge>> allPaths = cfgPaths.getAllPaths(Set.of(x),
 					controlFlowGraph.vertexSet(), true, null);
 
@@ -117,7 +127,8 @@ public class FirstForwardDominatorTree extends SlicerGraph<Integer> {
 			}
 
 			final Integer firstForwardDominator = sortedForwardDominators.get(vertexIndex + 1);
-			graph.addEdge(firstForwardDominator, x);
+			graph.addEdge(x, firstForwardDominator);
+//			graph.addEdge(firstForwardDominator, x);
 		}
 		return graph;
 	}
@@ -149,6 +160,9 @@ public class FirstForwardDominatorTree extends SlicerGraph<Integer> {
 		ComponentNameProvider<Integer> vertexLabelProvider = new ComponentNameProvider<Integer>() {
 			public String getName(Integer index) {
 				if (controlFlow != null) {
+//					if (index == -1) {
+//						return "ROOT";
+//					}
 					try {
 						IInstruction[] instructions = controlFlow.getMethodData().getInstructions();
 						return index + ": " + instructions[index].toString();

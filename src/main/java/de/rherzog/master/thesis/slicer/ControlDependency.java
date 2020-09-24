@@ -7,29 +7,36 @@ import java.util.Set;
 
 import org.jgrapht.Graph;
 import org.jgrapht.GraphPath;
-import org.jgrapht.alg.cycle.JohnsonSimpleCycles;
 import org.jgrapht.alg.shortestpath.AllDirectedPaths;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.io.ComponentNameProvider;
 import org.jgrapht.io.ExportException;
 
-import com.ibm.wala.shrikeBT.IConditionalBranchInstruction;
 import com.ibm.wala.shrikeBT.IInstruction;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 
+import de.rherzog.master.thesis.slicer.dominance.PostDominance;
+
 public class ControlDependency extends SlicerGraph<Integer> {
 	private ControlFlow controlFlow;
-	private FirstForwardDominatorTree firstForwardDominatorTree;
+	private Graph<Integer, DefaultEdge> controlFlowGraph;
+	private PostDominance postDominance;
 
 	private Graph<Integer, DefaultEdge> graph;
-	private List<List<Integer>> simpleCycles;
 
 	public static final int ROOT_INDEX = -1;
 
-	public ControlDependency(ControlFlow controlFlowGraph, FirstForwardDominatorTree firstForwardDominatorTree) {
-		this.controlFlow = controlFlowGraph;
-		this.firstForwardDominatorTree = firstForwardDominatorTree;
+	public ControlDependency(ControlFlow controlFlow, PostDominance postDominance)
+			throws IOException, InvalidClassFileException {
+		this.controlFlow = controlFlow;
+		this.controlFlowGraph = controlFlow.getGraph();
+		this.postDominance = postDominance;
+	}
+
+	public ControlDependency(Graph<Integer, DefaultEdge> controlFlowGraph, PostDominance postDominance) {
+		this.controlFlowGraph = controlFlowGraph;
+		this.postDominance = postDominance;
 	}
 
 	@Override
@@ -39,88 +46,62 @@ public class ControlDependency extends SlicerGraph<Integer> {
 		}
 
 		// Build up graph with vertices
-//		IInstruction[] instructions = controlFlow.getMethodData().getInstructions();
 		graph = new DefaultDirectedGraph<>(DefaultEdge.class);
 
 		// In a control dependency graph there is a root node which marks the program
 		// start. Add it first
 		graph.addVertex(ROOT_INDEX);
+		controlFlowGraph.vertexSet().forEach(v -> graph.addVertex(v));
 
-		// Every vertex in the control flow is present in the control dependency graph
-		// as well.
-		final Graph<Integer, DefaultEdge> cfg = controlFlow.getGraph();
-		final Graph<Integer, DefaultEdge> fdt = firstForwardDominatorTree.getGraph();
-		cfg.vertexSet().forEach(v -> graph.addVertex(v));
+		// A node y is control dependent on node x (x → y) if
+		// – ∃ path p from x to y in the CFG, such that y post‐dominates every node in p
+		// (except for x), and
+		// – x is not post‐dominated by y
 
-		// https://www.cs.colorado.edu/~kena/classes/5828/s00/lectures/lecture15.pdf
-		// Y is control dependent on X <=> there is a path in the CFG from X to Y that
-		// doesn't contain the immediate forward dominator of X
-		AllDirectedPaths<Integer, DefaultEdge> cfgPaths = new AllDirectedPaths<>(cfg);
-		for (int x : cfg.vertexSet()) {
-			for (int y : cfg.vertexSet()) {
-//				if (x == y) {
-//					continue;
-//				}
-				final List<GraphPath<Integer, DefaultEdge>> paths = cfgPaths.getAllPaths(x, y, true, null);
+		AllDirectedPaths<Integer, DefaultEdge> cfgPaths = new AllDirectedPaths<>(controlFlowGraph);
 
-				boolean controlDependent = false;
-				for (GraphPath<Integer, DefaultEdge> path : paths) {
-					if (path.getLength() > 0) {
-//						System.out.println(path.toString());
-						final HashSet<Integer> vertexSetOnPath = new HashSet<>(path.getVertexList());
+		for (int x : controlFlowGraph.vertexSet()) {
+			for (int y : controlFlowGraph.vertexSet()) {
+				if (x == y) {
+					continue;
+				}
+				// – ∃ path p from x to y in the CFG, such that y post‐dominates every node in p
+				// (except for x)
+				final List<GraphPath<Integer, DefaultEdge>> xyPaths = cfgPaths.getAllPaths(x, y, false,
+						controlFlowGraph.edgeSet().size());
 
-						final Integer intermediateForwardDominator = firstForwardDominatorTree
-								.getImmediateForwardDominator(x);
-						if (intermediateForwardDominator == null) {
-//							controlDependent = true;
+				// such that y post‐dominates every node in p
+				boolean existsAnyPathDominatingAllNodes = false;
+				for (GraphPath<Integer, DefaultEdge> xyPath : xyPaths) {
+					final List<Integer> pathNodes = xyPath.getVertexList();
+
+					boolean dominatesAllNodesInPath = true;
+					for (int pathNode : pathNodes) {
+						if (pathNode == x) {
+							// (except for x)
+							continue;
 						}
-						if (!vertexSetOnPath.contains(intermediateForwardDominator)) {
-							controlDependent = true;
-						}
+						dominatesAllNodesInPath &= postDominance.isPostDominating(y, pathNode);
 					}
+					existsAnyPathDominatingAllNodes |= dominatesAllNodesInPath;
 				}
 
-				if (controlDependent) {
-					System.out.println(y + " is" + (controlDependent ? "" : " NOT") + " control dependent on " + x);
-//					final Integer intermediateForwardDominator = firstForwardDominatorTree
-//							.getImmediateForwardDominator(y);
-					graph.addEdge(x, y);
-					break;
+				if (!existsAnyPathDominatingAllNodes) {
+					// Condition 1 failed
+					continue;
 				}
+
+				// x is not post‐dominated by y
+				if (postDominance.isPostDominating(y, x)) {
+					continue;
+				}
+
+				// Control dependent from x to y
+				graph.addEdge(x, y);
 			}
 		}
 
-		// Build up the edges which shows the control dependencies
-		// Start with the root node (index) and begin to analyze with the first
-		// instruction (index 0)
-//		iterate(new HashSet<>(), cfg, instructions, ROOT_INDEX, 0);
 		return graph;
-	}
-
-	private void iterate(Set<Integer> visited, Graph<Integer, DefaultEdge> cfg, IInstruction[] instructions, int parent,
-			int index) {
-		// We just need to visit each node once
-		if (!visited.add(index)) {
-			return;
-		}
-
-		// If we havn't seen the instruction with "index" before, it always depends on
-		// the parent index.
-		graph.addEdge(parent, index);
-		// If there is a edge to one or more instructions in the cfg focus on it.
-		for (DefaultEdge edge : cfg.outgoingEdgesOf(index)) {
-			int targetInstructionIndex = cfg.getEdgeTarget(edge);
-
-			IInstruction instruction = instructions[index];
-			// If we visit a ConditionalBranchInstruction (CBI), all dependent instructions
-			// can only be reached by executing the CBI first. Hence, the new parent is the
-			// CBI instruction.
-			if (instruction instanceof IConditionalBranchInstruction) {
-				iterate(visited, cfg, instructions, index, targetInstructionIndex);
-			} else {
-				iterate(visited, cfg, instructions, parent, targetInstructionIndex);
-			}
-		}
 	}
 
 	public Set<Integer> getControlDependencyInstructions(int index) throws IOException, InvalidClassFileException {
@@ -137,8 +118,6 @@ public class ControlDependency extends SlicerGraph<Integer> {
 
 	@Override
 	protected String dotPrint() throws IOException, InvalidClassFileException, ExportException {
-		IInstruction[] instructions = controlFlow.getMethodData().getInstructions();
-
 		// use helper classes to define how vertices should be rendered,
 		// adhering to the DOT language restrictions
 		ComponentNameProvider<Integer> vertexIdProvider = new ComponentNameProvider<>() {
@@ -151,20 +130,17 @@ public class ControlDependency extends SlicerGraph<Integer> {
 				if (index == ROOT_INDEX) {
 					return "START";
 				}
-				return index + ": " + instructions[index].toString();
+				if (controlFlow != null) {
+					try {
+						IInstruction[] instructions = controlFlow.getMethodData().getInstructions();
+						return index + ": " + instructions[index].toString();
+					} catch (IOException | InvalidClassFileException e) {
+					}
+				}
+				return String.valueOf(index);
 			}
 		};
 		return getExporterGraphString(vertexIdProvider, vertexLabelProvider);
-	}
-
-	public List<List<Integer>> getSimpleCycles() throws IOException, InvalidClassFileException {
-		if (simpleCycles != null) {
-			return simpleCycles;
-		}
-
-		JohnsonSimpleCycles<Integer, DefaultEdge> johnsonSimpleCycles = new JohnsonSimpleCycles<>(getGraph());
-		simpleCycles = johnsonSimpleCycles.findSimpleCycles();
-		return simpleCycles;
 	}
 
 	@Override

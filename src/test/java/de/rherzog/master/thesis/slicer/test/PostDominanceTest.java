@@ -35,14 +35,15 @@ import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import de.rherzog.master.thesis.slicer.ControlFlow;
 import de.rherzog.master.thesis.slicer.dominance.DominanceTree;
 import de.rherzog.master.thesis.slicer.dominance.FirstForwardDominatorTree;
+import de.rherzog.master.thesis.slicer.dominance.PostDominance;
 import de.rherzog.master.thesis.utils.Utilities;
 
 @TestInstance(Lifecycle.PER_CLASS)
-public class ForwardDominanceTreeTest {
+public class PostDominanceTest {
 	Graph<Integer, DefaultEdge> cfg;
 
 	@BeforeEach
-	public void foo() throws IOException, InterruptedException {
+	public void setup() throws IOException, InterruptedException {
 		cfg = new DefaultDirectedGraph<Integer, DefaultEdge>(DefaultEdge.class);
 
 		// https://www.cs.colorado.edu/~kena/classes/5828/s00/lectures/lecture15.pdf
@@ -100,17 +101,8 @@ public class ForwardDominanceTreeTest {
 	}
 
 	@Test
-	public void fd() throws IOException, InterruptedException, InvalidClassFileException, ExportException {
-		DominanceTree forwardDominatorTree = new DominanceTree(cfg, 1);
-		forwardDominatorTree.getDominators();
-		forwardDominatorTree.writePlot(Path.of("/tmp/slicer"), "DominanceTreeGraphTest.png");
-	}
-
-	@Test
-	public void ffd() throws IOException, InterruptedException, InvalidClassFileException, ExportException {
-		FirstForwardDominatorTree firstForwardDominatorTree = new FirstForwardDominatorTree(cfg);
-		firstForwardDominatorTree.getImmediateForwardDominators();
-
-		firstForwardDominatorTree.writePlot(Path.of("/tmp/slicer"), "FirstForwardDominatorTreeGraphTest.png");
+	public void pd() throws IOException, InterruptedException, InvalidClassFileException, ExportException {
+		PostDominance postDominance = new PostDominance(cfg);
+		postDominance.writePlot(Path.of("/tmp/slicer"), "PostDominanceTest.png");
 	}
 }

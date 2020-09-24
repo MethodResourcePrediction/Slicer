@@ -1,4 +1,4 @@
-package de.rherzog.master.thesis.slicer;
+package de.rherzog.master.thesis.slicer.dominance;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -15,6 +15,9 @@ import org.jgrapht.io.ExportException;
 
 import com.ibm.wala.shrikeBT.IInstruction;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
+
+import de.rherzog.master.thesis.slicer.ControlFlow;
+import de.rherzog.master.thesis.slicer.SlicerGraph;
 
 public class DominanceTree extends SlicerGraph<Integer> {
 	private ControlFlow controlFlow;
@@ -139,7 +142,7 @@ public class DominanceTree extends SlicerGraph<Integer> {
 				continue;
 			}
 
-			int forwardDominator = 0;
+			int forwardDominator = n0;
 			for (int domIndex : entry.getValue()) {
 				if (domIndex == entry.getKey()) {
 					continue;
@@ -152,10 +155,10 @@ public class DominanceTree extends SlicerGraph<Integer> {
 //					graph.addEdge(entry.getKey(), domIndex); // Reverse
 //					graph.addEdge(domIndex, entry.getKey()); // Forward
 //				}
-				graph.addEdge(domIndex, entry.getKey()); // Forward
+//				graph.addEdge(domIndex, entry.getKey()); // Forward
 			}
 //			graph.addEdge(entry.getKey(), forwardDominator); // Reverse
-//			graph.addEdge(forwardDominator, entry.getKey()); // Forward
+			graph.addEdge(forwardDominator, entry.getKey()); // Forward
 		}
 		return graph;
 	}
