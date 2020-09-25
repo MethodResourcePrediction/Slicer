@@ -4,27 +4,12 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import org.jgrapht.Graph;
-import org.jgrapht.GraphPath;
-import org.jgrapht.alg.connectivity.ConnectivityInspector;
-import org.jgrapht.alg.shortestpath.AllDirectedPaths;
-import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.io.ComponentNameProvider;
 import org.jgrapht.io.DOTExporter;
 import org.jgrapht.io.ExportException;
-import org.jgrapht.io.GraphExporter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -32,55 +17,19 @@ import org.junit.jupiter.api.TestInstance.Lifecycle;
 
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 
-import de.rherzog.master.thesis.slicer.ControlFlow;
-import de.rherzog.master.thesis.slicer.dominance.DominanceTree;
+import de.rherzog.master.thesis.slicer.dominance.Dominance;
 import de.rherzog.master.thesis.slicer.dominance.FirstForwardDominatorTree;
+import de.rherzog.master.thesis.slicer.dominance.PostDominance;
+import de.rherzog.master.thesis.slicer.dominance.StrictDominance;
 import de.rherzog.master.thesis.utils.Utilities;
 
 @TestInstance(Lifecycle.PER_CLASS)
-public class ForwardDominanceTreeTest {
+public class DominanceTest {
 	Graph<Integer, DefaultEdge> cfg;
 
 	@BeforeEach
-	public void foo() throws IOException, InterruptedException {
-		cfg = new DefaultDirectedGraph<Integer, DefaultEdge>(DefaultEdge.class);
-
-		// https://www.cs.colorado.edu/~kena/classes/5828/s00/lectures/lecture15.pdf
-		IntStream.rangeClosed(1, 6).forEach(i -> cfg.addVertex(i));
-		cfg.addEdge(1, 2);
-		cfg.addEdge(2, 3);
-		cfg.addEdge(2, 4);
-		cfg.addEdge(3, 5);
-		cfg.addEdge(4, 5);
-		cfg.addEdge(5, 6);
-
-		// Extended:
-		// https://www.cs.colorado.edu/~kena/classes/5828/s00/lectures/lecture15.pdf
-//		IntStream.rangeClosed(1, 10).forEach(i -> cfg.addVertex(i));
-//		cfg.addEdge(1, 2);
-//
-//		cfg.addEdge(2, 3);
-//		cfg.addEdge(2, 4);
-//
-//		cfg.addEdge(3, 5);
-//		cfg.addEdge(5, 6);
-//		cfg.addEdge(6, 9);
-//
-//		cfg.addEdge(4, 7);
-//		cfg.addEdge(7, 8);
-//		cfg.addEdge(8, 9);
-//
-//		cfg.addEdge(9, 10);
-
-		// https://en.wikipedia.org/wiki/Dominator_(graph_theory)
-//		IntStream.rangeClosed(1, 6).forEach(i -> cfg.addVertex(i));
-//		cfg.addEdge(1, 2);
-//		cfg.addEdge(2, 3);
-//		cfg.addEdge(2, 4);
-//		cfg.addEdge(2, 6);
-//		cfg.addEdge(3, 5);
-//		cfg.addEdge(4, 5);
-//		cfg.addEdge(5, 2);
+	public void setup() throws IOException, InterruptedException {
+		cfg = TestControlFlowGraph.getControlFlowGraph();
 
 		DOTExporter<Integer, DefaultEdge> dotExporter = new DOTExporter<>(new ComponentNameProvider<>() {
 			@Override
@@ -100,8 +49,14 @@ public class ForwardDominanceTreeTest {
 	}
 
 	@Test
+	public void d() throws IOException, InterruptedException, InvalidClassFileException, ExportException {
+		Dominance dominance = new Dominance(cfg, 1);
+		dominance.writePlot(Path.of("/tmp/slicer"), "DominanceTest.png");
+	}
+
+	@Test
 	public void fd() throws IOException, InterruptedException, InvalidClassFileException, ExportException {
-		DominanceTree forwardDominatorTree = new DominanceTree(cfg, 1);
+		Dominance forwardDominatorTree = new Dominance(cfg, 1);
 		forwardDominatorTree.getDominators();
 		forwardDominatorTree.writePlot(Path.of("/tmp/slicer"), "DominanceTreeGraphTest.png");
 	}
@@ -112,5 +67,17 @@ public class ForwardDominanceTreeTest {
 		firstForwardDominatorTree.getImmediateForwardDominators();
 
 		firstForwardDominatorTree.writePlot(Path.of("/tmp/slicer"), "FirstForwardDominatorTreeGraphTest.png");
+	}
+
+	@Test
+	public void pd() throws IOException, InterruptedException, InvalidClassFileException, ExportException {
+		PostDominance postDominance = new PostDominance(cfg, 1);
+		postDominance.writePlot(Path.of("/tmp/slicer"), "PostDominanceTest.png");
+	}
+
+	@Test
+	public void sd() throws IOException, InterruptedException, InvalidClassFileException, ExportException {
+		StrictDominance strictDominance = new StrictDominance(new Dominance(cfg, 1));
+		strictDominance.writePlot(Path.of("/tmp/slicer"), "StrictDominanceTest.png");
 	}
 }

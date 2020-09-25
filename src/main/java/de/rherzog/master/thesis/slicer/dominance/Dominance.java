@@ -19,20 +19,20 @@ import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import de.rherzog.master.thesis.slicer.ControlFlow;
 import de.rherzog.master.thesis.slicer.SlicerGraph;
 
-public class DominanceTree extends SlicerGraph<Integer> {
+public class Dominance extends SlicerGraph<Integer> {
 	private ControlFlow controlFlow;
 	private Graph<Integer, DefaultEdge> controlFlowGraph;
 
 	private Graph<Integer, DefaultEdge> graph;
 	private int startIndex;
 
-	public DominanceTree(ControlFlow controlFlow, int startIndex) throws IOException, InvalidClassFileException {
+	public Dominance(ControlFlow controlFlow, int startIndex) throws IOException, InvalidClassFileException {
 		this.controlFlow = controlFlow;
 		this.controlFlowGraph = controlFlow.getGraph();
 		this.startIndex = startIndex;
 	}
 
-	public DominanceTree(Graph<Integer, DefaultEdge> controlFlowGraph, int startIndex) {
+	public Dominance(Graph<Integer, DefaultEdge> controlFlowGraph, int startIndex) {
 		this.controlFlowGraph = controlFlowGraph;
 		this.startIndex = startIndex;
 	}
@@ -131,23 +131,23 @@ public class DominanceTree extends SlicerGraph<Integer> {
 			}
 		} while (changes);
 
-		for (Entry<Integer, Set<Integer>> entry : dom.entrySet()) {
-			System.out.println(entry);
-		}
+//		for (Entry<Integer, Set<Integer>> entry : dom.entrySet()) {
+//			System.out.println(entry);
+//		}
 
 //		Map<Integer, Integer> ifdom = new HashMap<>();
 //		// Add domination indexes to the final graph
 		for (Entry<Integer, Set<Integer>> entry : dom.entrySet()) {
-			if (entry.getKey() == n0) {
-				continue;
-			}
+//			if (entry.getKey() == n0) {
+//				continue;
+//			}
 
-			int forwardDominator = n0;
+//			int forwardDominator = n0;
 			for (int domIndex : entry.getValue()) {
-				if (domIndex == entry.getKey()) {
-					continue;
-				}
-				forwardDominator = Math.max(forwardDominator, domIndex);
+//				if (domIndex == entry.getKey()) {
+//					continue;
+//				}
+//				forwardDominator = Math.max(forwardDominator, domIndex);
 
 //				// Only add an edge to the graph if there is a precedence in the cfg. Instead it
 //				// would yield to an absolute chaotic graph faaar away from being a tree.
@@ -155,10 +155,10 @@ public class DominanceTree extends SlicerGraph<Integer> {
 //					graph.addEdge(entry.getKey(), domIndex); // Reverse
 //					graph.addEdge(domIndex, entry.getKey()); // Forward
 //				}
-//				graph.addEdge(domIndex, entry.getKey()); // Forward
+				graph.addEdge(domIndex, entry.getKey()); // Forward
 			}
 //			graph.addEdge(entry.getKey(), forwardDominator); // Reverse
-			graph.addEdge(forwardDominator, entry.getKey()); // Forward
+//			graph.addEdge(forwardDominator, entry.getKey()); // Forward
 		}
 		return graph;
 	}
@@ -195,6 +195,10 @@ public class DominanceTree extends SlicerGraph<Integer> {
 			dominatorMap.put(edgeTarget, edgeSource);
 		}
 		return dominatorMap;
+	}
+
+	public ControlFlow getControlFlow() {
+		return controlFlow;
 	}
 
 }

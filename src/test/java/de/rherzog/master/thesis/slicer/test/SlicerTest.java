@@ -666,7 +666,7 @@ public class SlicerTest {
 				"Lde.rherzog.master.thesis.slicer.test.SlicerValidation;.reuseVariableWithoutReinitialization()V");
 		System.out.println(slicer.getMethodSummary());
 		slicer.getControlFlow().showPlot();
-		slicer.getDominanceTree().showPlot();
+		slicer.getDominance().showPlot();
 		slicer.getFirstForwardDominatorTree().showPlot();
 		slicer.getControlDependency().showPlot();
 
@@ -1092,7 +1092,7 @@ public class SlicerTest {
 		Path dir = Path.of(new URI("file:///tmp/slicer"));
 //		final Path dir = Files.createTempDirectory("slicer-");
 		slicer.getControlFlow().writePlot(dir, "ControlFlow.png");
-		slicer.getDominanceTree().writePlot(dir, "ForwardDominanceTree.png");
+		slicer.getDominance().writePlot(dir, "ForwardDominanceTree.png");
 //		slicer.getControlDependency().writePlot(dir, "ControlDependency.png");
 	}
 

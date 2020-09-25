@@ -22,16 +22,19 @@ import de.rherzog.master.thesis.slicer.SlicerGraph;
 public class PostDominance extends SlicerGraph<Integer> {
 	private ControlFlow controlFlow;
 	private Graph<Integer, DefaultEdge> controlFlowGraph;
+	private Integer startNode;
 
 	private Graph<Integer, DefaultEdge> graph;
 
 	public PostDominance(ControlFlow controlFlow) throws IOException, InvalidClassFileException {
 		this.controlFlow = controlFlow;
 		this.controlFlowGraph = controlFlow.getGraph();
+		this.startNode = controlFlow.getStartNode();
 	}
 
-	public PostDominance(Graph<Integer, DefaultEdge> controlFlowGraph) {
+	public PostDominance(Graph<Integer, DefaultEdge> controlFlowGraph, int startNode) {
 		this.controlFlowGraph = controlFlowGraph;
+		this.startNode = startNode;
 	}
 
 	@Override
@@ -44,6 +47,7 @@ public class PostDominance extends SlicerGraph<Integer> {
 			graph.addVertex(v);
 		});
 
+		// Version 2
 		Set<Integer> exitVertices = new HashSet<>();
 		controlFlowGraph.vertexSet().forEach(v -> {
 			if (controlFlowGraph.outDegreeOf(v) == 0) {

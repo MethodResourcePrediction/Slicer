@@ -4,10 +4,8 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.file.Path;
-import java.util.stream.IntStream;
 
 import org.jgrapht.Graph;
-import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.io.ComponentNameProvider;
 import org.jgrapht.io.DOTExporter;
@@ -30,44 +28,7 @@ public class ControlDependencyTest {
 
 	@BeforeEach
 	public void setup() throws IOException, InterruptedException {
-		cfg = new DefaultDirectedGraph<Integer, DefaultEdge>(DefaultEdge.class);
-
-		// https://www.cs.colorado.edu/~kena/classes/5828/s00/lectures/lecture15.pdf
-		IntStream.rangeClosed(1, 6).forEach(i -> cfg.addVertex(i));
-		cfg.addEdge(1, 2);
-		cfg.addEdge(2, 3);
-		cfg.addEdge(2, 4);
-		cfg.addEdge(3, 5);
-		cfg.addEdge(4, 5);
-		cfg.addEdge(5, 6);
-
-		// Extended:
-		// https://www.cs.colorado.edu/~kena/classes/5828/s00/lectures/lecture15.pdf
-//		IntStream.rangeClosed(1, 10).forEach(i -> cfg.addVertex(i));
-//		cfg.addEdge(1, 2);
-//
-//		cfg.addEdge(2, 3);
-//		cfg.addEdge(2, 4);
-//
-//		cfg.addEdge(3, 5);
-//		cfg.addEdge(5, 6);
-//		cfg.addEdge(6, 9);
-//
-//		cfg.addEdge(4, 7);
-//		cfg.addEdge(7, 8);
-//		cfg.addEdge(8, 9);
-//
-//		cfg.addEdge(9, 10);
-
-		// https://en.wikipedia.org/wiki/Dominator_(graph_theory)
-//		IntStream.rangeClosed(1, 6).forEach(i -> cfg.addVertex(i));
-//		cfg.addEdge(1, 2);
-//		cfg.addEdge(2, 3);
-//		cfg.addEdge(2, 4);
-//		cfg.addEdge(2, 6);
-//		cfg.addEdge(3, 5);
-//		cfg.addEdge(4, 5);
-//		cfg.addEdge(5, 2);
+		cfg = TestControlFlowGraph.getControlFlowGraph();
 
 		DOTExporter<Integer, DefaultEdge> dotExporter = new DOTExporter<>(new ComponentNameProvider<>() {
 			@Override
@@ -85,7 +46,7 @@ public class ControlDependencyTest {
 
 		Utilities.dotWriteToFile("/tmp/slicer/ControlFlowGraphTest.png", writer.toString());
 
-		postDominance = new PostDominance(cfg);
+		postDominance = new PostDominance(cfg, 1);
 	}
 
 	@Test

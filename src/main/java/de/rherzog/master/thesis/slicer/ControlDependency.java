@@ -53,53 +53,80 @@ public class ControlDependency extends SlicerGraph<Integer> {
 		graph.addVertex(ROOT_INDEX);
 		controlFlowGraph.vertexSet().forEach(v -> graph.addVertex(v));
 
+		// Version 1
+		// https://compilers.cs.uni-saarland.de/teaching/spa/2014/slides/ProgramDependenceGraph.pdf
+		
+		// For every edge x →cf y
+		final Graph<Integer, DefaultEdge> postDominanceGraph = postDominance.getGraph();
+		for (DefaultEdge cfgEdge : controlFlowGraph.edgeSet()) {
+			final Integer x = controlFlowGraph.getEdgeSource(cfgEdge);
+			final Integer y = controlFlowGraph.getEdgeTarget(cfgEdge);
+
+			// where x is not post-dominated by y
+			if (postDominance.isPostDominating(x, y)) {
+				continue;
+			}
+
+			// TODO one moves upwards from y in the post­‐dominator tree. Every node z
+			// visited before x’s parent is control dependent on x.
+			for (DefaultEdge incomingEdgeOfX : postDominanceGraph.incomingEdgesOf(x)) {
+				final Integer z = postDominanceGraph.getEdgeSource(incomingEdgeOfX);
+				if (z == x) {
+					continue;
+				}
+				System.out.println(incomingEdgeOfX);
+			}
+		}
+
+		// Version 2
+
 		// A node y is control dependent on node x (x → y) if
 		// – ∃ path p from x to y in the CFG, such that y post‐dominates every node in p
 		// (except for x), and
 		// – x is not post‐dominated by y
 
-		AllDirectedPaths<Integer, DefaultEdge> cfgPaths = new AllDirectedPaths<>(controlFlowGraph);
-
-		for (int x : controlFlowGraph.vertexSet()) {
-			for (int y : controlFlowGraph.vertexSet()) {
-				if (x == y) {
-					continue;
-				}
-				// – ∃ path p from x to y in the CFG, such that y post‐dominates every node in p
-				// (except for x)
-				final List<GraphPath<Integer, DefaultEdge>> xyPaths = cfgPaths.getAllPaths(x, y, false,
-						controlFlowGraph.edgeSet().size());
-
-				// such that y post‐dominates every node in p
-				boolean existsAnyPathDominatingAllNodes = false;
-				for (GraphPath<Integer, DefaultEdge> xyPath : xyPaths) {
-					final List<Integer> pathNodes = xyPath.getVertexList();
-
-					boolean dominatesAllNodesInPath = true;
-					for (int pathNode : pathNodes) {
-						if (pathNode == x) {
-							// (except for x)
-							continue;
-						}
-						dominatesAllNodesInPath &= postDominance.isPostDominating(y, pathNode);
-					}
-					existsAnyPathDominatingAllNodes |= dominatesAllNodesInPath;
-				}
-
-				if (!existsAnyPathDominatingAllNodes) {
-					// Condition 1 failed
-					continue;
-				}
-
-				// x is not post‐dominated by y
-				if (postDominance.isPostDominating(y, x)) {
-					continue;
-				}
-
-				// Control dependent from x to y
-				graph.addEdge(x, y);
-			}
-		}
+//		AllDirectedPaths<Integer, DefaultEdge> cfgPaths = new AllDirectedPaths<>(controlFlowGraph);
+//
+//		for (int x : controlFlowGraph.vertexSet()) {
+//			for (int y : controlFlowGraph.vertexSet()) {
+//				if (x == y) {
+//					continue;
+//				}
+//				// – ∃ path p from x to y in the CFG, such that y post‐dominates every node in p
+//				// (except for x)
+//				final List<GraphPath<Integer, DefaultEdge>> xyPaths = cfgPaths.getAllPaths(x, y, false,
+//						controlFlowGraph.edgeSet().size());
+//
+//				// such that y post‐dominates every node in p
+//				boolean existsAnyPathDominatingAllNodes = false;
+//				for (GraphPath<Integer, DefaultEdge> xyPath : xyPaths) {
+//					final List<Integer> pathNodes = xyPath.getVertexList();
+//
+//					boolean dominatesAllNodesInPath = true;
+//					for (int pathNode : pathNodes) {
+//						if (pathNode == x) {
+//							// (except for x)
+//							continue;
+//						}
+//						dominatesAllNodesInPath &= postDominance.isPostDominating(y, pathNode);
+//					}
+//					existsAnyPathDominatingAllNodes |= dominatesAllNodesInPath;
+//				}
+//
+//				if (!existsAnyPathDominatingAllNodes) {
+//					// Condition 1 failed
+//					continue;
+//				}
+//
+//				// x is not post‐dominated by y
+//				if (postDominance.isPostDominating(y, x)) {
+//					continue;
+//				}
+//
+//				// Control dependent from x to y
+//				graph.addEdge(x, y);
+//			}
+//		}
 
 		return graph;
 	}

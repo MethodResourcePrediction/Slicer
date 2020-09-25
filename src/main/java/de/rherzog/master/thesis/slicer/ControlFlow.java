@@ -37,6 +37,7 @@ public class ControlFlow extends SlicerGraph<Integer> {
 	private List<List<Integer>> simpleCycles;
 	private StackTrace stackTrace;
 	private List<Pair<Integer, Integer>> loopPairs;
+	private Integer startNode;
 
 	public ControlFlow(String inputPath, String methodSignature) {
 		this.inputPath = inputPath;
@@ -66,6 +67,8 @@ public class ControlFlow extends SlicerGraph<Integer> {
 
 		MethodData methodData = getMethodData();
 		IInstruction[] instructions = methodData.getInstructions();
+		
+		startNode = 0;
 
 		graph = new DefaultDirectedGraph<>(DefaultEdge.class);
 
@@ -255,5 +258,13 @@ public class ControlFlow extends SlicerGraph<Integer> {
 			e.printStackTrace();
 			return e.getMessage();
 		}
+	}
+
+	public Integer getStartNode() {
+		return startNode;
+	}
+
+	public void setStartNode(Integer startNode) {
+		this.startNode = startNode;
 	}
 }

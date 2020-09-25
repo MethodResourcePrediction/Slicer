@@ -28,7 +28,7 @@ import com.ibm.wala.shrikeBT.IInvokeInstruction;
 import com.ibm.wala.shrikeBT.ReturnInstruction;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 
-import de.rherzog.master.thesis.slicer.dominance.DominanceTree;
+import de.rherzog.master.thesis.slicer.dominance.Dominance;
 import de.rherzog.master.thesis.slicer.dominance.FirstForwardDominatorTree;
 import de.rherzog.master.thesis.slicer.dominance.PostDominance;
 import de.rherzog.master.thesis.slicer.instrumenter.export.SliceWriter.ExportFormat;
@@ -54,7 +54,7 @@ public class Slicer {
 
 	// Dominance
 	private FirstForwardDominatorTree firstForwardDominatorTree;
-	private DominanceTree dominanceTree;
+	private Dominance dominance;
 	private PostDominance postDominance;
 
 	private boolean verbose = false;
@@ -87,7 +87,7 @@ public class Slicer {
 		ArgumentDependency argumentDependency = getArgumentDependency();
 		ClassObjectDependency classObjectDependency = getClassObjectDependency();
 		FirstForwardDominatorTree firstForwardDominatorTree = getFirstForwardDominatorTree();
-		DominanceTree dominanceTree = getDominanceTree();
+		Dominance dominanceTree = getDominance();
 		PostDominance postDominance = getPostDominance();
 
 		Map<Integer, Set<Integer>> varIndexesToRenumber = argumentDependency.getVarIndexesToRenumber();
@@ -466,12 +466,12 @@ public class Slicer {
 		return classObjectDependency;
 	}
 
-	public DominanceTree getDominanceTree() throws IOException, InvalidClassFileException {
-		if (dominanceTree != null) {
-			return dominanceTree;
+	public Dominance getDominance() throws IOException, InvalidClassFileException {
+		if (dominance != null) {
+			return dominance;
 		}
-		dominanceTree = new DominanceTree(getControlFlow(), 0);
-		return dominanceTree;
+		dominance = new Dominance(getControlFlow(), 0);
+		return dominance;
 	}
 
 	public PostDominance getPostDominance() throws IOException, InvalidClassFileException {
