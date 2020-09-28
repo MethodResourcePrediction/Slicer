@@ -84,4 +84,8 @@ public class StrictDominance extends SlicerGraph<Integer> {
 		return dominatorMap;
 	}
 
+	protected Dominance getDominance() {
+		return dominance;
+	}
+
 }

@@ -187,18 +187,16 @@ public class Dominance extends SlicerGraph<Integer> {
 		return getExporterGraphString(vertexIdProvider, vertexLabelProvider);
 	}
 
-	public Map<Integer, Integer> getDominators() throws IOException, InvalidClassFileException {
-		Map<Integer, Integer> dominatorMap = new HashMap<>();
-		for (DefaultEdge edge : getGraph().edgeSet()) {
-			final Integer edgeSource = getGraph().getEdgeSource(edge);
-			final Integer edgeTarget = getGraph().getEdgeTarget(edge);
-			dominatorMap.put(edgeTarget, edgeSource);
-		}
-		return dominatorMap;
+	protected ControlFlow getControlFlow() {
+		return controlFlow;
 	}
 
-	public ControlFlow getControlFlow() {
-		return controlFlow;
+	protected Graph<Integer, DefaultEdge> getControlFlowGraph() {
+		return controlFlowGraph;
+	}
+
+	protected int getStartIndex() {
+		return startIndex;
 	}
 
 }

@@ -29,8 +29,8 @@ import com.ibm.wala.shrikeBT.ReturnInstruction;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 
 import de.rherzog.master.thesis.slicer.dominance.Dominance;
-import de.rherzog.master.thesis.slicer.dominance.FirstForwardDominatorTree;
-import de.rherzog.master.thesis.slicer.dominance.PostDominance;
+import de.rherzog.master.thesis.slicer.dominance.ImmediateDominance;
+import de.rherzog.master.thesis.slicer.dominance.StrictDominance;
 import de.rherzog.master.thesis.slicer.instrumenter.export.SliceWriter.ExportFormat;
 import de.rherzog.master.thesis.utils.Utilities;
 
@@ -53,9 +53,9 @@ public class Slicer {
 	private ClassObjectDependency classObjectDependency;
 
 	// Dominance
-	private FirstForwardDominatorTree firstForwardDominatorTree;
 	private Dominance dominance;
-	private PostDominance postDominance;
+	private StrictDominance strictDominance;
+	private ImmediateDominance immediateDominance;
 
 	private boolean verbose = false;
 
@@ -86,9 +86,9 @@ public class Slicer {
 		DataDependency dataDependency = getDataDependency();
 		ArgumentDependency argumentDependency = getArgumentDependency();
 		ClassObjectDependency classObjectDependency = getClassObjectDependency();
-		FirstForwardDominatorTree firstForwardDominatorTree = getFirstForwardDominatorTree();
-		Dominance dominanceTree = getDominance();
-		PostDominance postDominance = getPostDominance();
+		Dominance dominance = getDominance();
+		StrictDominance strictDominance = getStrictDominance();
+		ImmediateDominance immediateDominance = getImmediateDominance();
 
 		Map<Integer, Set<Integer>> varIndexesToRenumber = argumentDependency.getVarIndexesToRenumber();
 		Set<Integer> instructionsInCycles = controlFlow.getInstructionsInCycles();
@@ -430,7 +430,7 @@ public class Slicer {
 		if (controlDependency != null) {
 			return controlDependency;
 		}
-		controlDependency = new ControlDependency(getControlFlow(), getPostDominance());
+		controlDependency = new ControlDependency(getControlFlow(), getImmediateDominance());
 		return controlDependency;
 	}
 
@@ -474,20 +474,20 @@ public class Slicer {
 		return dominance;
 	}
 
-	public PostDominance getPostDominance() throws IOException, InvalidClassFileException {
-		if (postDominance != null) {
-			return postDominance;
+	public StrictDominance getStrictDominance() throws IOException, InvalidClassFileException {
+		if (strictDominance != null) {
+			return strictDominance;
 		}
-		postDominance = new PostDominance(getControlFlow());
-		return postDominance;
+		strictDominance = new StrictDominance(getDominance());
+		return strictDominance;
 	}
 
-	public FirstForwardDominatorTree getFirstForwardDominatorTree() throws IOException, InvalidClassFileException {
-		if (firstForwardDominatorTree != null) {
-			return firstForwardDominatorTree;
+	public ImmediateDominance getImmediateDominance() throws IOException, InvalidClassFileException {
+		if (immediateDominance != null) {
+			return immediateDominance;
 		}
-		firstForwardDominatorTree = new FirstForwardDominatorTree(getControlFlow());
-		return firstForwardDominatorTree;
+		immediateDominance = new ImmediateDominance(getStrictDominance());
+		return immediateDominance;
 	}
 
 	public Map<Integer, Set<Integer>> getVariableIndexesToRenumber() throws IOException, InvalidClassFileException {

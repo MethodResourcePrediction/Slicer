@@ -121,11 +121,16 @@ public class SlicerTest {
 
 	@Test
 	public void testSimpleMethodCallAndLoopWithParameter() throws IOException, InvalidClassFileException,
-			InterruptedException, IllegalStateException, DecoderException {
+			InterruptedException, IllegalStateException, DecoderException, ExportException {
 		slicer.setInputJar(slicerValidationJarPath);
 		slicer.setMethodSignature(
 				"Lde.rherzog.master.thesis.slicer.test.SlicerValidation;.simpleMethodCallAndLoopWithParameter(J)V");
 		System.out.println(slicer.getMethodSummary());
+
+		slicer.getControlDependency().showPlot();
+		slicer.getControlFlow().showPlot();
+		slicer.getDominance().showPlot();
+		slicer.getImmediateDominance().showPlot();
 
 		Map<Set<Integer>, List<IInstruction>> slicerCriterionResultMap = new HashMap<>();
 
@@ -667,7 +672,7 @@ public class SlicerTest {
 		System.out.println(slicer.getMethodSummary());
 		slicer.getControlFlow().showPlot();
 		slicer.getDominance().showPlot();
-		slicer.getFirstForwardDominatorTree().showPlot();
+		slicer.getImmediateDominance().showPlot();
 		slicer.getControlDependency().showPlot();
 
 		Map<Set<Integer>, List<IInstruction>> slicerCriterionResultMap = new HashMap<>();

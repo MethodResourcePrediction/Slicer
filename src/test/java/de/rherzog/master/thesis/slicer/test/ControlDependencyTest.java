@@ -18,16 +18,18 @@ import org.junit.jupiter.api.TestInstance.Lifecycle;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 
 import de.rherzog.master.thesis.slicer.ControlDependency;
-import de.rherzog.master.thesis.slicer.dominance.PostDominance;
+import de.rherzog.master.thesis.slicer.dominance.Dominance;
+import de.rherzog.master.thesis.slicer.dominance.ImmediateDominance;
+import de.rherzog.master.thesis.slicer.dominance.StrictDominance;
 import de.rherzog.master.thesis.utils.Utilities;
 
 @TestInstance(Lifecycle.PER_CLASS)
 public class ControlDependencyTest {
 	private Graph<Integer, DefaultEdge> cfg;
-	private PostDominance postDominance;
+	private ImmediateDominance immediateDominance;
 
 	@BeforeEach
-	public void setup() throws IOException, InterruptedException {
+	public void setup() throws IOException, InterruptedException, InvalidClassFileException {
 		cfg = TestControlFlowGraph.getControlFlowGraph();
 
 		DOTExporter<Integer, DefaultEdge> dotExporter = new DOTExporter<>(new ComponentNameProvider<>() {
@@ -44,14 +46,16 @@ public class ControlDependencyTest {
 		Writer writer = new StringWriter();
 		dotExporter.exportGraph(cfg, writer);
 
-		Utilities.dotWriteToFile("/tmp/slicer/ControlFlowGraphTest.png", writer.toString());
+		Utilities.dotWriteToFile("/tmp/slicer/ControlFlowGraph.png", writer.toString());
 
-		postDominance = new PostDominance(cfg, 1);
+		Dominance dominance = new Dominance(cfg, 1);
+		StrictDominance strictDominance = new StrictDominance(dominance);
+		immediateDominance = new ImmediateDominance(strictDominance);
 	}
 
 	@Test
 	public void cd() throws IOException, InterruptedException, InvalidClassFileException, ExportException {
-		ControlDependency controlDependency = new ControlDependency(cfg, postDominance);
-		controlDependency.writePlot(Path.of("/tmp/slicer"), "ControlDependencyTest.png");
+		ControlDependency controlDependency = new ControlDependency(cfg, immediateDominance);
+		controlDependency.writePlot(Path.of("/tmp/slicer"), "ControlDependency.png");
 	}
 }
