@@ -16,14 +16,14 @@ import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import de.rherzog.master.thesis.slicer.ControlFlow;
 import de.rherzog.master.thesis.slicer.SlicerGraph;
 
-public class StrictDominance extends SlicerGraph<Integer> {
+public class StrictPostDominance extends SlicerGraph<Integer> {
 	private Graph<Integer, DefaultEdge> graph;
-	private Dominance dominance;
+	private PostDominance postDominance;
 
-	public StrictDominance(Dominance dominance) throws IOException, InvalidClassFileException {
-		this.dominance = dominance;
+	public StrictPostDominance(PostDominance postDominance) throws IOException, InvalidClassFileException {
+		this.postDominance = postDominance;
 	}
-	
+
 	@Override
 	public Graph<Integer, DefaultEdge> getGraph() throws IOException, InvalidClassFileException {
 		if (graph != null) {
@@ -33,12 +33,12 @@ public class StrictDominance extends SlicerGraph<Integer> {
 
 		// Every vertex in the control flow is present in the forward dominance graph
 		// as well.
-		Graph<Integer, DefaultEdge> dominanceGraph = dominance.getGraph();
-		dominanceGraph.vertexSet().forEach(v -> graph.addVertex(v));
+		Graph<Integer, DefaultEdge> psotDominanceGraph = postDominance.getGraph();
+		psotDominanceGraph.vertexSet().forEach(v -> graph.addVertex(v));
 
-		for (DefaultEdge dominanceEdge : dominanceGraph.edgeSet()) {
-			final Integer edgeSource = dominanceGraph.getEdgeSource(dominanceEdge);
-			final Integer edgeTarget = dominanceGraph.getEdgeTarget(dominanceEdge);
+		for (DefaultEdge postDominanceEdge : psotDominanceGraph.edgeSet()) {
+			final Integer edgeSource = psotDominanceGraph.getEdgeSource(postDominanceEdge);
+			final Integer edgeTarget = psotDominanceGraph.getEdgeTarget(postDominanceEdge);
 
 			if (edgeSource.equals(edgeTarget)) {
 				// Omit self dominance
@@ -60,7 +60,7 @@ public class StrictDominance extends SlicerGraph<Integer> {
 		};
 		ComponentNameProvider<Integer> vertexLabelProvider = new ComponentNameProvider<Integer>() {
 			public String getName(Integer index) {
-				ControlFlow controlFlow = dominance.getControlFlow();
+				ControlFlow controlFlow = postDominance.getControlFlow();
 				if (controlFlow != null) {
 					try {
 						IInstruction[] instructions = controlFlow.getMethodData().getInstructions();
@@ -84,8 +84,8 @@ public class StrictDominance extends SlicerGraph<Integer> {
 		return dominatorMap;
 	}
 
-	public Dominance getDominance() {
-		return dominance;
+	public PostDominance getPostDominance() {
+		return postDominance;
 	}
 
 }

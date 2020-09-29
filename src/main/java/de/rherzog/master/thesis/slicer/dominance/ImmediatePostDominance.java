@@ -18,12 +18,13 @@ import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import de.rherzog.master.thesis.slicer.ControlFlow;
 import de.rherzog.master.thesis.slicer.SlicerGraph;
 
-public class ImmediateDominance extends SlicerGraph<Integer> {
+public class ImmediatePostDominance extends SlicerGraph<Integer> {
 	private Graph<Integer, DefaultEdge> graph;
-	private StrictDominance strictDominance;
+	private StrictPostDominance strictPostDominance;
 
-	public ImmediateDominance(StrictDominance strictDominance) throws IOException, InvalidClassFileException {
-		this.strictDominance = strictDominance;
+	public ImmediatePostDominance(StrictPostDominance strictPostDominance)
+			throws IOException, InvalidClassFileException {
+		this.strictPostDominance = strictPostDominance;
 	}
 
 	@Override
@@ -35,34 +36,36 @@ public class ImmediateDominance extends SlicerGraph<Integer> {
 
 		// Every vertex in the control flow is present in the forward dominance graph
 		// as well.
-		Graph<Integer, DefaultEdge> strictDominanceGraph = strictDominance.getGraph();
-		strictDominanceGraph.vertexSet().forEach(v -> graph.addVertex(v));
+		Graph<Integer, DefaultEdge> strictPostDominanceGraph = strictPostDominance.getGraph();
+		strictPostDominanceGraph.vertexSet().forEach(v -> graph.addVertex(v));
 
 		// The immediate dominator or idom of a node n is the unique node that strictly
 		// dominates n but does not strictly dominate any other node that strictly
 		// dominates n
-		for (int n : strictDominanceGraph.vertexSet()) {
+		for (int n : strictPostDominanceGraph.vertexSet()) {
 			// Find all nodes that strictly dominate n
-			final Set<DefaultEdge> strictlyDominatingEdgesOfN = strictDominanceGraph.incomingEdgesOf(n);
-			final Set<Integer> strictlyDominatingNodesOfN = new HashSet<>();
-			for (DefaultEdge strictlyDominatingEdgeOfN : strictlyDominatingEdgesOfN) {
-				strictlyDominatingNodesOfN.add(strictDominanceGraph.getEdgeSource(strictlyDominatingEdgeOfN));
+			final Set<DefaultEdge> strictlyPostDominatingEdgesOfN = strictPostDominanceGraph.incomingEdgesOf(n);
+			final Set<Integer> strictlyPostDominatingNodesOfN = new HashSet<>();
+			for (DefaultEdge strictlyPostDominatingEdgeOfN : strictlyPostDominatingEdgesOfN) {
+				strictlyPostDominatingNodesOfN
+						.add(strictPostDominanceGraph.getEdgeSource(strictlyPostDominatingEdgeOfN));
 			}
 
 			// ... but does not strictly dominate any other node that strictly dominates n
-			Integer uniqueDominatingNode = null;
-			for (int strictlyDominatingNodeOfN : strictlyDominatingNodesOfN) {
-				boolean dominatesOtherNodeThatDominatesN = false;
-				for (int strictlyDominatingNodeOfN2 : strictlyDominatingNodesOfN) {
-					if (strictDominanceGraph.containsEdge(strictlyDominatingNodeOfN, strictlyDominatingNodeOfN2)) {
-						dominatesOtherNodeThatDominatesN = true;
+			Integer uniquePostDominatingNode = null;
+			for (int strictlyPostDominatingNodeOfN : strictlyPostDominatingNodesOfN) {
+				boolean postDominatesOtherNodeThatDominatesN = false;
+				for (int strictlyDominatingNodeOfN2 : strictlyPostDominatingNodesOfN) {
+					if (strictPostDominanceGraph.containsEdge(strictlyPostDominatingNodeOfN,
+							strictlyDominatingNodeOfN2)) {
+						postDominatesOtherNodeThatDominatesN = true;
 						break; // optimization
 					}
 				}
 
-				if (!dominatesOtherNodeThatDominatesN) {
-					if (uniqueDominatingNode == null) {
-						uniqueDominatingNode = strictlyDominatingNodeOfN;
+				if (!postDominatesOtherNodeThatDominatesN) {
+					if (uniquePostDominatingNode == null) {
+						uniquePostDominatingNode = strictlyPostDominatingNodeOfN;
 					} else {
 						// Not possible
 						throw new RuntimeException();
@@ -70,13 +73,13 @@ public class ImmediateDominance extends SlicerGraph<Integer> {
 				}
 			}
 
-			if (uniqueDominatingNode == null && !strictDominanceGraph.incomingEdgesOf(n).isEmpty()) {
+			if (uniquePostDominatingNode == null && !strictPostDominanceGraph.incomingEdgesOf(n).isEmpty()) {
 				// Not possible
 				throw new RuntimeException("Starting node " + n + " has a dominating node which is not possible");
 			}
 //			System.out.println(uniqueDominatingNode + " immediately dominates " + n);
-			if (uniqueDominatingNode != null) {
-				graph.addEdge(uniqueDominatingNode, n);
+			if (uniquePostDominatingNode != null) {
+				graph.addEdge(uniquePostDominatingNode, n);
 			}
 		}
 		return graph;
@@ -93,7 +96,7 @@ public class ImmediateDominance extends SlicerGraph<Integer> {
 		};
 		ComponentNameProvider<Integer> vertexLabelProvider = new ComponentNameProvider<Integer>() {
 			public String getName(Integer index) {
-				ControlFlow controlFlow = strictDominance.getDominance().getControlFlow();
+				ControlFlow controlFlow = strictPostDominance.getPostDominance().getControlFlow();
 				if (controlFlow != null) {
 					try {
 						IInstruction[] instructions = controlFlow.getMethodData().getInstructions();
@@ -117,8 +120,8 @@ public class ImmediateDominance extends SlicerGraph<Integer> {
 		return dominatorMap;
 	}
 
-	public StrictDominance getStrictDominance() {
-		return strictDominance;
+	public StrictPostDominance getStrictPostDominance() {
+		return strictPostDominance;
 	}
 
 }

@@ -19,15 +19,21 @@ import com.ibm.wala.shrikeCT.InvalidClassFileException;
 
 import de.rherzog.master.thesis.slicer.dominance.Dominance;
 import de.rherzog.master.thesis.slicer.dominance.ImmediateDominance;
+import de.rherzog.master.thesis.slicer.dominance.ImmediatePostDominance;
+import de.rherzog.master.thesis.slicer.dominance.PostDominance;
 import de.rherzog.master.thesis.slicer.dominance.StrictDominance;
+import de.rherzog.master.thesis.slicer.dominance.StrictPostDominance;
 import de.rherzog.master.thesis.utils.Utilities;
 
 @TestInstance(Lifecycle.PER_CLASS)
 public class DominanceTest {
 	private Graph<Integer, DefaultEdge> cfg;
 	private Dominance dominance;
+	private PostDominance postDominance;
 	private StrictDominance strictDominance;
 	private ImmediateDominance immediateDominance;
+	private StrictPostDominance strictPostDominance;
+	private ImmediatePostDominance immediatePostDominance;
 
 	@BeforeEach
 	public void setup() throws IOException, InterruptedException, InvalidClassFileException {
@@ -50,8 +56,11 @@ public class DominanceTest {
 		Utilities.dotWriteToFile("/tmp/slicer/ControlFlowGraph.png", writer.toString());
 
 		dominance = new Dominance(cfg, 1);
+		postDominance = new PostDominance(cfg, 1);
 		strictDominance = new StrictDominance(dominance);
+		strictPostDominance = new StrictPostDominance(postDominance);
 		immediateDominance = new ImmediateDominance(strictDominance);
+		immediatePostDominance = new ImmediatePostDominance(strictPostDominance);
 	}
 
 	@Test
@@ -69,24 +78,18 @@ public class DominanceTest {
 		immediateDominance.writePlot(Path.of("/tmp/slicer"), "ImmediateDominance.png");
 	}
 
-//	@Test
-//	public void fd() throws IOException, InterruptedException, InvalidClassFileException, ExportException {
-//		ForwardDominance forwardDominatorTree = new ForwardDominance(new Dominance(cfg, 1));
-//		forwardDominatorTree.getDominators();
-//		forwardDominatorTree.writePlot(Path.of("/tmp/slicer"), "ForwardDominance.png");
-//	}
+	@Test
+	public void pd() throws IOException, InterruptedException, InvalidClassFileException, ExportException {
+		postDominance.writePlot(Path.of("/tmp/slicer"), "PostDominance.png");
+	}
 
-//	@Test
-//	public void ffd() throws IOException, InterruptedException, InvalidClassFileException, ExportException {
-//		FirstForwardDominatorTree firstForwardDominatorTree = new FirstForwardDominatorTree(cfg);
-//		firstForwardDominatorTree.getImmediateForwardDominators();
-//
-//		firstForwardDominatorTree.writePlot(Path.of("/tmp/slicer"), "FirstForwardDominatorTreeGraph.png");
-//	}
+	@Test
+	public void spd() throws IOException, InterruptedException, InvalidClassFileException, ExportException {
+		strictPostDominance.writePlot(Path.of("/tmp/slicer"), "StrictPostDominance.png");
+	}
 
-//	@Test
-//	public void pd() throws IOException, InterruptedException, InvalidClassFileException, ExportException {
-//		PostDominance postDominance = new PostDominance(cfg, 1);
-//		postDominance.writePlot(Path.of("/tmp/slicer"), "PostDominance.png");
-//	}
+	@Test
+	public void ipd() throws IOException, InterruptedException, InvalidClassFileException, ExportException {
+		immediatePostDominance.writePlot(Path.of("/tmp/slicer"), "ImmediatePostDominance.png");
+	}
 }

@@ -30,7 +30,10 @@ import com.ibm.wala.shrikeCT.InvalidClassFileException;
 
 import de.rherzog.master.thesis.slicer.dominance.Dominance;
 import de.rherzog.master.thesis.slicer.dominance.ImmediateDominance;
+import de.rherzog.master.thesis.slicer.dominance.ImmediatePostDominance;
+import de.rherzog.master.thesis.slicer.dominance.PostDominance;
 import de.rherzog.master.thesis.slicer.dominance.StrictDominance;
+import de.rherzog.master.thesis.slicer.dominance.StrictPostDominance;
 import de.rherzog.master.thesis.slicer.instrumenter.export.SliceWriter.ExportFormat;
 import de.rherzog.master.thesis.utils.Utilities;
 
@@ -56,6 +59,10 @@ public class Slicer {
 	private Dominance dominance;
 	private StrictDominance strictDominance;
 	private ImmediateDominance immediateDominance;
+	// Post Dominance
+	private ImmediatePostDominance immediatePostDominance;
+	private PostDominance postDominance;
+	private StrictPostDominance strictPostDominance;
 
 	private boolean verbose = false;
 
@@ -86,9 +93,14 @@ public class Slicer {
 		DataDependency dataDependency = getDataDependency();
 		ArgumentDependency argumentDependency = getArgumentDependency();
 		ClassObjectDependency classObjectDependency = getClassObjectDependency();
+
 		Dominance dominance = getDominance();
 		StrictDominance strictDominance = getStrictDominance();
 		ImmediateDominance immediateDominance = getImmediateDominance();
+
+		PostDominance postDominance = getPostDominance();
+		StrictPostDominance strictPostDominance = getStrictPostDominance();
+		ImmediatePostDominance immediatePostDominance = getImmediatePostDominance();
 
 		Map<Integer, Set<Integer>> varIndexesToRenumber = argumentDependency.getVarIndexesToRenumber();
 		Set<Integer> instructionsInCycles = controlFlow.getInstructionsInCycles();
@@ -430,7 +442,7 @@ public class Slicer {
 		if (controlDependency != null) {
 			return controlDependency;
 		}
-		controlDependency = new ControlDependency(getControlFlow(), getImmediateDominance());
+		controlDependency = new ControlDependency(getControlFlow(), getImmediatePostDominance());
 		return controlDependency;
 	}
 
@@ -474,6 +486,14 @@ public class Slicer {
 		return dominance;
 	}
 
+	public PostDominance getPostDominance() throws IOException, InvalidClassFileException {
+		if (postDominance != null) {
+			return postDominance;
+		}
+		postDominance = new PostDominance(getControlFlow(), 0);
+		return postDominance;
+	}
+
 	public StrictDominance getStrictDominance() throws IOException, InvalidClassFileException {
 		if (strictDominance != null) {
 			return strictDominance;
@@ -482,12 +502,28 @@ public class Slicer {
 		return strictDominance;
 	}
 
+	public StrictPostDominance getStrictPostDominance() throws IOException, InvalidClassFileException {
+		if (strictPostDominance != null) {
+			return strictPostDominance;
+		}
+		strictPostDominance = new StrictPostDominance(getPostDominance());
+		return strictPostDominance;
+	}
+
 	public ImmediateDominance getImmediateDominance() throws IOException, InvalidClassFileException {
 		if (immediateDominance != null) {
 			return immediateDominance;
 		}
 		immediateDominance = new ImmediateDominance(getStrictDominance());
 		return immediateDominance;
+	}
+
+	public ImmediatePostDominance getImmediatePostDominance() throws IOException, InvalidClassFileException {
+		if (immediatePostDominance != null) {
+			return immediatePostDominance;
+		}
+		immediatePostDominance = new ImmediatePostDominance(getStrictPostDominance());
+		return immediatePostDominance;
 	}
 
 	public Map<Integer, Set<Integer>> getVariableIndexesToRenumber() throws IOException, InvalidClassFileException {

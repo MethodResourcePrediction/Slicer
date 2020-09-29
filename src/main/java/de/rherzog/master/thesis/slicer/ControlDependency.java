@@ -13,27 +13,29 @@ import org.jgrapht.io.ExportException;
 import com.ibm.wala.shrikeBT.IInstruction;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 
-import de.rherzog.master.thesis.slicer.dominance.ImmediateDominance;
+import de.rherzog.master.thesis.slicer.dominance.ImmediatePostDominance;
 
 public class ControlDependency extends SlicerGraph<Integer> {
 	private ControlFlow controlFlow;
 	private Graph<Integer, DefaultEdge> controlFlowGraph;
-	private ImmediateDominance immediateDominance;
+	private ImmediatePostDominance immediatePostDominance;
 
 	private Graph<Integer, DefaultEdge> graph;
+//	private int startNode;
 
 	public static final int ROOT_INDEX = -1;
 
-	public ControlDependency(ControlFlow controlFlow, ImmediateDominance immediateDominance)
+	public ControlDependency(ControlFlow controlFlow, ImmediatePostDominance immediatePostDominance)
 			throws IOException, InvalidClassFileException {
 		this.controlFlow = controlFlow;
 		this.controlFlowGraph = controlFlow.getGraph();
-		this.immediateDominance = immediateDominance;
+		this.immediatePostDominance = immediatePostDominance;
 	}
 
-	public ControlDependency(Graph<Integer, DefaultEdge> controlFlowGraph, ImmediateDominance immediateDominance) {
+	public ControlDependency(Graph<Integer, DefaultEdge> controlFlowGraph,
+			ImmediatePostDominance immediatePostDominance) {
 		this.controlFlowGraph = controlFlowGraph;
-		this.immediateDominance = immediateDominance;
+		this.immediatePostDominance = immediatePostDominance;
 	}
 
 	@Override
@@ -50,61 +52,94 @@ public class ControlDependency extends SlicerGraph<Integer> {
 		graph.addVertex(ROOT_INDEX);
 		controlFlowGraph.vertexSet().forEach(v -> graph.addVertex(v));
 
-		// Version 1
-		// https://compilers.cs.uni-saarland.de/teaching/spa/2014/slides/ProgramDependenceGraph.pdf
+		// Version: Own
+//		final Graph<Integer, DefaultEdge> immediateDominanceGraph = immediateDominance.getGraph();
+//		downOnGraph(graph, immediateDominanceGraph, ROOT_INDEX, startNode);
 
-		// For every edge x →cf y
-		final Graph<Integer, DefaultEdge> immediateDominanceGraph = immediateDominance.getGraph();
-		for (DefaultEdge cfgEdge : controlFlowGraph.edgeSet()) {
-			Integer x = controlFlowGraph.getEdgeSource(cfgEdge);
-			Integer y = controlFlowGraph.getEdgeTarget(cfgEdge);
+		// Version 2 (Second definition)
+		// http://infolab.stanford.edu/~ullman/dragon/w06/lectures/cs243-lec08-wei.pdf
+//		final Graph<Integer, DefaultEdge> immediatePostDominanceGraph = immediatePostDominance.getGraph();
+		final Graph<Integer, DefaultEdge> strictPostDominanceGraph = immediatePostDominance.getStrictPostDominance()
+				.getPostDominance().getGraph();
 
-			if (controlFlowGraph.incomingEdgesOf(x).isEmpty()) {
-				// Start node
-				continue;
+		for (Integer w : controlFlowGraph.vertexSet()) {
+			for (DefaultEdge cfgEdge : controlFlowGraph.edgeSet()) {
+				Integer u = controlFlowGraph.getEdgeSource(cfgEdge);
+				Integer v = controlFlowGraph.getEdgeTarget(cfgEdge);
+
+				// w post-dominates v
+				if (strictPostDominanceGraph.containsEdge(w, v)) {
+					if (!w.equals(u)) {
+						if (!strictPostDominanceGraph.containsEdge(w, u)) {
+							graph.addEdge(u, w);
+							break;
+						}
+					}
+				}
 			}
-
-			// where x is not post-dominated by y
-			if (immediateDominanceGraph.containsEdge(y, x)) {
-				continue;
-			}
-
-			// one moves upwards from y in the post­‐dominator tree. Every node z
-			// visited before x’s parent is control dependent on x.
-			final Set<DefaultEdge> incomingEdgesOfX = immediateDominanceGraph.incomingEdgesOf(x);
-			final DefaultEdge incomingEdgeOfX = incomingEdgesOfX.iterator().next();
-			final Integer parentOfX = immediateDominanceGraph.getEdgeSource(incomingEdgeOfX);
-
-			upFromUntil(graph, immediateDominanceGraph, x, parentOfX, y);
-
-//			final Set<DefaultEdge> incomingEdgesOfY = immediateDominanceGraph.incomingEdgesOf(y);
-//			final DefaultEdge incomingEdgeOfY = incomingEdgesOfY.iterator().next();
-//			Integer z = immediateDominanceGraph.getEdgeSource(incomingEdgeOfY);
-
-//			do {
-//				graph.addEdge(z, x);
-//				final Set<DefaultEdge> incomingEdgesOfZ = immediateDominanceGraph.incomingEdgesOf(z);
-//				final DefaultEdge incomingEdgeOfZ = incomingEdgesOfZ.iterator().next();
-//				z = immediateDominanceGraph.getEdgeSource(incomingEdgeOfZ);
-//			} while (!parentOfX.equals(z));
-
-//			do {
-//				graph.addEdge(x, y);
-//
-//				final Set<DefaultEdge> incomingEdgesOfX = immediateDominanceGraph.incomingEdgesOf(y);
-//				final DefaultEdge incomingEdgeOfX = incomingEdgesOfX.iterator().next();
-//				y = immediateDominanceGraph.getEdgeSource(incomingEdgeOfX);
-//			} while (x != y);
-//			for (DefaultEdge incomingEdgeOfX : immediateDominanceGraph.incomingEdgesOf(x)) {
-//				final Integer z = immediateDominanceGraph.getEdgeSource(incomingEdgeOfX);
-//				if (z == x) {
-//					continue;
-//				}
-//				System.out.println(incomingEdgeOfX);
-//				graph.addEdge(immediateDominanceGraph.getEdgeSource(incomingEdgeOfX),
-//						immediateDominanceGraph.getEdgeTarget(incomingEdgeOfX));
-//			}
 		}
+
+//		// Version 1
+//		// https://compilers.cs.uni-saarland.de/teaching/spa/2014/slides/ProgramDependenceGraph.pdf
+//
+//		// For every edge x →cf y
+//		final Graph<Integer, DefaultEdge> immediatePostDominanceGraph = immediatePostDominance.getGraph();
+//		for (DefaultEdge cfgEdge : controlFlowGraph.edgeSet()) {
+//			Integer x = controlFlowGraph.getEdgeSource(cfgEdge);
+//			Integer y = controlFlowGraph.getEdgeTarget(cfgEdge);
+//
+////			if (controlFlowGraph.incomingEdgesOf(x).isEmpty()) {
+////				// Start node or no parent
+////				continue;
+////			}
+//
+//			// where x is not post-dominated by y
+//			if (immediatePostDominanceGraph.containsEdge(y, x)) {
+//				continue;
+//			}
+//
+//			// one moves upwards from y in the post­‐dominator tree. Every node z
+//			// visited before x’s parent is control dependent on x.
+//			final Set<DefaultEdge> incomingEdgesOfX = immediatePostDominanceGraph.incomingEdgesOf(x);
+//
+//			if (incomingEdgesOfX.isEmpty()) {
+//				graph.addEdge(ROOT_INDEX, x);
+////				upFromUntil(graph, immediateDominanceGraph, x, ROOT_INDEX, y);
+//			} else {
+//				final DefaultEdge incomingEdgeOfX = incomingEdgesOfX.iterator().next();
+//				final Integer parentOfX = immediatePostDominanceGraph.getEdgeSource(incomingEdgeOfX);
+//
+//				upFromUntil(graph, immediatePostDominanceGraph, x, parentOfX, y);
+//			}
+//
+////			final Set<DefaultEdge> incomingEdgesOfY = immediateDominanceGraph.incomingEdgesOf(y);
+////			final DefaultEdge incomingEdgeOfY = incomingEdgesOfY.iterator().next();
+////			Integer z = immediateDominanceGraph.getEdgeSource(incomingEdgeOfY);
+//
+////			do {
+////				graph.addEdge(z, x);
+////				final Set<DefaultEdge> incomingEdgesOfZ = immediateDominanceGraph.incomingEdgesOf(z);
+////				final DefaultEdge incomingEdgeOfZ = incomingEdgesOfZ.iterator().next();
+////				z = immediateDominanceGraph.getEdgeSource(incomingEdgeOfZ);
+////			} while (!parentOfX.equals(z));
+//
+////			do {
+////				graph.addEdge(x, y);
+////
+////				final Set<DefaultEdge> incomingEdgesOfX = immediateDominanceGraph.incomingEdgesOf(y);
+////				final DefaultEdge incomingEdgeOfX = incomingEdgesOfX.iterator().next();
+////				y = immediateDominanceGraph.getEdgeSource(incomingEdgeOfX);
+////			} while (x != y);
+////			for (DefaultEdge incomingEdgeOfX : immediateDominanceGraph.incomingEdgesOf(x)) {
+////				final Integer z = immediateDominanceGraph.getEdgeSource(incomingEdgeOfX);
+////				if (z == x) {
+////					continue;
+////				}
+////				System.out.println(incomingEdgeOfX);
+////				graph.addEdge(immediateDominanceGraph.getEdgeSource(incomingEdgeOfX),
+////						immediateDominanceGraph.getEdgeTarget(incomingEdgeOfX));
+////			}
+//		}
 
 		// Root node dependency for all node without any incoming edge
 		for (int node : controlFlowGraph.vertexSet()) {
@@ -115,6 +150,33 @@ public class ControlDependency extends SlicerGraph<Integer> {
 			graph.addEdge(ROOT_INDEX, node);
 		}
 		return graph;
+	}
+
+	private static void downOnGraph(final Graph<Integer, DefaultEdge> graph,
+			final Graph<Integer, DefaultEdge> immediateDominanceGraph, int parent, int node) {
+		final Set<DefaultEdge> outgoingEdgesOfZ = immediateDominanceGraph.outgoingEdgesOf(node);
+
+		if (outgoingEdgesOfZ.size() == 0) {
+			// Exit node
+			graph.addEdge(parent, node);
+			return;
+		}
+
+		if (outgoingEdgesOfZ.size() == 1) {
+			// Dependent on parent
+			graph.addEdge(parent, node);
+
+			int nextNode = graph.getEdgeTarget(outgoingEdgesOfZ.iterator().next());
+			downOnGraph(graph, immediateDominanceGraph, parent, nextNode);
+		} else {
+			// Has node dependent nodes (control dependency)
+			for (DefaultEdge outgoingEdgeOfZ : outgoingEdgesOfZ) {
+				int nextNode = immediateDominanceGraph.getEdgeTarget(outgoingEdgeOfZ);
+
+				graph.addEdge(node, nextNode);
+				downOnGraph(graph, immediateDominanceGraph, node, nextNode);
+			}
+		}
 	}
 
 	private static void upFromUntil(final Graph<Integer, DefaultEdge> graph,

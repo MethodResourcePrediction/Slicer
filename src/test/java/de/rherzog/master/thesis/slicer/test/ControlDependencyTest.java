@@ -20,13 +20,17 @@ import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import de.rherzog.master.thesis.slicer.ControlDependency;
 import de.rherzog.master.thesis.slicer.dominance.Dominance;
 import de.rherzog.master.thesis.slicer.dominance.ImmediateDominance;
+import de.rherzog.master.thesis.slicer.dominance.ImmediatePostDominance;
+import de.rherzog.master.thesis.slicer.dominance.PostDominance;
 import de.rherzog.master.thesis.slicer.dominance.StrictDominance;
+import de.rherzog.master.thesis.slicer.dominance.StrictPostDominance;
 import de.rherzog.master.thesis.utils.Utilities;
 
 @TestInstance(Lifecycle.PER_CLASS)
 public class ControlDependencyTest {
 	private Graph<Integer, DefaultEdge> cfg;
 	private ImmediateDominance immediateDominance;
+	private ImmediatePostDominance immediatePostDominance;
 
 	@BeforeEach
 	public void setup() throws IOException, InterruptedException, InvalidClassFileException {
@@ -48,14 +52,18 @@ public class ControlDependencyTest {
 
 		Utilities.dotWriteToFile("/tmp/slicer/ControlFlowGraph.png", writer.toString());
 
-		Dominance dominance = new Dominance(cfg, 1);
-		StrictDominance strictDominance = new StrictDominance(dominance);
-		immediateDominance = new ImmediateDominance(strictDominance);
+//		Dominance dominance = new Dominance(cfg, TestControlFlowGraph.getStartNode());
+//		StrictDominance strictDominance = new StrictDominance(dominance);
+//		immediateDominance = new ImmediateDominance(strictDominance);
+
+		PostDominance postDominance = new PostDominance(cfg, TestControlFlowGraph.getStartNode());
+		StrictPostDominance strictPostDominance = new StrictPostDominance(postDominance);
+		immediatePostDominance = new ImmediatePostDominance(strictPostDominance);
 	}
 
 	@Test
 	public void cd() throws IOException, InterruptedException, InvalidClassFileException, ExportException {
-		ControlDependency controlDependency = new ControlDependency(cfg, immediateDominance);
+		ControlDependency controlDependency = new ControlDependency(cfg, immediatePostDominance);
 		controlDependency.writePlot(Path.of("/tmp/slicer"), "ControlDependency.png");
 	}
 }

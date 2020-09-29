@@ -7,6 +7,8 @@ import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 
 public class TestControlFlowGraph {
+	private static final int START_NODE = 1;
+	
 	public static Graph<Integer, DefaultEdge> getControlFlowGraph() {
 		Graph<Integer, DefaultEdge> cfg = new DefaultDirectedGraph<Integer, DefaultEdge>(DefaultEdge.class);
 
@@ -62,5 +64,9 @@ public class TestControlFlowGraph {
 		cfg.addEdge(5, 2);
 
 		return cfg;
+	}
+	
+	public static int getStartNode() {
+		return START_NODE;
 	}
 }
