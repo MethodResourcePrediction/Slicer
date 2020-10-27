@@ -419,6 +419,10 @@ public class Slicer {
 			if (controlDependentIndex == ControlDependency.ROOT_INDEX) {
 				continue;
 			}
+			if ((controlFlow.getMethodData().getInstructions()[index] instanceof ConstantInstruction)) {
+				// Constant-Instructions are independent of any control dependency
+				continue;
+			}
 			slice(controlFlow, controlDependency, blockDependency, argumentDependency, dataDependency,
 					classObjectDependency, dependendInstructions, controlDependentIndex);
 		}
