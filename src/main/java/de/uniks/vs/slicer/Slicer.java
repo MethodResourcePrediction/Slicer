@@ -46,6 +46,7 @@ public class Slicer {
 	private Set<Integer> instructionIndexes;
 	private ExportFormat exportFormat;
 	private String additionalJarsPath;
+	private boolean showPlots;
 
 	// Internal graphs
 	private ControlFlow controlFlow;
@@ -76,16 +77,10 @@ public class Slicer {
 		mySlicer.setVerbose(true);
 		mySlicer.parseArgs(args);
 //		mySlicer.setExportFormat(null);
-//		mySlicer.makeSlicedFile(true);
-		mySlicer.makeSlicedFile(false);
+		mySlicer.makeSlicedFile();
 	}
 
-	public String makeSlicedFile() throws IOException, InvalidClassFileException, IllegalStateException,
-			DecoderException, InterruptedException, ExportException {
-		return makeSlicedFile(false);
-	}
-
-	public String makeSlicedFile(boolean showDotPlots) throws IOException, InvalidClassFileException,
+	public String makeSlicedFile() throws IOException, InvalidClassFileException,
 			IllegalStateException, DecoderException, InterruptedException, ExportException {
 		ControlFlow controlFlow = getControlFlow();
 		ControlDependency controlDependency = getControlDependency();
@@ -105,7 +100,7 @@ public class Slicer {
 		Map<Integer, Set<Integer>> varIndexesToRenumber = argumentDependency.getVarIndexesToRenumber();
 		Set<Integer> instructionsInCycles = controlFlow.getInstructionsInCycles();
 
-		if (showDotPlots) {
+		if (showPlots) {
 			showPlots();
 		}
 
@@ -578,6 +573,7 @@ public class Slicer {
 		options.addOption("rf", "resultFilePath", true, "path to saved result file [result.xml]");
 		options.addOption("ajp", "additionalJarsPath", true,
 				"path where the additional jars are stored [Default: ../]");
+		options.addOption("sp", "showPlots", true, "show dot plots [Default: false]");
 
 		CommandLineParser parser = new DefaultParser();
 		CommandLine cmd = parser.parse(options, args);
@@ -620,6 +616,8 @@ public class Slicer {
 			}
 			instructionIndexes.add(instructionIndex);
 		}
+		
+		showPlots = cmd.hasOption("showPlots");
 	}
 
 	public String getInputJar() {
