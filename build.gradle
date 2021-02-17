@@ -28,8 +28,6 @@ dependencies {
     compile group: 'de.uniks.vs.methodresourceprediction', name: 'utils', version: '1.0.0-SNAPSHOT'
     compile group: 'de.uniks.vs.methodresourceprediction', name: 'slicer.export', version: '1.0.0-SNAPSHOT'
 
-    compile group: 'com.ibm.wala', name: 'shrike', version: '1.5.7-SNAPSHOT'
-
     compile group: 'com.ibm.wala', name: 'core', version: '1.5.7-SNAPSHOT'
     compile group: 'com.ibm.wala', name: 'util', version: '1.5.7-SNAPSHOT'
     compile group: 'com.ibm.wala', name: 'shrike', version: '1.5.7-SNAPSHOT'
