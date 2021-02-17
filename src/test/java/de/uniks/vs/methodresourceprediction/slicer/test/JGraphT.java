@@ -1,4 +1,4 @@
-package de.uniks.vs.slicer.test;
+package de.uniks.vs.methodresourceprediction.slicer.test;
 /*
  * (C) Copyright 2003-2018, by Barak Naveh and Contributors.
  *

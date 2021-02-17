@@ -1,14 +1,13 @@
-package de.uniks.vs.slicer.test;
+package de.uniks.vs.methodresourceprediction.slicer.test;
 
 import java.io.IOException;
 
+import de.uniks.vs.methodresourceprediction.slicer.Slicer;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.codec.DecoderException;
 import org.jgrapht.io.ExportException;
 
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
-
-import de.uniks.vs.slicer.Slicer;
 
 public class MyInstrumenter {
 //	@Test

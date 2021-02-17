@@ -1,1 +1,47 @@
-../SlicerExport/Slicer.xsd
+<?xml version="1.0" encoding="UTF-8"?>
+<schema targetNamespace="http://rherzog.de/thesis/master/Slicer" elementFormDefault="qualified" xmlns="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://rherzog.de/thesis/master/Slicer">
+
+    <element name="Slicer" type="tns:Slicer"></element>
+
+    <complexType name="Slicer">
+    	<sequence>
+    		<element name="Executions" type="tns:Executions"></element>
+    	</sequence>
+    	<attribute name="durationMS" type="long"></attribute>
+    </complexType>
+
+    <complexType name="Features">
+    	<sequence>
+    		<element name="Feature" type="tns:Feature" maxOccurs="unbounded" minOccurs="0"></element>
+    	</sequence>
+    </complexType>
+    
+    <complexType name="Feature">
+    	<sequence>
+    		<element name="Value" type="string"></element>
+    	</sequence>
+    	<attribute name="instructionIndex" type="int"></attribute>
+    </complexType>
+
+    <complexType name="FeatureValues">
+    	<sequence>
+    		<element name="Value" type="string" maxOccurs="unbounded" minOccurs="0"></element>
+    	</sequence>
+    </complexType>
+
+    <complexType name="Executions">
+    	<sequence>
+    		<element name="Execution" type="tns:Execution" maxOccurs="unbounded" minOccurs="0"></element>
+    	</sequence>
+    </complexType>
+
+    <complexType name="Execution">
+    	<sequence>
+    		<element name="Features" type="tns:Features"></element>
+    	</sequence>
+    	<attribute name="executionCount" type="int"></attribute>
+    	<attribute name="startMS" type="long"></attribute>
+    	<attribute name="endMS" type="long"></attribute>
+    	<attribute name="durationMS" type="long"></attribute>
+    </complexType>
+</schema>

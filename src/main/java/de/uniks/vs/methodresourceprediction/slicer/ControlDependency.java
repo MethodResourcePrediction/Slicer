@@ -1,9 +1,10 @@
-package de.uniks.vs.slicer;
+package de.uniks.vs.methodresourceprediction.slicer;
 
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
+import de.uniks.vs.methodresourceprediction.slicer.dominance.ImmediatePostDominance;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
@@ -12,8 +13,6 @@ import org.jgrapht.io.ExportException;
 
 import com.ibm.wala.shrikeBT.IInstruction;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
-
-import de.uniks.vs.slicer.dominance.ImmediatePostDominance;
 
 public class ControlDependency extends SlicerGraph<Integer> {
 	private ControlFlow controlFlow;

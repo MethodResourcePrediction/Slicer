@@ -1,4 +1,4 @@
-package de.uniks.vs.slicer;
+package de.uniks.vs.methodresourceprediction.slicer;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -16,7 +16,7 @@ import com.ibm.wala.shrikeBT.InvokeInstruction;
 import com.ibm.wala.shrikeBT.NewInstruction;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 
-import de.uniks.vs.utils.Utilities;
+import de.uniks.vs.methodresourceprediction.utils.Utilities;
 
 public class ClassObjectDependency extends SlicerGraph<Integer> {
 	private BlockDependency blockDependency;

@@ -1,4 +1,4 @@
-package de.uniks.vs.slicer;
+package de.uniks.vs.methodresourceprediction.slicer;
 
 import java.io.File;
 import java.io.IOException;
@@ -51,12 +51,12 @@ import com.ibm.wala.types.generics.TypeSignature;
 import com.ibm.wala.util.collections.Iterator2Iterable;
 import com.ibm.wala.util.strings.StringStuff;
 
-import de.uniks.vs.slicer.export.FeatureLogger;
-import de.uniks.vs.slicer.export.FeatureLoggerExecution;
-import de.uniks.vs.slicer.export.SliceWriter;
-import de.uniks.vs.slicer.export.SliceWriter.ExportFormat;
-import de.uniks.vs.utils.InstrumenterComparator;
-import de.uniks.vs.utils.Utilities;
+import de.uniks.vs.methodresourceprediction.slicer.export.FeatureLogger;
+import de.uniks.vs.methodresourceprediction.slicer.export.FeatureLoggerExecution;
+import de.uniks.vs.methodresourceprediction.slicer.export.SliceWriter;
+import de.uniks.vs.methodresourceprediction.slicer.export.SliceWriter.ExportFormat;
+import de.uniks.vs.methodresourceprediction.utils.InstrumenterComparator;
+import de.uniks.vs.methodresourceprediction.utils.Utilities;
 
 public class Instrumenter {
 	private final static String ADDITIONAL_JARS_PATH = "extra_libs/";

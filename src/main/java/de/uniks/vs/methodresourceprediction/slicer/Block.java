@@ -1,4 +1,4 @@
-package de.uniks.vs.slicer;
+package de.uniks.vs.methodresourceprediction.slicer;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;

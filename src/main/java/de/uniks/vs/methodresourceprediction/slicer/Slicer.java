@@ -1,4 +1,4 @@
-package de.uniks.vs.slicer;
+package de.uniks.vs.methodresourceprediction.slicer;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -28,14 +28,14 @@ import com.ibm.wala.shrikeBT.IInvokeInstruction;
 import com.ibm.wala.shrikeBT.ReturnInstruction;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 
-import de.uniks.vs.slicer.export.SliceWriter.ExportFormat;
-import de.uniks.vs.utils.Utilities;
-import de.uniks.vs.slicer.dominance.Dominance;
-import de.uniks.vs.slicer.dominance.ImmediateDominance;
-import de.uniks.vs.slicer.dominance.ImmediatePostDominance;
-import de.uniks.vs.slicer.dominance.PostDominance;
-import de.uniks.vs.slicer.dominance.StrictDominance;
-import de.uniks.vs.slicer.dominance.StrictPostDominance;
+import de.uniks.vs.methodresourceprediction.slicer.export.SliceWriter.ExportFormat;
+import de.uniks.vs.methodresourceprediction.utils.Utilities;
+import de.uniks.vs.methodresourceprediction.slicer.dominance.Dominance;
+import de.uniks.vs.methodresourceprediction.slicer.dominance.ImmediateDominance;
+import de.uniks.vs.methodresourceprediction.slicer.dominance.ImmediatePostDominance;
+import de.uniks.vs.methodresourceprediction.slicer.dominance.PostDominance;
+import de.uniks.vs.methodresourceprediction.slicer.dominance.StrictDominance;
+import de.uniks.vs.methodresourceprediction.slicer.dominance.StrictPostDominance;
 
 public class Slicer {
 	private String inputJar;

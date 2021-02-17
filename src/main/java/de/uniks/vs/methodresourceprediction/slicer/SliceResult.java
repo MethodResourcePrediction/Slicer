@@ -1,4 +1,4 @@
-package de.uniks.vs.slicer;
+package de.uniks.vs.methodresourceprediction.slicer;
 
 import java.io.IOException;
 import java.rmi.UnexpectedException;
@@ -35,8 +35,8 @@ import com.ibm.wala.types.TypeName;
 import com.ibm.wala.util.debug.UnimplementedError;
 import com.ibm.wala.util.strings.StringStuff;
 
-import de.uniks.vs.slicer.export.Nothing;
-import de.uniks.vs.utils.Utilities;
+import de.uniks.vs.methodresourceprediction.slicer.export.Nothing;
+import de.uniks.vs.methodresourceprediction.utils.Utilities;
 
 public class SliceResult {
 	private String methodSignature;

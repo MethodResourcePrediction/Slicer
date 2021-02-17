@@ -1,8 +1,8 @@
-package de.uniks.vs.slicer.test;
+package de.uniks.vs.methodresourceprediction.slicer.test;
 
 import java.io.PrintStream;
 
-import de.uniks.vs.slicer.export.Nothing;
+import de.uniks.vs.methodresourceprediction.slicer.export.Nothing;
 
 public class SlicerValidation {
 	// DO NOT CHANGE THESE METHODS

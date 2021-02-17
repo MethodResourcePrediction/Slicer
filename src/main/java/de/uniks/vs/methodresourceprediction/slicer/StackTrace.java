@@ -1,4 +1,4 @@
-package de.uniks.vs.slicer;
+package de.uniks.vs.methodresourceprediction.slicer;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -10,7 +10,7 @@ import java.util.stream.IntStream;
 
 import com.ibm.wala.shrikeBT.IInstruction;
 
-import de.uniks.vs.utils.Utilities;
+import de.uniks.vs.methodresourceprediction.utils.Utilities;
 
 public class StackTrace implements Iterable<Entry<Integer, Stack<Integer>>> {
 	private IInstruction[] instructions;

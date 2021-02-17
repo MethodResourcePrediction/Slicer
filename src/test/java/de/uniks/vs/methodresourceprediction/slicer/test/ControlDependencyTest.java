@@ -1,4 +1,4 @@
-package de.uniks.vs.slicer.test;
+package de.uniks.vs.methodresourceprediction.slicer.test;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -17,14 +17,12 @@ import org.junit.jupiter.api.TestInstance.Lifecycle;
 
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 
-import de.uniks.vs.utils.Utilities;
-import de.uniks.vs.slicer.ControlDependency;
-import de.uniks.vs.slicer.dominance.Dominance;
-import de.uniks.vs.slicer.dominance.ImmediateDominance;
-import de.uniks.vs.slicer.dominance.ImmediatePostDominance;
-import de.uniks.vs.slicer.dominance.PostDominance;
-import de.uniks.vs.slicer.dominance.StrictDominance;
-import de.uniks.vs.slicer.dominance.StrictPostDominance;
+import de.uniks.vs.methodresourceprediction.utils.Utilities;
+import de.uniks.vs.methodresourceprediction.slicer.ControlDependency;
+import de.uniks.vs.methodresourceprediction.slicer.dominance.ImmediateDominance;
+import de.uniks.vs.methodresourceprediction.slicer.dominance.ImmediatePostDominance;
+import de.uniks.vs.methodresourceprediction.slicer.dominance.PostDominance;
+import de.uniks.vs.methodresourceprediction.slicer.dominance.StrictPostDominance;
 
 @TestInstance(Lifecycle.PER_CLASS)
 public class ControlDependencyTest {

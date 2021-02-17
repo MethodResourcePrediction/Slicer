@@ -1,4 +1,4 @@
-package de.uniks.vs.slicer.test;
+package de.uniks.vs.methodresourceprediction.slicer.test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.IntStream;
 
+import de.uniks.vs.methodresourceprediction.slicer.SlicerGraph;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.AbstractGraph;
 import org.jgrapht.graph.DefaultDirectedGraph;
@@ -25,15 +26,14 @@ import org.junit.jupiter.api.TestInstance.Lifecycle;
 
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 
-import de.uniks.vs.utils.Utilities;
-import de.uniks.vs.slicer.ControlDependency;
-import de.uniks.vs.slicer.SlicerGraph;
-import de.uniks.vs.slicer.dominance.Dominance;
-import de.uniks.vs.slicer.dominance.ImmediateDominance;
-import de.uniks.vs.slicer.dominance.ImmediatePostDominance;
-import de.uniks.vs.slicer.dominance.PostDominance;
-import de.uniks.vs.slicer.dominance.StrictDominance;
-import de.uniks.vs.slicer.dominance.StrictPostDominance;
+import de.uniks.vs.methodresourceprediction.utils.Utilities;
+import de.uniks.vs.methodresourceprediction.slicer.ControlDependency;
+import de.uniks.vs.methodresourceprediction.slicer.dominance.Dominance;
+import de.uniks.vs.methodresourceprediction.slicer.dominance.ImmediateDominance;
+import de.uniks.vs.methodresourceprediction.slicer.dominance.ImmediatePostDominance;
+import de.uniks.vs.methodresourceprediction.slicer.dominance.PostDominance;
+import de.uniks.vs.methodresourceprediction.slicer.dominance.StrictDominance;
+import de.uniks.vs.methodresourceprediction.slicer.dominance.StrictPostDominance;
 
 @TestInstance(Lifecycle.PER_CLASS)
 public class DominanceTest {

@@ -1,4 +1,4 @@
-package de.uniks.vs.slicer;
+package de.uniks.vs.methodresourceprediction.slicer;
 
 import java.io.IOException;
 import java.util.List;
@@ -14,7 +14,7 @@ import org.jgrapht.io.ExportException;
 import com.ibm.wala.shrikeBT.IInstruction;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 
-import de.uniks.vs.utils.Utilities;
+import de.uniks.vs.methodresourceprediction.utils.Utilities;
 
 public class BlockDependency extends SlicerGraph<Block> {
 	private ControlFlow controlFlow;

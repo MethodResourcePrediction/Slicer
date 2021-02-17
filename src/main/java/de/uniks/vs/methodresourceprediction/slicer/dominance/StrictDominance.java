@@ -1,9 +1,11 @@
-package de.uniks.vs.slicer.dominance;
+package de.uniks.vs.methodresourceprediction.slicer.dominance;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import de.uniks.vs.methodresourceprediction.slicer.ControlFlow;
+import de.uniks.vs.methodresourceprediction.slicer.SlicerGraph;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
@@ -12,9 +14,6 @@ import org.jgrapht.io.ExportException;
 
 import com.ibm.wala.shrikeBT.IInstruction;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
-
-import de.uniks.vs.slicer.ControlFlow;
-import de.uniks.vs.slicer.SlicerGraph;
 
 public class StrictDominance extends SlicerGraph<Integer> {
 	private Graph<Integer, DefaultEdge> graph;

@@ -1,4 +1,4 @@
-package de.uniks.vs.slicer;
+package de.uniks.vs.methodresourceprediction.slicer;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -15,7 +15,7 @@ import org.jgrapht.io.GraphExporter;
 
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 
-import de.uniks.vs.utils.Utilities;
+import de.uniks.vs.methodresourceprediction.utils.Utilities;
 
 // TODO Rewrite this into an abstract class with a method generating the exporter for graph creation
 public abstract class SlicerGraph<T> {

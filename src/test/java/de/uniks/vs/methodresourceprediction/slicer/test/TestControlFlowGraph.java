@@ -1,4 +1,4 @@
-package de.uniks.vs.slicer.test;
+package de.uniks.vs.methodresourceprediction.slicer.test;
 
 import java.util.stream.IntStream;
 

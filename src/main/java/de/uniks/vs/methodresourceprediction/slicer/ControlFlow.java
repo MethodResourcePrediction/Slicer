@@ -1,4 +1,4 @@
-package de.uniks.vs.slicer;
+package de.uniks.vs.methodresourceprediction.slicer;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,7 +25,7 @@ import com.ibm.wala.shrikeCT.ClassReader;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import com.ibm.wala.util.collections.Pair;
 
-import de.uniks.vs.utils.InstrumenterComparator;
+import de.uniks.vs.methodresourceprediction.utils.InstrumenterComparator;
 
 public class ControlFlow extends SlicerGraph<Integer> {
 	private String inputPath;
