@@ -35,8 +35,8 @@ import com.ibm.wala.types.TypeName;
 import com.ibm.wala.util.debug.UnimplementedError;
 import com.ibm.wala.util.strings.StringStuff;
 
-import de.rherzog.master.thesis.slicer.instrumenter.export.Nothing;
-import de.rherzog.master.thesis.utils.Utilities;
+import de.uniks.vs.slicer.export.Nothing;
+import de.uniks.vs.utils.Utilities;
 
 public class SliceResult {
 	private String methodSignature;

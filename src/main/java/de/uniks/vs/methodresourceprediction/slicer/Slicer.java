@@ -28,8 +28,8 @@ import com.ibm.wala.shrikeBT.IInvokeInstruction;
 import com.ibm.wala.shrikeBT.ReturnInstruction;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 
-import de.rherzog.master.thesis.slicer.instrumenter.export.SliceWriter.ExportFormat;
-import de.rherzog.master.thesis.utils.Utilities;
+import de.uniks.vs.slicer.export.SliceWriter.ExportFormat;
+import de.uniks.vs.utils.Utilities;
 import de.uniks.vs.slicer.dominance.Dominance;
 import de.uniks.vs.slicer.dominance.ImmediateDominance;
 import de.uniks.vs.slicer.dominance.ImmediatePostDominance;

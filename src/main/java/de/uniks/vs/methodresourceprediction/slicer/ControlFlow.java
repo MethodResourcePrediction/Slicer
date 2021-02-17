@@ -25,7 +25,7 @@ import com.ibm.wala.shrikeCT.ClassReader;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import com.ibm.wala.util.collections.Pair;
 
-import de.rherzog.master.thesis.utils.InstrumenterComparator;
+import de.uniks.vs.utils.InstrumenterComparator;
 
 public class ControlFlow extends SlicerGraph<Integer> {
 	private String inputPath;

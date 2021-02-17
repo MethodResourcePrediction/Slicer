@@ -10,7 +10,7 @@ import java.util.stream.IntStream;
 
 import com.ibm.wala.shrikeBT.IInstruction;
 
-import de.rherzog.master.thesis.utils.Utilities;
+import de.uniks.vs.utils.Utilities;
 
 public class StackTrace implements Iterable<Entry<Integer, Stack<Integer>>> {
 	private IInstruction[] instructions;

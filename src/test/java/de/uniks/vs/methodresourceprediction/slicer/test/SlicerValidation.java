@@ -2,7 +2,7 @@ package de.uniks.vs.slicer.test;
 
 import java.io.PrintStream;
 
-import de.rherzog.master.thesis.slicer.instrumenter.export.Nothing;
+import de.uniks.vs.slicer.export.Nothing;
 
 public class SlicerValidation {
 	// DO NOT CHANGE THESE METHODS

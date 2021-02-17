@@ -51,12 +51,12 @@ import com.ibm.wala.types.generics.TypeSignature;
 import com.ibm.wala.util.collections.Iterator2Iterable;
 import com.ibm.wala.util.strings.StringStuff;
 
-import de.rherzog.master.thesis.slicer.instrumenter.export.FeatureLogger;
-import de.rherzog.master.thesis.slicer.instrumenter.export.FeatureLoggerExecution;
-import de.rherzog.master.thesis.slicer.instrumenter.export.SliceWriter;
-import de.rherzog.master.thesis.slicer.instrumenter.export.SliceWriter.ExportFormat;
-import de.rherzog.master.thesis.utils.InstrumenterComparator;
-import de.rherzog.master.thesis.utils.Utilities;
+import de.uniks.vs.slicer.export.FeatureLogger;
+import de.uniks.vs.slicer.export.FeatureLoggerExecution;
+import de.uniks.vs.slicer.export.SliceWriter;
+import de.uniks.vs.slicer.export.SliceWriter.ExportFormat;
+import de.uniks.vs.utils.InstrumenterComparator;
+import de.uniks.vs.utils.Utilities;
 
 public class Instrumenter {
 	private final static String ADDITIONAL_JARS_PATH = "extra_libs/";

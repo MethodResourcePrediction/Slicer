@@ -82,7 +82,7 @@ public class SlicerTest {
 	public void testSimpleMethodCall() throws IOException, InvalidClassFileException, InterruptedException,
 			IllegalStateException, DecoderException {
 		slicer.setInputJar(slicerValidationJarPath);
-		slicer.setMethodSignature("Lde.rherzog.master.thesis.slicer.test.SlicerValidation;.simpleMethodCall()V");
+		slicer.setMethodSignature("Lde.uniks.vs.slicer.test.SlicerValidation;.simpleMethodCall()V");
 		System.out.println(slicer.getMethodSummary());
 
 		Map<Set<Integer>, List<IInstruction>> slicerCriterionResultMap = new HashMap<>();
@@ -103,7 +103,7 @@ public class SlicerTest {
 			IllegalStateException, DecoderException {
 		slicer.setInputJar(slicerValidationJarPath);
 		slicer.setMethodSignature(
-				"Lde.rherzog.master.thesis.slicer.test.SlicerValidation;.simpleMethodCallWithParameter(J)V");
+				"Lde.uniks.vs.slicer.test.SlicerValidation;.simpleMethodCallWithParameter(J)V");
 		System.out.println(slicer.getMethodSummary());
 
 		Map<Set<Integer>, List<IInstruction>> slicerCriterionResultMap = new HashMap<>();
@@ -124,7 +124,7 @@ public class SlicerTest {
 			InterruptedException, IllegalStateException, DecoderException, ExportException {
 		slicer.setInputJar(slicerValidationJarPath);
 		slicer.setMethodSignature(
-				"Lde.rherzog.master.thesis.slicer.test.SlicerValidation;.simpleMethodCallAndLoopWithParameter(J)V");
+				"Lde.uniks.vs.slicer.test.SlicerValidation;.simpleMethodCallAndLoopWithParameter(J)V");
 		System.out.println(slicer.getMethodSummary());
 
 //		slicer.getControlFlow().showPlot();
@@ -228,7 +228,7 @@ public class SlicerTest {
 			throws IOException, InvalidClassFileException, InterruptedException {
 		slicer.setInputJar(slicerValidationJarPath);
 		slicer.setMethodSignature(
-				"Lde.rherzog.master.thesis.slicer.test.SlicerValidation;.reuseVariableWithReinitialization()V");
+				"Lde.uniks.vs.slicer.test.SlicerValidation;.reuseVariableWithReinitialization()V");
 		System.out.println(slicer.getMethodSummary());
 
 		Map<Set<Integer>, List<IInstruction>> slicerCriterionResultMap = new HashMap<>();
@@ -483,7 +483,7 @@ public class SlicerTest {
 			throws IOException, InvalidClassFileException, InterruptedException {
 		slicer.setInputJar(slicerValidationJarPath);
 		slicer.setMethodSignature(
-				"Lde.rherzog.master.thesis.slicer.test.SlicerValidation;.reuseVariableWithReinitializationDoubleSized()V");
+				"Lde.uniks.vs.slicer.test.SlicerValidation;.reuseVariableWithReinitializationDoubleSized()V");
 		System.out.println(slicer.getMethodSummary());
 
 		Map<Set<Integer>, List<IInstruction>> slicerCriterionResultMap = new HashMap<>();
@@ -883,7 +883,7 @@ public class SlicerTest {
 			throws IOException, InvalidClassFileException, InterruptedException, ExportException {
 		slicer.setInputJar(slicerValidationJarPath);
 		slicer.setMethodSignature(
-				"Lde.rherzog.master.thesis.slicer.test.SlicerValidation;.reuseVariableWithoutReinitialization()V");
+				"Lde.uniks.vs.slicer.test.SlicerValidation;.reuseVariableWithoutReinitialization()V");
 		System.out.println(slicer.getMethodSummary());
 //		slicer.getControlFlow().showPlot();
 //		slicer.getDominance().showPlot();
@@ -1143,7 +1143,7 @@ public class SlicerTest {
 			throws IOException, InvalidClassFileException, InterruptedException {
 		slicer.setInputJar(slicerValidationJarPath);
 		slicer.setMethodSignature(
-				"Lde.rherzog.master.thesis.slicer.test.SlicerValidation;.reuseVariableWithoutReinitializationDoubleSized()V");
+				"Lde.uniks.vs.slicer.test.SlicerValidation;.reuseVariableWithoutReinitializationDoubleSized()V");
 		System.out.println(slicer.getMethodSummary());
 //		Utilities.dotShow(slicer.getControlFlow().dotPrint());
 
@@ -1482,7 +1482,7 @@ public class SlicerTest {
 	public void testSimpleReturnValue() throws IOException, InvalidClassFileException, InterruptedException,
 			IllegalStateException, DecoderException {
 		slicer.setInputJar(slicerValidationJarPath);
-		slicer.setMethodSignature("Lde.rherzog.master.thesis.slicer.test.SlicerValidation;.simpleReturnValue()I");
+		slicer.setMethodSignature("Lde.uniks.vs.slicer.test.SlicerValidation;.simpleReturnValue()I");
 		System.out.println(slicer.getMethodSummary());
 
 		Map<Set<Integer>, List<IInstruction>> slicerCriterionResultMap = new HashMap<>();
@@ -1499,7 +1499,7 @@ public class SlicerTest {
 	public void testSimpleReturnValue2() throws IOException, InvalidClassFileException, InterruptedException,
 			IllegalStateException, DecoderException {
 		slicer.setInputJar(slicerValidationJarPath);
-		slicer.setMethodSignature("Lde.rherzog.master.thesis.slicer.test.SlicerValidation;.simpleReturnValue2()J");
+		slicer.setMethodSignature("Lde.uniks.vs.slicer.test.SlicerValidation;.simpleReturnValue2()J");
 		System.out.println(slicer.getMethodSummary());
 
 		Map<Set<Integer>, List<IInstruction>> slicerCriterionResultMap = new HashMap<>();
@@ -1518,7 +1518,7 @@ public class SlicerTest {
 	public void testSimpleReturnValue3() throws IOException, InvalidClassFileException, InterruptedException,
 			IllegalStateException, DecoderException {
 		slicer.setInputJar(slicerValidationJarPath);
-		slicer.setMethodSignature("Lde.rherzog.master.thesis.slicer.test.SlicerValidation;.simpleReturnValue3()J");
+		slicer.setMethodSignature("Lde.uniks.vs.slicer.test.SlicerValidation;.simpleReturnValue3()J");
 		System.out.println(slicer.getMethodSummary());
 
 		Map<Set<Integer>, List<IInstruction>> slicerCriterionResultMap = new HashMap<>();
@@ -1544,7 +1544,7 @@ public class SlicerTest {
 			IllegalStateException, DecoderException {
 		slicer.setInputJar(slicerValidationJarPath);
 		slicer.setMethodSignature(
-				"Lde.rherzog.master.thesis.slicer.test.SlicerValidation;.returnObject()Ljava/io/PrintStream;");
+				"Lde.uniks.vs.slicer.test.SlicerValidation;.returnObject()Ljava/io/PrintStream;");
 		System.out.println(slicer.getMethodSummary());
 
 		Map<Set<Integer>, List<IInstruction>> slicerCriterionResultMap = new HashMap<>();
@@ -1563,7 +1563,7 @@ public class SlicerTest {
 	public void testSliceConditional()
 			throws IOException, InvalidClassFileException, InterruptedException, ExportException, URISyntaxException {
 		slicer.setInputJar(slicerValidationJarPath);
-		slicer.setMethodSignature("Lde.rherzog.master.thesis.slicer.test.SlicerValidation;.simpleConditional()V");
+		slicer.setMethodSignature("Lde.uniks.vs.slicer.test.SlicerValidation;.simpleConditional()V");
 		System.out.println(slicer.getMethodSummary());
 //		slicer.showPlots();
 		Path dir = Path.of(new URI("file:///tmp/slicer"));

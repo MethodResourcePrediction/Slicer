@@ -25,7 +25,7 @@ import org.junit.jupiter.api.TestInstance.Lifecycle;
 
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 
-import de.rherzog.master.thesis.utils.Utilities;
+import de.uniks.vs.utils.Utilities;
 import de.uniks.vs.slicer.ControlDependency;
 import de.uniks.vs.slicer.SlicerGraph;
 import de.uniks.vs.slicer.dominance.Dominance;

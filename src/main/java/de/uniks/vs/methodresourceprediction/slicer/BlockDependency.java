@@ -14,7 +14,7 @@ import org.jgrapht.io.ExportException;
 import com.ibm.wala.shrikeBT.IInstruction;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 
-import de.rherzog.master.thesis.utils.Utilities;
+import de.uniks.vs.utils.Utilities;
 
 public class BlockDependency extends SlicerGraph<Block> {
 	private ControlFlow controlFlow;

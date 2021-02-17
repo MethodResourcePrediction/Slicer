@@ -15,7 +15,7 @@ import org.jgrapht.io.GraphExporter;
 
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 
-import de.rherzog.master.thesis.utils.Utilities;
+import de.uniks.vs.utils.Utilities;
 
 // TODO Rewrite this into an abstract class with a method generating the exporter for graph creation
 public abstract class SlicerGraph<T> {
