@@ -110,7 +110,7 @@ public class Slicer {
 				argumentDependency, dataDependency, classObjectDependency);
 		Map<Integer, Integer> instructionPopMap = getInstructionPopMap();
 
-		System.out.println(getSliceResult());
+//		System.out.println(getSliceResult());
 
 		// Instrument a new program with a modified method which we analyze
 		Instrumenter instrumenter = new Instrumenter(additionalJarsPath, inputJar, outputJar, methodSignature,

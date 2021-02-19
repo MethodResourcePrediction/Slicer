@@ -74,7 +74,7 @@ public class Instrumenter {
 
 	// Filter for duplicate entries.
 	private Set<String> duplicateEntrySet = new HashSet<>();
-	private String[] exportJars = new String[] { "SlicerExport/build/libs/SlicerExport.jar", "Utils/build/libs/Utils.jar" };
+	private String[] exportJars = new String[] { "slicer.export-1.0.0-SNAPSHOT.jar", "utils-1.0.0-SNAPSHOT.jar" };
 	private boolean verbose = false;
 
 	/**
@@ -83,7 +83,6 @@ public class Instrumenter {
 	 * @param inputPath       - path to input jar which should be profiled
 	 * @param outputPath      - path to output jar where the profiled program is
 	 *                        stored
-	 * @param pipePath        - path to pipe for data send back communication
 	 * @param methodSignature - signature for method to profile
 	 * @param exportFormat
 	 * @throws IOException
@@ -798,8 +797,6 @@ public class Instrumenter {
 	/**
 	 * Finalizes the instrumentalization. This consists out of adding additional
 	 * required libraries and classes
-	 * 
-	 * @param mainClass
 	 * 
 	 * @throws DecoderException
 	 */

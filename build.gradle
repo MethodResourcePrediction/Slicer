@@ -24,6 +24,11 @@ group = "de.uniks.vs.methodresourceprediction"
 archivesBaseName = "slicer"
 version = "1.0.0-SNAPSHOT"
 
+configurations {
+    sourceCompatibility = 1.11
+    targetCompatibility = 1.11
+}
+
 dependencies {
     compile group: 'de.uniks.vs.methodresourceprediction', name: 'utils', version: '1.0.0-SNAPSHOT'
     compile group: 'de.uniks.vs.methodresourceprediction', name: 'slicer.export', version: '1.0.0-SNAPSHOT'
@@ -124,7 +129,7 @@ uploadArchives {
 }
 
 extraArchive {
-    sources = false
+    sources = true
     tests = true
     javadoc = false
 }
