@@ -128,6 +128,13 @@ public class DependencyTest {
     assertTrue(slicer.isFunctional());
   }
 
+  @Test
+  public void testStaticMethodCallWithDependency() throws IOException, InvalidClassFileException {
+    slicer.setMethodSignature(
+        "Lde.uniks.vs.methodresourceprediction.slicer.test.DependencyValidation;.staticMethodCallWithDependency(I)I");
+    assertTrue(slicer.isFunctional());
+  }
+
   private String readInputStream(InputStream inputStream) {
     // Copy the stream contents into a StringWriter
     StringWriter writer = new StringWriter();

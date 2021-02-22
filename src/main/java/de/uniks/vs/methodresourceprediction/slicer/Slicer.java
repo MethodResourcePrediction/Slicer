@@ -1,12 +1,10 @@
 package de.uniks.vs.methodresourceprediction.slicer;
 
 import com.ibm.wala.shrikeBT.*;
-import com.ibm.wala.shrikeBT.shrikeCT.ClassInstrumenter;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import de.uniks.vs.methodresourceprediction.slicer.dominance.*;
 import de.uniks.vs.methodresourceprediction.slicer.export.SliceWriter.ExportFormat;
 import de.uniks.vs.methodresourceprediction.utils.Utilities;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -695,6 +693,7 @@ public class Slicer {
     return slicer.getSliceResult();
   }
 
+  // TODO Extract to Analyzer?
   public boolean isFunctional() throws IOException, InvalidClassFileException {
     final String[] jvmAllowedPackagePrefixes = new String[] {"Ljava/"};
 
@@ -716,14 +715,16 @@ public class Slicer {
         InvokeInstruction invokeInstruction = (InvokeInstruction) instruction;
         String classType = invokeInstruction.getClassType();
         String methodName = invokeInstruction.getMethodName();
+        String methodSignature = invokeInstruction.getMethodSignature();
 
         boolean allowedPrefix =
             Arrays.stream(jvmAllowedPackagePrefixes).anyMatch(classType::startsWith);
         if (!allowedPrefix) {
-          ClassInstrumenter classInstrumenter =
-              Instrumenter.getClassInstrumenter(new File(inputJar), classType);
-          MethodData method = Instrumenter.getMethod(classInstrumenter, methodName);
-          if (!method.getIsStatic()) {
+          // Iteratively check dependent invocations
+          Slicer slicer = new Slicer();
+          slicer.setInputJar(getInputJar());
+          slicer.setMethodSignature(classType + "." + methodName + methodSignature);
+          if (!slicer.isFunctional()) {
             return false;
           }
         }

@@ -52,4 +52,8 @@ public class DependencyValidation {
   public static int staticMethodCallWithoutDependency(int someNumber) {
     return staticMethodWithoutDependencies(someNumber);
   }
+
+  public static int staticMethodCallWithDependency(int someNumber) {
+    return staticMethodWithStaticVariableDependency(someNumber);
+  }
 }
