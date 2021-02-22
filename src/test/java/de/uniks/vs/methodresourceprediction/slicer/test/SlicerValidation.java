@@ -94,10 +94,36 @@ public class SlicerValidation {
 		return System.out;
 	}
 
-	public void functionalMethod(int someNumber) {
-		double[] randoms = new double[someNumber];
-		for (int i = 0; i < someNumber; i++) {
-			randoms[i] = Math.random();
-		}
+	public static int staticMethodWithoutDependencies(int someNumber) {
+		return someNumber;
+	}
+
+	private static final int STATIC_CONSTANT = 10;
+	public static int staticMethodWithStaticFieldDependency(int someNumber) {
+		return someNumber + STATIC_CONSTANT;
+	}
+
+	// Public access to prevent replacing to constant optimization
+	public static int staticVariable = 20;
+	public static int staticMethodWithStaticVariableDependency(int someNumber) {
+		return someNumber + staticVariable;
+	}
+
+	public int methodWithWithoutDependency(int someNumber) {
+		return someNumber;
+	}
+
+	public long methodWithWithJavaLangDependency(int someNumber) {
+		return someNumber + Thread.currentThread().getId();
+	}
+
+	public static long staticMethodWithWithJavaLangDependency(int someNumber) {
+		return someNumber + Thread.currentThread().getId();
+	}
+
+	// Public access to prevent replacing to constant optimization
+	public int variable = 20;
+	public int methodWithVariableDependency(int someNumber) {
+		return someNumber + variable;
 	}
 }
