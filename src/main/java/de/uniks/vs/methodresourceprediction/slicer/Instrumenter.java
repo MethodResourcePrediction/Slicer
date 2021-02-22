@@ -1,30 +1,8 @@
 package de.uniks.vs.methodresourceprediction.slicer;
 
-import com.ibm.wala.shrikeBT.ArrayLengthInstruction;
-import com.ibm.wala.shrikeBT.ArrayLoadInstruction;
-import com.ibm.wala.shrikeBT.BinaryOpInstruction;
-import com.ibm.wala.shrikeBT.ConditionalBranchInstruction;
-import com.ibm.wala.shrikeBT.ConstantInstruction;
-import com.ibm.wala.shrikeBT.Constants;
-import com.ibm.wala.shrikeBT.ConversionInstruction;
-import com.ibm.wala.shrikeBT.DupInstruction;
-import com.ibm.wala.shrikeBT.GetInstruction;
-import com.ibm.wala.shrikeBT.GotoInstruction;
-import com.ibm.wala.shrikeBT.IInstruction;
-import com.ibm.wala.shrikeBT.ILoadInstruction;
-import com.ibm.wala.shrikeBT.IStoreInstruction;
-import com.ibm.wala.shrikeBT.InvokeDynamicInstruction;
-import com.ibm.wala.shrikeBT.InvokeInstruction;
-import com.ibm.wala.shrikeBT.LoadInstruction;
-import com.ibm.wala.shrikeBT.MethodData;
-import com.ibm.wala.shrikeBT.MethodEditor;
+import com.ibm.wala.shrikeBT.*;
 import com.ibm.wala.shrikeBT.MethodEditor.Output;
 import com.ibm.wala.shrikeBT.MethodEditor.Patch;
-import com.ibm.wala.shrikeBT.NewInstruction;
-import com.ibm.wala.shrikeBT.PopInstruction;
-import com.ibm.wala.shrikeBT.ReturnInstruction;
-import com.ibm.wala.shrikeBT.StoreInstruction;
-import com.ibm.wala.shrikeBT.Util;
 import com.ibm.wala.shrikeBT.shrikeCT.ClassInstrumenter;
 import com.ibm.wala.shrikeBT.shrikeCT.OfflineInstrumenter;
 import com.ibm.wala.shrikeCT.ClassReader;
@@ -40,38 +18,32 @@ import de.uniks.vs.methodresourceprediction.slicer.export.SliceWriter;
 import de.uniks.vs.methodresourceprediction.slicer.export.SliceWriter.ExportFormat;
 import de.uniks.vs.methodresourceprediction.utils.InstrumenterComparator;
 import de.uniks.vs.methodresourceprediction.utils.Utilities;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.io.FilenameUtils;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 public class Instrumenter {
   private static final String ADDITIONAL_JARS_PATH = "extra_libs/";
 
-  private OfflineInstrumenter instrumenter;
-  private String inputPath;
-  private String outputPath;
-  private String tempOutputPath;
-  private File baseDirFile;
-  private String additionalJarsPath;
-  private String methodSignature;
-  private String mainClass;
-  private String resultFilePath;
-  private ExportFormat exportFormat;
+  private final OfflineInstrumenter instrumenter;
+  private final String inputPath;
+  private final String outputPath;
+  private final File baseDirFile;
+  private final String additionalJarsPath;
+  private final String methodSignature;
+  private final String mainClass;
+  private final String resultFilePath;
+  private final ExportFormat exportFormat;
 
   // Filter for duplicate entries.
-  private Set<String> duplicateEntrySet = new HashSet<>();
-  private String[] exportJars =
+  private final Set<String> duplicateEntrySet = new HashSet<>();
+  private final String[] exportJars =
       new String[] {"slicer.export-1.0.0-SNAPSHOT.jar", "utils-1.0.0-SNAPSHOT.jar"};
   private boolean integrateFeatureLogger = false;
   private boolean verbose = false;
@@ -146,47 +118,97 @@ public class Instrumenter {
     //		instrumenter.addInputJar(new File(inputPath));
     addJar(inputPath);
 
-    tempOutputPath = outputPath + "_";
+    String tempOutputPath = outputPath + "_";
     instrumenter.setOutputJar(new File(tempOutputPath));
     instrumenter.setPassUnmodifiedClasses(true);
   }
 
-  public static IInstruction[] getInstructions(File inputJar, String methodSignature)
-      throws IOException, InvalidClassFileException {
-    InstrumenterComparator comparator = InstrumenterComparator.of(methodSignature);
-
+  // TODO Extract to Analyzer?
+  public static ClassInstrumenter[] getClassInstrumenters(File inputJar) throws IOException {
     OfflineInstrumenter inst = new OfflineInstrumenter();
     inst.addInputJar(inputJar);
     inst.beginTraversal();
 
-    // Iterate each class in the input program and instrument it
+    List<ClassInstrumenter> classInstrumenters = new ArrayList<>();
+
     ClassInstrumenter ci;
-    MethodData md = null;
     while ((ci = inst.nextClass()) != null) {
-      // Search for the correct method (MethodData)
-      ClassReader reader = ci.getReader();
+      classInstrumenters.add(ci);
+    }
+    return classInstrumenters.toArray(new ClassInstrumenter[0]);
+  }
 
-      for (int methodIndex = 0; methodIndex < reader.getMethodCount(); methodIndex++) {
-        md = ci.visitMethod(methodIndex);
-        if (md == null) {
-          continue;
-        }
+  // TODO Extract to Analyzer?
+  public static ClassInstrumenter getClassInstrumenter(File inputJar, String className)
+      throws IOException {
+    Optional<ClassInstrumenter> optionalClassInstrumenter =
+        Arrays.stream(getClassInstrumenters(inputJar))
+            .filter(
+                ci -> {
+                  try {
+                    String name = "L" + ci.getReader().getName() + ";";
+                    return name.equals(className);
+                  } catch (InvalidClassFileException e) {
+                    return false;
+                  }
+                })
+            .findFirst();
+    return optionalClassInstrumenter.orElse(null);
+  }
 
-        if (!comparator.equals(md)) {
-          md = null;
-          continue;
-        }
-        break;
+  // TODO Extract to Analyzer?
+  public static MethodData[] getMethods(ClassInstrumenter classInstrumenter)
+      throws InvalidClassFileException {
+    List<MethodData> methodDataList = new ArrayList<>();
+    ClassReader classReader = classInstrumenter.getReader();
+    for (int methodIndex = 0; methodIndex < classReader.getMethodCount(); methodIndex++) {
+      MethodData md = classInstrumenter.visitMethod(methodIndex);
+      if (md == null) {
+        continue;
       }
+      methodDataList.add(md);
+    }
+    return methodDataList.toArray(new MethodData[0]);
+  }
 
-      // Check if method was not found in this class
-      if (md != null) {
-        break;
+  // TODO Extract to Analyzer?
+  public static MethodData getMethod(ClassInstrumenter classInstrumenter, String methodName)
+      throws InvalidClassFileException {
+    Optional<MethodData> optionalMethodData =
+        Arrays.stream(getMethods(classInstrumenter))
+            .filter(
+                md -> {
+                    String name = md.getName();
+                    return name.equals(methodName);
+                })
+            .findFirst();
+    return optionalMethodData.orElse(null);
+  }
+
+  // TODO Extract to Analyzer?
+  public static IInstruction[] getInstructions(File inputJar, String methodSignature)
+      throws IOException, InvalidClassFileException {
+    InstrumenterComparator comparator = InstrumenterComparator.of(methodSignature);
+
+    MethodData md = null;
+    ClassInstrumenter[] classInstrumenters = getClassInstrumenters(inputJar);
+    for (ClassInstrumenter classInstrumenter : classInstrumenters) {
+      if (comparator.equals(classInstrumenter)) {
+        MethodData[] methods = getMethods(classInstrumenter);
+        for (MethodData method : methods) {
+          if (comparator.equals(method)) {
+            md = method;
+            break;
+          }
+        }
       }
     }
+
     if (md == null) {
       return null;
     }
+
+    // Iterate each class in the input program and instrument it
     return md.getInstructions();
   }
 

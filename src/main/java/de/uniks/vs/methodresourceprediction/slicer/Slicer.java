@@ -1,38 +1,21 @@
 package de.uniks.vs.methodresourceprediction.slicer;
 
-import com.ibm.wala.shrikeBT.ConstantInstruction;
-import com.ibm.wala.shrikeBT.GotoInstruction;
-import com.ibm.wala.shrikeBT.IConditionalBranchInstruction;
-import com.ibm.wala.shrikeBT.IInstruction;
-import com.ibm.wala.shrikeBT.IInvokeInstruction;
-import com.ibm.wala.shrikeBT.ReturnInstruction;
+import com.ibm.wala.shrikeBT.*;
+import com.ibm.wala.shrikeBT.shrikeCT.ClassInstrumenter;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
-import de.uniks.vs.methodresourceprediction.slicer.dominance.Dominance;
-import de.uniks.vs.methodresourceprediction.slicer.dominance.ImmediateDominance;
-import de.uniks.vs.methodresourceprediction.slicer.dominance.ImmediatePostDominance;
-import de.uniks.vs.methodresourceprediction.slicer.dominance.PostDominance;
-import de.uniks.vs.methodresourceprediction.slicer.dominance.StrictDominance;
-import de.uniks.vs.methodresourceprediction.slicer.dominance.StrictPostDominance;
+import de.uniks.vs.methodresourceprediction.slicer.dominance.*;
 import de.uniks.vs.methodresourceprediction.slicer.export.SliceWriter.ExportFormat;
 import de.uniks.vs.methodresourceprediction.utils.Utilities;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.Stack;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.*;
 import org.apache.commons.codec.DecoderException;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.io.ExportException;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
 
 public class Slicer {
   private String inputJar;
@@ -88,13 +71,13 @@ public class Slicer {
     ArgumentDependency argumentDependency = getArgumentDependency();
     ClassObjectDependency classObjectDependency = getClassObjectDependency();
 
-    Dominance dominance = getDominance();
-    StrictDominance strictDominance = getStrictDominance();
-    ImmediateDominance immediateDominance = getImmediateDominance();
-
-    PostDominance postDominance = getPostDominance();
-    StrictPostDominance strictPostDominance = getStrictPostDominance();
-    ImmediatePostDominance immediatePostDominance = getImmediatePostDominance();
+    //    Dominance dominance = getDominance();
+    //    StrictDominance strictDominance = getStrictDominance();
+    //    ImmediateDominance immediateDominance = getImmediateDominance();
+    //
+    //    PostDominance postDominance = getPostDominance();
+    //    StrictPostDominance strictPostDominance = getStrictPostDominance();
+    //    ImmediatePostDominance immediatePostDominance = getImmediatePostDominance();
 
     Map<Integer, Set<Integer>> varIndexesToRenumber = argumentDependency.getVarIndexesToRenumber();
     Set<Integer> instructionsInCycles = controlFlow.getInstructionsInCycles();
@@ -711,6 +694,60 @@ public class Slicer {
     slicer.setInstructionIndexes(instructionIndexes);
 
     return slicer.getSliceResult();
+  }
+
+  public boolean isFunctional() throws IOException, InvalidClassFileException {
+    final String[] jvmAllowedPackagePrefixes = new String[] {"Ljava/"};
+
+    // TODO Functional if
+    // * Does not store class variables
+    // * Does not store fields
+    // * Calls only functional methods or jvm methods
+
+    MethodData methodData = getControlFlow().getMethodData();
+    if (!methodData.getIsStatic()) {
+      return false;
+    }
+
+    IInstruction[] instructions = methodData.getInstructions();
+    int maxLocalVarIndex = Utilities.getMaxLocalVarIndex(instructions);
+
+    for (IInstruction instruction : instructions) {
+      if (instruction instanceof InvokeInstruction) {
+        InvokeInstruction invokeInstruction = (InvokeInstruction) instruction;
+        String classType = invokeInstruction.getClassType();
+        String methodName = invokeInstruction.getMethodName();
+
+        boolean allowedPrefix =
+            Arrays.stream(jvmAllowedPackagePrefixes).anyMatch(classType::startsWith);
+        if (!allowedPrefix) {
+          ClassInstrumenter classInstrumenter =
+              Instrumenter.getClassInstrumenter(new File(inputJar), classType);
+          MethodData method = Instrumenter.getMethod(classInstrumenter, methodName);
+          if (!method.getIsStatic()) {
+            return false;
+          }
+        }
+      }
+
+      if (instruction instanceof IStoreInstruction) {
+        IStoreInstruction storeInstruction = (IStoreInstruction) instruction;
+        if (storeInstruction.getVarIndex() > maxLocalVarIndex) {
+          return false;
+        }
+      }
+
+      if (instruction instanceof IGetInstruction) {
+        IGetInstruction getInstruction = (IGetInstruction) instruction;
+        String classType = getInstruction.getClassType();
+        boolean allowedPrefix =
+            Arrays.stream(jvmAllowedPackagePrefixes).anyMatch(classType::startsWith);
+        if (!allowedPrefix) {
+          return false;
+        }
+      }
+    }
+    return true;
   }
 
   public void parseArgs(String[] args) throws ParseException {

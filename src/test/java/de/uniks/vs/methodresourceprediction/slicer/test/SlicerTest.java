@@ -14,6 +14,7 @@ import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.Map.Entry;
@@ -29,21 +30,20 @@ import org.junit.jupiter.api.TestInstance.Lifecycle;
 @TestInstance(Lifecycle.PER_CLASS)
 public class SlicerTest {
   private Slicer slicer;
-  private String slicerValidationJarPath;
 
   @BeforeEach
   public void setUp() throws Exception {
     // Get path to java class
     String classFilePath =
         SlicerTest.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-    String path = URLDecoder.decode(classFilePath, "UTF-8");
+    String path = URLDecoder.decode(classFilePath, StandardCharsets.UTF_8);
 
     String jvmPackageName = SlicerValidation.class.getPackageName();
     String packageName = jvmPackageName.replaceAll("\\.", File.separator) + File.separator;
 
     String slicerValidationClassPath =
         FilenameUtils.concat(path, packageName + SlicerValidation.class.getSimpleName() + ".class");
-    slicerValidationJarPath =
+    String slicerValidationJarPath =
         FilenameUtils.concat(path, packageName + SlicerValidation.class.getSimpleName() + ".jar");
 
     Process process =
@@ -58,13 +58,13 @@ public class SlicerTest {
     }
 
     slicer = new Slicer();
+    slicer.setInputJar(slicerValidationJarPath);
   }
 
   @Test
   public void testSimpleMethodCall()
       throws IOException, InvalidClassFileException, InterruptedException, IllegalStateException,
           DecoderException {
-    slicer.setInputJar(slicerValidationJarPath);
     slicer.setMethodSignature(
         "Lde.uniks.vs.methodresourceprediction.slicer.test.SlicerValidation;.simpleMethodCall()V");
     System.out.println(slicer.getMethodSummary());
@@ -95,7 +95,6 @@ public class SlicerTest {
   public void testSimpleMethodCallWithParameter()
       throws IOException, InvalidClassFileException, InterruptedException, IllegalStateException,
           DecoderException {
-    slicer.setInputJar(slicerValidationJarPath);
     slicer.setMethodSignature(
         "Lde.uniks.vs.methodresourceprediction.slicer.test.SlicerValidation;.simpleMethodCallWithParameter(J)V");
     System.out.println(slicer.getMethodSummary());
@@ -124,7 +123,6 @@ public class SlicerTest {
   public void testSimpleMethodCallAndLoopWithParameter()
       throws IOException, InvalidClassFileException, InterruptedException, IllegalStateException,
           DecoderException, ExportException {
-    slicer.setInputJar(slicerValidationJarPath);
     slicer.setMethodSignature(
         "Lde.uniks.vs.methodresourceprediction.slicer.test.SlicerValidation;.simpleMethodCallAndLoopWithParameter(J)V");
     System.out.println(slicer.getMethodSummary());
@@ -291,7 +289,6 @@ public class SlicerTest {
   @Test
   public void testSliceReuseVariableWithReinitialization()
       throws IOException, InvalidClassFileException, InterruptedException {
-    slicer.setInputJar(slicerValidationJarPath);
     slicer.setMethodSignature(
         "Lde.uniks.vs.methodresourceprediction.slicer.test.SlicerValidation;.reuseVariableWithReinitialization()V");
     System.out.println(slicer.getMethodSummary());
@@ -735,7 +732,6 @@ public class SlicerTest {
   @Test
   public void testSliceReuseVariableWithReinitializationDoubleSized()
       throws IOException, InvalidClassFileException, InterruptedException {
-    slicer.setInputJar(slicerValidationJarPath);
     slicer.setMethodSignature(
         "Lde.uniks.vs.methodresourceprediction.slicer.test.SlicerValidation;.reuseVariableWithReinitializationDoubleSized()V");
     System.out.println(slicer.getMethodSummary());
@@ -1364,7 +1360,6 @@ public class SlicerTest {
   @Test
   public void testSliceReuseVariableWithoutReinitialization()
       throws IOException, InvalidClassFileException, InterruptedException, ExportException {
-    slicer.setInputJar(slicerValidationJarPath);
     slicer.setMethodSignature(
         "Lde.uniks.vs.methodresourceprediction.slicer.test.SlicerValidation;.reuseVariableWithoutReinitialization()V");
     System.out.println(slicer.getMethodSummary());
@@ -1826,7 +1821,6 @@ public class SlicerTest {
   @Test
   public void testSliceReuseVariableWithoutReinitializationDoubleSized()
       throws IOException, InvalidClassFileException, InterruptedException {
-    slicer.setInputJar(slicerValidationJarPath);
     slicer.setMethodSignature(
         "Lde.uniks.vs.methodresourceprediction.slicer.test.SlicerValidation;.reuseVariableWithoutReinitializationDoubleSized()V");
     System.out.println(slicer.getMethodSummary());
@@ -2400,7 +2394,6 @@ public class SlicerTest {
   public void testSimpleReturnValue()
       throws IOException, InvalidClassFileException, InterruptedException, IllegalStateException,
           DecoderException {
-    slicer.setInputJar(slicerValidationJarPath);
     slicer.setMethodSignature(
         "Lde.uniks.vs.methodresourceprediction.slicer.test.SlicerValidation;.simpleReturnValue()I");
     System.out.println(slicer.getMethodSummary());
@@ -2421,7 +2414,6 @@ public class SlicerTest {
   public void testSimpleReturnValue2()
       throws IOException, InvalidClassFileException, InterruptedException, IllegalStateException,
           DecoderException {
-    slicer.setInputJar(slicerValidationJarPath);
     slicer.setMethodSignature(
         "Lde.uniks.vs.methodresourceprediction.slicer.test.SlicerValidation;.simpleReturnValue2()J");
     System.out.println(slicer.getMethodSummary());
@@ -2448,7 +2440,6 @@ public class SlicerTest {
   public void testSimpleReturnValue3()
       throws IOException, InvalidClassFileException, InterruptedException, IllegalStateException,
           DecoderException {
-    slicer.setInputJar(slicerValidationJarPath);
     slicer.setMethodSignature(
         "Lde.uniks.vs.methodresourceprediction.slicer.test.SlicerValidation;.simpleReturnValue3()J");
     System.out.println(slicer.getMethodSummary());
@@ -2483,9 +2474,7 @@ public class SlicerTest {
 
   @Test
   public void testReturnObject()
-      throws IOException, InvalidClassFileException, InterruptedException, IllegalStateException,
-          DecoderException {
-    slicer.setInputJar(slicerValidationJarPath);
+      throws IOException, InvalidClassFileException, IllegalStateException {
     slicer.setMethodSignature(
         "Lde.uniks.vs.methodresourceprediction.slicer.test.SlicerValidation;.returnObject()Ljava/io/PrintStream;");
     System.out.println(slicer.getMethodSummary());
@@ -2510,7 +2499,6 @@ public class SlicerTest {
   public void testSliceConditional()
       throws IOException, InvalidClassFileException, InterruptedException, ExportException,
           URISyntaxException {
-    slicer.setInputJar(slicerValidationJarPath);
     slicer.setMethodSignature(
         "Lde.uniks.vs.methodresourceprediction.slicer.test.SlicerValidation;.simpleConditional()V");
     System.out.println(slicer.getMethodSummary());

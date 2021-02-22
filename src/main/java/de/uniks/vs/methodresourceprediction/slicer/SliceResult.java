@@ -1,27 +1,7 @@
 package de.uniks.vs.methodresourceprediction.slicer;
 
-import com.ibm.wala.shrikeBT.ArrayLengthInstruction;
-import com.ibm.wala.shrikeBT.ArrayLoadInstruction;
-import com.ibm.wala.shrikeBT.BinaryOpInstruction;
-import com.ibm.wala.shrikeBT.ComparisonInstruction;
-import com.ibm.wala.shrikeBT.ConditionalBranchInstruction;
-import com.ibm.wala.shrikeBT.ConstantInstruction;
-import com.ibm.wala.shrikeBT.Constants;
-import com.ibm.wala.shrikeBT.ConversionInstruction;
-import com.ibm.wala.shrikeBT.DupInstruction;
-import com.ibm.wala.shrikeBT.GetInstruction;
-import com.ibm.wala.shrikeBT.GotoInstruction;
-import com.ibm.wala.shrikeBT.IComparisonInstruction;
-import com.ibm.wala.shrikeBT.IInstruction;
+import com.ibm.wala.shrikeBT.*;
 import com.ibm.wala.shrikeBT.IInvokeInstruction.Dispatch;
-import com.ibm.wala.shrikeBT.InvokeDynamicInstruction;
-import com.ibm.wala.shrikeBT.InvokeInstruction;
-import com.ibm.wala.shrikeBT.LoadInstruction;
-import com.ibm.wala.shrikeBT.NewInstruction;
-import com.ibm.wala.shrikeBT.PopInstruction;
-import com.ibm.wala.shrikeBT.ReturnInstruction;
-import com.ibm.wala.shrikeBT.StoreInstruction;
-import com.ibm.wala.shrikeBT.Util;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import com.ibm.wala.types.TypeName;
 import com.ibm.wala.util.debug.UnimplementedError;
@@ -30,18 +10,16 @@ import de.uniks.vs.methodresourceprediction.slicer.export.Nothing;
 import de.uniks.vs.methodresourceprediction.utils.Utilities;
 import java.io.IOException;
 import java.rmi.UnexpectedException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class SliceResult {
-  private String methodSignature;
-  private Set<Integer> instructionIndex, instructionsToKeep, instructionsToIgnore;
-  private Map<Integer, Integer> instructionPopMap;
-  private ControlFlow controlFlow;
-  private ArgumentDependency argumentDependency;
+  private final String methodSignature;
+  private final Set<Integer> instructionIndex;
+  private final Set<Integer> instructionsToKeep;
+  private final Set<Integer> instructionsToIgnore;
+  private final Map<Integer, Integer> instructionPopMap;
+  private final ControlFlow controlFlow;
+  private final ArgumentDependency argumentDependency;
 
   public SliceResult(
       String methodSignature,
