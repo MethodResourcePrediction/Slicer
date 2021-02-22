@@ -6,16 +6,15 @@ import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import de.uniks.vs.methodresourceprediction.slicer.dominance.*;
 import de.uniks.vs.methodresourceprediction.slicer.export.SliceWriter.ExportFormat;
 import de.uniks.vs.methodresourceprediction.utils.Utilities;
-import org.apache.commons.cli.*;
-import org.apache.commons.codec.DecoderException;
-import org.jgrapht.graph.DefaultEdge;
-import org.jgrapht.io.ExportException;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import org.apache.commons.cli.*;
+import org.apache.commons.codec.DecoderException;
+import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.io.ExportException;
 
 public class Slicer {
   private String inputJar;

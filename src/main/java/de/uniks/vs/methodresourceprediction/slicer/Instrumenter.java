@@ -18,15 +18,14 @@ import de.uniks.vs.methodresourceprediction.slicer.export.SliceWriter;
 import de.uniks.vs.methodresourceprediction.slicer.export.SliceWriter.ExportFormat;
 import de.uniks.vs.methodresourceprediction.utils.InstrumenterComparator;
 import de.uniks.vs.methodresourceprediction.utils.Utilities;
-import org.apache.commons.codec.DecoderException;
-import org.apache.commons.io.FilenameUtils;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.io.FilenameUtils;
 
 public class Instrumenter {
   private static final String ADDITIONAL_JARS_PATH = "extra_libs/";
@@ -178,8 +177,8 @@ public class Instrumenter {
         Arrays.stream(getMethods(classInstrumenter))
             .filter(
                 md -> {
-                    String name = md.getName();
-                    return name.equals(methodName);
+                  String name = md.getName();
+                  return name.equals(methodName);
                 })
             .findFirst();
     return optionalMethodData.orElse(null);
