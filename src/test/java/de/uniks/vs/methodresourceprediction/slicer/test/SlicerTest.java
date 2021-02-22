@@ -1,19 +1,12 @@
 package de.uniks.vs.methodresourceprediction.slicer.test;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.ibm.wala.shrikeBT.*;
 import com.ibm.wala.shrikeBT.IInvokeInstruction.Dispatch;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import de.uniks.vs.methodresourceprediction.slicer.SliceResult;
 import de.uniks.vs.methodresourceprediction.slicer.Slicer;
-import org.apache.commons.codec.DecoderException;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
-import org.jgrapht.io.ExportException;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.TestInstance.Lifecycle;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,8 +17,14 @@ import java.net.URLDecoder;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.Map.Entry;
-
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
+import org.jgrapht.io.ExportException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
 
 @TestInstance(Lifecycle.PER_CLASS)
 public class SlicerTest {

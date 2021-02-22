@@ -1,20 +1,5 @@
 package de.uniks.vs.methodresourceprediction.slicer;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.jgrapht.Graph;
-import org.jgrapht.alg.cycle.JohnsonSimpleCycles;
-import org.jgrapht.graph.DefaultDirectedGraph;
-import org.jgrapht.graph.DefaultEdge;
-import org.jgrapht.io.ComponentNameProvider;
-import org.jgrapht.io.ExportException;
-
 import com.ibm.wala.shrikeBT.ConditionalBranchInstruction;
 import com.ibm.wala.shrikeBT.GotoInstruction;
 import com.ibm.wala.shrikeBT.IInstruction;
@@ -24,247 +9,269 @@ import com.ibm.wala.shrikeBT.shrikeCT.OfflineInstrumenter;
 import com.ibm.wala.shrikeCT.ClassReader;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import com.ibm.wala.util.collections.Pair;
-
 import de.uniks.vs.methodresourceprediction.utils.InstrumenterComparator;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.jgrapht.Graph;
+import org.jgrapht.alg.cycle.JohnsonSimpleCycles;
+import org.jgrapht.graph.DefaultDirectedGraph;
+import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.io.ComponentNameProvider;
+import org.jgrapht.io.ExportException;
 
 public class ControlFlow extends SlicerGraph<Integer> {
-	private String inputPath;
-	private String methodSignature;
+  private String inputPath;
+  private String methodSignature;
 
-	private MethodData methodData;
+  private MethodData methodData;
 
-	private Graph<Integer, DefaultEdge> graph;
-	private List<List<Integer>> simpleCycles;
-	private StackTrace stackTrace;
-	private List<Pair<Integer, Integer>> loopPairs;
-	private Integer startNode;
+  private Graph<Integer, DefaultEdge> graph;
+  private List<List<Integer>> simpleCycles;
+  private StackTrace stackTrace;
+  private List<Pair<Integer, Integer>> loopPairs;
+  private Integer startNode;
 
-	public ControlFlow(String inputPath, String methodSignature) {
-		this.inputPath = inputPath;
-		this.methodSignature = methodSignature;
-	}
+  public ControlFlow(String inputPath, String methodSignature) {
+    this.inputPath = inputPath;
+    this.methodSignature = methodSignature;
+  }
 
-	public ControlFlow(MethodData methodData) {
-		this.methodData = methodData;
-	}
+  public ControlFlow(MethodData methodData) {
+    this.methodData = methodData;
+  }
 
-	public StackTrace getStackTrace() throws IOException, InvalidClassFileException {
-		if (stackTrace != null) {
-			return stackTrace;
-		}
+  public StackTrace getStackTrace() throws IOException, InvalidClassFileException {
+    if (stackTrace != null) {
+      return stackTrace;
+    }
 
-		MethodData methodData = getMethodData();
-		IInstruction[] instructions = methodData.getInstructions();
-		stackTrace = new StackTrace(instructions);
-		return stackTrace;
-	}
+    MethodData methodData = getMethodData();
+    IInstruction[] instructions = methodData.getInstructions();
+    stackTrace = new StackTrace(instructions);
+    return stackTrace;
+  }
 
-	@Override
-	public Graph<Integer, DefaultEdge> getGraph() throws IOException, InvalidClassFileException {
-		if (graph != null) {
-			return graph;
-		}
+  @Override
+  public Graph<Integer, DefaultEdge> getGraph() throws IOException, InvalidClassFileException {
+    if (graph != null) {
+      return graph;
+    }
 
-		MethodData methodData = getMethodData();
-		IInstruction[] instructions = methodData.getInstructions();
-		
-		startNode = 0;
+    MethodData methodData = getMethodData();
+    IInstruction[] instructions = methodData.getInstructions();
 
-		graph = new DefaultDirectedGraph<>(DefaultEdge.class);
+    startNode = 0;
 
-		// Add all instruction indexes as vertices first
-		for (int index = 0; index < instructions.length; index++) {
-			graph.addVertex(index);
-		}
+    graph = new DefaultDirectedGraph<>(DefaultEdge.class);
 
-		// Iterate all instructions and build the control flow
-		for (int index = 0; index < instructions.length - 1; index++) {
-			IInstruction a = instructions[index];
+    // Add all instruction indexes as vertices first
+    for (int index = 0; index < instructions.length; index++) {
+      graph.addVertex(index);
+    }
 
-			int b = index + 1;
-			// If the next instruction is a Goto-/ConditionalBranchInstruction, the flow can
-			// differ to realize if's and loops
-			if (a instanceof GotoInstruction) {
-				int target = a.getBranchTargets()[0];
-				b = target;
-			}
-			if (a instanceof ConditionalBranchInstruction) {
-				graph.addEdge(index, b);
-				int target = ((ConditionalBranchInstruction) a).getTarget();
-				b = target;
-			}
-			graph.addEdge(index, b);
-		}
-		return graph;
-	}
+    // Iterate all instructions and build the control flow
+    for (int index = 0; index < instructions.length - 1; index++) {
+      IInstruction a = instructions[index];
 
-	public List<List<Integer>> getSimpleCycles() throws IOException, InvalidClassFileException {
-		if (simpleCycles != null) {
-			return simpleCycles;
-		}
+      int b = index + 1;
+      // If the next instruction is a Goto-/ConditionalBranchInstruction, the flow can
+      // differ to realize if's and loops
+      if (a instanceof GotoInstruction) {
+        int target = a.getBranchTargets()[0];
+        b = target;
+      }
+      if (a instanceof ConditionalBranchInstruction) {
+        graph.addEdge(index, b);
+        int target = ((ConditionalBranchInstruction) a).getTarget();
+        b = target;
+      }
+      graph.addEdge(index, b);
+    }
+    return graph;
+  }
 
-		JohnsonSimpleCycles<Integer, DefaultEdge> johnsonSimpleCycles = new JohnsonSimpleCycles<>(getGraph());
-		simpleCycles = johnsonSimpleCycles.findSimpleCycles();
-		return simpleCycles;
-	}
+  public List<List<Integer>> getSimpleCycles() throws IOException, InvalidClassFileException {
+    if (simpleCycles != null) {
+      return simpleCycles;
+    }
 
-	public List<Pair<Integer, Integer>> getLoopPairs() throws IOException, InvalidClassFileException {
-		if (loopPairs != null) {
-			return loopPairs;
-		}
+    JohnsonSimpleCycles<Integer, DefaultEdge> johnsonSimpleCycles =
+        new JohnsonSimpleCycles<>(getGraph());
+    simpleCycles = johnsonSimpleCycles.findSimpleCycles();
+    return simpleCycles;
+  }
 
-		loopPairs = new ArrayList<>();
-		for (List<Integer> simpleCycle : getSimpleCycles()) {
-			int min = simpleCycle.stream().mapToInt(Integer::intValue).min().getAsInt();
-			int max = simpleCycle.stream().mapToInt(Integer::intValue).max().getAsInt();
+  public List<Pair<Integer, Integer>> getLoopPairs() throws IOException, InvalidClassFileException {
+    if (loopPairs != null) {
+      return loopPairs;
+    }
 
-			Pair<Integer, Integer> loopPair = Pair.make(min, max);
-			if (!loopPairs.stream().filter(loopIndex -> loopIndex.equals(loopPair)).findAny().isPresent()) {
-				loopPairs.add(loopPair);
-			}
-		}
-		return loopPairs;
-	}
+    loopPairs = new ArrayList<>();
+    for (List<Integer> simpleCycle : getSimpleCycles()) {
+      int min = simpleCycle.stream().mapToInt(Integer::intValue).min().getAsInt();
+      int max = simpleCycle.stream().mapToInt(Integer::intValue).max().getAsInt();
 
-	public boolean isPartOfCycle(int instructionIndex) throws IOException, InvalidClassFileException {
-		for (List<Integer> cycle : getSimpleCycles()) {
-			if (cycle.contains(instructionIndex)) {
-				return true;
-			}
-		}
-		return false;
-	}
+      Pair<Integer, Integer> loopPair = Pair.make(min, max);
+      if (!loopPairs.stream()
+          .filter(loopIndex -> loopIndex.equals(loopPair))
+          .findAny()
+          .isPresent()) {
+        loopPairs.add(loopPair);
+      }
+    }
+    return loopPairs;
+  }
 
-	public Set<Integer> getInstructionsInCycles() throws IOException, InvalidClassFileException {
-		Set<Integer> instructionsInCycleSet = new HashSet<>();
-		for (int index = 0; index < getMethodData().getInstructions().length; index++) {
-			if (isPartOfCycle(index)) {
-				instructionsInCycleSet.add(index);
-			}
-		}
-		return instructionsInCycleSet;
-	}
+  public boolean isPartOfCycle(int instructionIndex) throws IOException, InvalidClassFileException {
+    for (List<Integer> cycle : getSimpleCycles()) {
+      if (cycle.contains(instructionIndex)) {
+        return true;
+      }
+    }
+    return false;
+  }
 
-	@Override
-	protected String dotPrint() throws IOException, InvalidClassFileException, ExportException {
-		IInstruction[] instructions = getMethodData().getInstructions();
+  public Set<Integer> getInstructionsInCycles() throws IOException, InvalidClassFileException {
+    Set<Integer> instructionsInCycleSet = new HashSet<>();
+    for (int index = 0; index < getMethodData().getInstructions().length; index++) {
+      if (isPartOfCycle(index)) {
+        instructionsInCycleSet.add(index);
+      }
+    }
+    return instructionsInCycleSet;
+  }
 
-		// use helper classes to define how vertices should be rendered,
-		// adhering to the DOT language restrictions
-		ComponentNameProvider<Integer> vertexIdProvider = new ComponentNameProvider<Integer>() {
-			public String getName(Integer index) {
-				return String.valueOf(index);
-			}
-		};
-		ComponentNameProvider<Integer> vertexLabelProvider = new ComponentNameProvider<Integer>() {
-			public String getName(Integer index) {
-				return index + ": " + instructions[index].toString();
-			}
-		};
-		return getExporterGraphString(vertexIdProvider, vertexLabelProvider);
-	}
+  @Override
+  protected String dotPrint() throws IOException, InvalidClassFileException, ExportException {
+    IInstruction[] instructions = getMethodData().getInstructions();
 
-	public MethodData getMethodData() throws IOException, InvalidClassFileException {
-		if (methodData != null) {
-			return methodData;
-		}
+    // use helper classes to define how vertices should be rendered,
+    // adhering to the DOT language restrictions
+    ComponentNameProvider<Integer> vertexIdProvider =
+        new ComponentNameProvider<Integer>() {
+          public String getName(Integer index) {
+            return String.valueOf(index);
+          }
+        };
+    ComponentNameProvider<Integer> vertexLabelProvider =
+        new ComponentNameProvider<Integer>() {
+          public String getName(Integer index) {
+            return index + ": " + instructions[index].toString();
+          }
+        };
+    return getExporterGraphString(vertexIdProvider, vertexLabelProvider);
+  }
 
-		InstrumenterComparator comparator = InstrumenterComparator.of(methodSignature);
+  public MethodData getMethodData() throws IOException, InvalidClassFileException {
+    if (methodData != null) {
+      return methodData;
+    }
 
-		OfflineInstrumenter inst = new OfflineInstrumenter();
-		inst.addInputJar(new File(inputPath));
-		inst.beginTraversal();
+    InstrumenterComparator comparator = InstrumenterComparator.of(methodSignature);
 
-		// Iterate each class in the input program and instrument it
-		ClassInstrumenter ci;
-		while ((ci = inst.nextClass()) != null) {
-			// Search for the correct method (MethodData)
-			ClassReader reader = ci.getReader();
+    OfflineInstrumenter inst = new OfflineInstrumenter();
+    inst.addInputJar(new File(inputPath));
+    inst.beginTraversal();
 
-			for (int methodIndex = 0; methodIndex < reader.getMethodCount(); methodIndex++) {
-				methodData = ci.visitMethod(methodIndex);
-				if (methodData == null) {
-					continue;
-				}
+    // Iterate each class in the input program and instrument it
+    ClassInstrumenter ci;
+    while ((ci = inst.nextClass()) != null) {
+      // Search for the correct method (MethodData)
+      ClassReader reader = ci.getReader();
 
-				if (!comparator.equals(methodData)) {
-					methodData = null;
-					continue;
-				}
-				break;
-			}
+      for (int methodIndex = 0; methodIndex < reader.getMethodCount(); methodIndex++) {
+        methodData = ci.visitMethod(methodIndex);
+        if (methodData == null) {
+          continue;
+        }
 
-			// Check if method was not found in this class
-			if (methodData != null) {
-				break;
-			}
-		}
-		return methodData;
-	}
+        if (!comparator.equals(methodData)) {
+          methodData = null;
+          continue;
+        }
+        break;
+      }
 
-	public List<List<Integer>> getCyclesForInstruction(int instructionIndex)
-			throws IOException, InvalidClassFileException {
-		List<List<Integer>> scs = getSimpleCycles();
-		List<List<Integer>> scsWithInstructionIndex = new ArrayList<>();
+      // Check if method was not found in this class
+      if (methodData != null) {
+        break;
+      }
+    }
+    return methodData;
+  }
 
-		for (List<Integer> sc : scs) {
-			if (sc.contains(instructionIndex)) {
-				scsWithInstructionIndex.add(sc);
-			}
-		}
-		return scsWithInstructionIndex;
-	}
+  public List<List<Integer>> getCyclesForInstruction(int instructionIndex)
+      throws IOException, InvalidClassFileException {
+    List<List<Integer>> scs = getSimpleCycles();
+    List<List<Integer>> scsWithInstructionIndex = new ArrayList<>();
 
-	public boolean inSameCycle(int instructionIndexA, int instructionIndexB)
-			throws IOException, InvalidClassFileException {
-		return inSameCycle(instructionIndexA, instructionIndexB, null);
-	}
+    for (List<Integer> sc : scs) {
+      if (sc.contains(instructionIndex)) {
+        scsWithInstructionIndex.add(sc);
+      }
+    }
+    return scsWithInstructionIndex;
+  }
 
-	public boolean inSameCycle(int instructionIndexA, int instructionIndexB, int... moreInstructionIndexes)
-			throws IOException, InvalidClassFileException {
-		// TODO What about sub-cycle handling?
-		if (!getCyclesForInstruction(instructionIndexA).equals(getCyclesForInstruction(instructionIndexB))) {
-			return false;
-		}
-		if (moreInstructionIndexes != null) {
-			for (int instructionIndex : moreInstructionIndexes) {
-				if (!getCyclesForInstruction(instructionIndexA).equals(getCyclesForInstruction(instructionIndex))) {
-					return false;
-				}
-			}
-		}
-		return true;
-	}
+  public boolean inSameCycle(int instructionIndexA, int instructionIndexB)
+      throws IOException, InvalidClassFileException {
+    return inSameCycle(instructionIndexA, instructionIndexB, null);
+  }
 
-	public void renumberVarIndexes(Map<Integer, Set<Integer>> varIndexesToRenumber)
-			throws IOException, InvalidClassFileException {
-//		Map<Integer, Set<Integer>> varIndexesToRenumber = getVarIndexesToRenumber();
+  public boolean inSameCycle(
+      int instructionIndexA, int instructionIndexB, int... moreInstructionIndexes)
+      throws IOException, InvalidClassFileException {
+    // TODO What about sub-cycle handling?
+    if (!getCyclesForInstruction(instructionIndexA)
+        .equals(getCyclesForInstruction(instructionIndexB))) {
+      return false;
+    }
+    if (moreInstructionIndexes != null) {
+      for (int instructionIndex : moreInstructionIndexes) {
+        if (!getCyclesForInstruction(instructionIndexA)
+            .equals(getCyclesForInstruction(instructionIndex))) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
 
-		IInstruction[] instructions = getMethodData().getInstructions();
-		for (int index = 0; index < instructions.length; index++) {
-			IInstruction instruction = instructions[index];
-//			instructions[index] = Utilities.rewriteVarIndex(varIndexesToRenumber, instruction, index);
-		}
-	}
+  public void renumberVarIndexes(Map<Integer, Set<Integer>> varIndexesToRenumber)
+      throws IOException, InvalidClassFileException {
+    //		Map<Integer, Set<Integer>> varIndexesToRenumber = getVarIndexesToRenumber();
 
-	@Override
-	public String toString() {
-		try {
-			return getGraph().toString();
-		} catch (IOException e) {
-			e.printStackTrace();
-			return e.getMessage();
-		} catch (InvalidClassFileException e) {
-			e.printStackTrace();
-			return e.getMessage();
-		}
-	}
+    IInstruction[] instructions = getMethodData().getInstructions();
+    for (int index = 0; index < instructions.length; index++) {
+      IInstruction instruction = instructions[index];
+      //			instructions[index] = Utilities.rewriteVarIndex(varIndexesToRenumber, instruction,
+      // index);
+    }
+  }
 
-	public Integer getStartNode() {
-		return startNode;
-	}
+  @Override
+  public String toString() {
+    try {
+      return getGraph().toString();
+    } catch (IOException e) {
+      e.printStackTrace();
+      return e.getMessage();
+    } catch (InvalidClassFileException e) {
+      e.printStackTrace();
+      return e.getMessage();
+    }
+  }
 
-	public void setStartNode(Integer startNode) {
-		this.startNode = startNode;
-	}
+  public Integer getStartNode() {
+    return startNode;
+  }
+
+  public void setStartNode(Integer startNode) {
+    this.startNode = startNode;
+  }
 }
