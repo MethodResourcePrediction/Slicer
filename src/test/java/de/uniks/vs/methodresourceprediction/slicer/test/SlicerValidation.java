@@ -93,4 +93,11 @@ public class SlicerValidation {
 	public PrintStream returnObject() {
 		return System.out;
 	}
+
+	public void functionalMethod(int someNumber) {
+		double[] randoms = new double[someNumber];
+		for (int i = 0; i < someNumber; i++) {
+			randoms[i] = Math.random();
+		}
+	}
 }
