@@ -75,20 +75,39 @@ public class Instrumenter {
 	// Filter for duplicate entries.
 	private Set<String> duplicateEntrySet = new HashSet<>();
 	private String[] exportJars = new String[] { "slicer.export-1.0.0-SNAPSHOT.jar", "utils-1.0.0-SNAPSHOT.jar" };
+	private boolean integrateFeatureLogger = false;
 	private boolean verbose = false;
 
-	/**
-	 * Constructor for an OfflineInstrumenter
-	 * 
-	 * @param inputPath       - path to input jar which should be profiled
-	 * @param outputPath      - path to output jar where the profiled program is
-	 *                        stored
-	 * @param methodSignature - signature for method to profile
-	 * @param exportFormat
-	 * @throws IOException
-	 */
+    /**
+     * Constructor for an OfflineInstrumenter
+     * @param additionalJarsPath
+     * @param inputPath
+     * @param outputPath
+     * @param methodSignature
+     * @param mainClass
+     * @param resultFilePath
+     * @param exportFormat
+     * @throws IOException
+     */
 	public Instrumenter(String additionalJarsPath, String inputPath, String outputPath, String methodSignature,
-			String mainClass, String resultFilePath, ExportFormat exportFormat) throws IOException {
+						String mainClass, String resultFilePath, ExportFormat exportFormat) throws IOException {
+		this(additionalJarsPath, inputPath, outputPath, methodSignature, mainClass, resultFilePath, exportFormat, false);
+	}
+
+    /**
+     * Constructor for an OfflineInstrumenter
+     * @param additionalJarsPath
+     * @param inputPath
+     * @param outputPath
+     * @param methodSignature
+     * @param mainClass
+     * @param resultFilePath
+     * @param exportFormat
+     * @param integrateFeatureLogger
+     * @throws IOException
+     */
+	public Instrumenter(String additionalJarsPath, String inputPath, String outputPath, String methodSignature,
+			String mainClass, String resultFilePath, ExportFormat exportFormat, boolean integrateFeatureLogger) throws IOException {
 		this.additionalJarsPath = additionalJarsPath;
 		this.inputPath = inputPath;
 		this.outputPath = outputPath;
@@ -96,6 +115,7 @@ public class Instrumenter {
 		this.mainClass = mainClass;
 		this.resultFilePath = resultFilePath;
 		this.exportFormat = exportFormat;
+		this.integrateFeatureLogger = integrateFeatureLogger;
 
 		baseDirFile = new File("");
 
@@ -246,6 +266,20 @@ public class Instrumenter {
 		// This is why loggerVarIndex gets incremented by 2, because startTimeVarIndex
 		// needs 2 elements on the stack.
 		final int startTimeVarIndex = maxVarIndex += 1;
+
+		if (integrateFeatureLogger) {
+			instrumentFeatureLogger(methodData, instructionIndexes, instructionIndexesToKeep, instructionPopMap, featurePatchMap, instructionsInCycles, instructions, lastInstructionIndex, maxVarIndex, instructionPatchesMap, startTimeVarIndex);
+		}
+
+		// Apply patches from map
+		applyPatches(methodEditor, instructionIndexesToKeep, instructionPatchesMap);
+
+		methodEditor.applyPatches();
+
+		return new InstrumentedMethod(methodEditor);
+	}
+
+	private void instrumentFeatureLogger(MethodData methodData, Set<Integer> instructionIndexes, Set<Integer> instructionIndexesToKeep, Map<Integer, Integer> instructionPopMap, Map<Integer, Patch> featurePatchMap, Set<Integer> instructionsInCycles, IInstruction[] instructions, int lastInstructionIndex, int maxVarIndex, Map<Integer, Map<PatchAction, List<Patch>>> instructionPatchesMap, int startTimeVarIndex) {
 		final int loggerVarIndex = maxVarIndex += 2;
 		final int executionLoggerVarIndex = maxVarIndex += 1;
 		final int resultVarIndex = maxVarIndex += 1;
@@ -452,13 +486,6 @@ public class Instrumenter {
 				}
 			});
 		}
-
-		// Apply patches from map
-		applyPatches(methodEditor, instructionIndexesToKeep, instructionPatchesMap);
-
-		methodEditor.applyPatches();
-
-		return new InstrumentedMethod(methodEditor, loggerVarIndex);
 	}
 
 	protected Patch getResultAfterPatch(MethodData methodData, final IInstruction instruction, int instructionIndex,
@@ -797,7 +824,7 @@ public class Instrumenter {
 	/**
 	 * Finalizes the instrumentalization. This consists out of adding additional
 	 * required libraries and classes
-	 * 
+	 *
 	 * @throws DecoderException
 	 */
 	public void finalize() throws IllegalStateException, IOException, DecoderException {

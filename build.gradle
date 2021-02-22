@@ -83,11 +83,13 @@ sourceSets {
     }
 }
 
+// TODO Define this variables in ~/.gradle/gradle.properties
+//  See: https://help.sonatype.com/repomanager2/maven-and-other-build-tools/gradle
+
 uploadArchives {
     repositories {
         mavenDeployer {
 //            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
-
             repository(url: "${nexusUrl}/repository/maven-releases/") {
                 authentication(userName: nexusUsername, password: nexusPassword)
             }
