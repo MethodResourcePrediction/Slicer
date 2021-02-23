@@ -58,7 +58,7 @@ public class DataDependency extends SlicerGraph<Integer> {
     }
 
     // Add a vertex for each instruction index
-    cfg.vertexSet().forEach(v -> dependencyGraph.addVertex(v));
+    cfg.vertexSet().forEach(dependencyGraph::addVertex);
 
     // Add edges to the graph if there is a data dependency. Start with iterating
     // for each instruction index. For each instruction, we analyze all preceding

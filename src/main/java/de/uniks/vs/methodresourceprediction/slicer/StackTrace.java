@@ -1,24 +1,28 @@
 package de.uniks.vs.methodresourceprediction.slicer;
 
+import com.ibm.wala.shrikeBT.DupInstruction;
+import com.ibm.wala.shrikeBT.ExceptionHandler;
 import com.ibm.wala.shrikeBT.IInstruction;
+import com.ibm.wala.shrikeBT.Util;
 import de.uniks.vs.methodresourceprediction.utils.Utilities;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Stack;
 import java.util.function.BiConsumer;
 import java.util.stream.IntStream;
 
 public class StackTrace implements Iterable<Entry<Integer, Stack<Integer>>> {
-  private IInstruction[] instructions;
+  private final IInstruction[] instructions;
+  private final ExceptionHandler[][] exceptionHandlers;
 
   private Map<Integer, Stack<Integer>> stackTrace;
+  private Map<Integer, Stack<Integer>> exceptionStackTrace;
   private Map<Integer, Stack<Integer>> poppedStackTrace;
   private Map<Integer, Stack<Integer>> pushedStackTrace;
 
-  public StackTrace(IInstruction[] instructions) {
+  public StackTrace(IInstruction[] instructions, ExceptionHandler[][] exceptionHandlers) {
     this.instructions = instructions;
+    this.exceptionHandlers = exceptionHandlers;
 
     createStackTraces();
   }
@@ -33,6 +37,13 @@ public class StackTrace implements Iterable<Entry<Integer, Stack<Integer>>> {
 
   public Stack<Integer> getPushedStackAtInstructionIndex(int instructionIndex) {
     return copyStack(getPushedStackTrace().get(instructionIndex));
+  }
+
+  public void forEachException(BiConsumer<Integer, Stack<Integer>> consumer) {
+    for (Entry<Integer, Stack<Integer>> entry : getExceptionStackTrace().entrySet()) {
+      Stack<Integer> pushedStack = entry.getValue();
+      consumer.accept(entry.getKey(), copyStack(pushedStack));
+    }
   }
 
   public void forEachPopped(BiConsumer<Integer, Stack<Integer>> consumer) {
@@ -53,6 +64,10 @@ public class StackTrace implements Iterable<Entry<Integer, Stack<Integer>>> {
     return stackTrace;
   }
 
+  public Map<Integer, Stack<Integer>> getExceptionStackTrace() {
+    return exceptionStackTrace;
+  }
+
   public Map<Integer, Stack<Integer>> getPoppedStackTrace() {
     return poppedStackTrace;
   }
@@ -63,21 +78,57 @@ public class StackTrace implements Iterable<Entry<Integer, Stack<Integer>>> {
 
   private void createStackTraces() {
     stackTrace = new HashMap<>();
+    exceptionStackTrace = new HashMap<>();
     poppedStackTrace = new HashMap<>();
     pushedStackTrace = new HashMap<>();
 
     Stack<Integer> stack = new Stack<>();
+
+    Map<Integer, Set<String>> instructionExceptions =
+        Utilities.getInstructionExceptions(instructions, exceptionHandlers);
+
     // Iterate all instructions and build the control flow
     // TODO Can we simply go though all instructions from front to end
-    // or should it follow the control flow?
+    //  or should it follow the control flow?
     for (int index = 0; index < instructions.length; index++) {
       IInstruction instruction = instructions[index];
+
+      // Exception handling
+      Set<String> instructionException =
+          instructionExceptions.getOrDefault(index, Collections.emptySet());
+      int pushedExceptionCount = instructionException.size();
+
+      Stack<Integer> exceptionStack = new Stack<>();
+      for (int pushedException = 0; pushedException < pushedExceptionCount; pushedException++) {
+        stack.push(-1 * index);
+        exceptionStack.push(-1 * index);
+      }
+      exceptionStackTrace.put(index, exceptionStack);
 
       int pushedElementCount = Utilities.getPushedElementCount(instruction);
       int poppedElementCount = Utilities.getPoppedElementCount(instruction);
 
+      // TODO That is maybe error-prone handling dup(2,0) is pain as hell
+      if (instruction instanceof DupInstruction) {
+        int topmostStackInstructionIndex = stack.elementAt(stack.size() - 1);
+        IInstruction lastPushedInstruction = instructions[topmostStackInstructionIndex];
+        String pushedType = lastPushedInstruction.getPushedType(null);
+        int wordSize;
+        if (lastPushedInstruction instanceof DupInstruction) {
+          wordSize = ((DupInstruction) lastPushedInstruction).getSize();
+        } else {
+          wordSize = Util.getWordSize(pushedType);
+        }
+
+        int poppedElementCountForDupInstruction =
+            Utilities.getPoppedElementCountForDupInstruction(
+                (DupInstruction) instruction, wordSize == 1);
+        pushedElementCount = 2 * poppedElementCountForDupInstruction;
+        poppedElementCount = poppedElementCountForDupInstruction;
+      }
+
       // Simulate POP stack execution
-      Stack<Integer> poppedStack = new Stack<Integer>();
+      Stack<Integer> poppedStack = new Stack<>();
       for (int popIteration = 0; popIteration < poppedElementCount; popIteration++) {
         Integer poppedIndex = stack.pop();
         poppedStack.insertElementAt(poppedIndex, 0);
@@ -85,7 +136,7 @@ public class StackTrace implements Iterable<Entry<Integer, Stack<Integer>>> {
       poppedStackTrace.put(index, poppedStack);
 
       // Simulate PUSH stack execution
-      Stack<Integer> pushedStack = new Stack<Integer>();
+      Stack<Integer> pushedStack = new Stack<>();
       for (int pushIteration = 0; pushIteration < pushedElementCount; pushIteration++) {
         stack.push(index);
         pushedStack.add(index);

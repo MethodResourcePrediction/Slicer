@@ -14,7 +14,7 @@ import java.util.*;
 
 public class SliceResult {
   private final String methodSignature;
-  private final Set<Integer> instructionIndex;
+  private final Set<Integer> instructionIndexes;
   private final Set<Integer> instructionsToKeep;
   private final Set<Integer> instructionsToIgnore;
   private final Map<Integer, Integer> instructionPopMap;
@@ -23,13 +23,13 @@ public class SliceResult {
 
   public SliceResult(
       String methodSignature,
-      Set<Integer> instructionIndex,
+      Set<Integer> instructionIndexes,
       Set<Integer> instructionsToKeep,
       Set<Integer> instructionsToIgnore,
       Map<Integer, Integer> instructionPopMap,
       ControlFlow controlFlow) {
     this.methodSignature = methodSignature;
-    this.instructionIndex = instructionIndex;
+    this.instructionIndexes = instructionIndexes;
     this.instructionsToKeep = instructionsToKeep;
     this.instructionsToIgnore = instructionsToIgnore;
     this.instructionPopMap = instructionPopMap;
@@ -37,8 +37,8 @@ public class SliceResult {
     this.argumentDependency = new ArgumentDependency(controlFlow);
   }
 
-  public Set<Integer> getInstructionIndex() {
-    return instructionIndex;
+  public Set<Integer> getInstructionIndexes() {
+    return instructionIndexes;
   }
 
   public Set<Integer> getInstructionsToKeep() {
@@ -264,7 +264,7 @@ public class SliceResult {
 
       builder.append(getMethodSignature());
       builder.append("\n");
-      builder.append("InstructionIndexes: " + getInstructionIndex() + "\n");
+      builder.append("InstructionIndexes: " + getInstructionIndexes() + "\n");
       builder.append("InstructionIndexesToKeep: " + getInstructionsToKeep() + "\n");
       builder.append("instructionIndexesToIgnore: " + getInstructionsToIgnore() + "\n");
       builder.append("instructionPopMap: " + getInstructionPopMap() + "\n");

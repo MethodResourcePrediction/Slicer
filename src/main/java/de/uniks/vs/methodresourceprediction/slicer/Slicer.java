@@ -1,18 +1,20 @@
 package de.uniks.vs.methodresourceprediction.slicer;
 
+import com.ibm.wala.shrikeBT.Util;
 import com.ibm.wala.shrikeBT.*;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import de.uniks.vs.methodresourceprediction.slicer.dominance.*;
 import de.uniks.vs.methodresourceprediction.slicer.export.SliceWriter.ExportFormat;
 import de.uniks.vs.methodresourceprediction.utils.Utilities;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.*;
 import org.apache.commons.cli.*;
 import org.apache.commons.codec.DecoderException;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.io.ExportException;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
 
 public class Slicer {
   private String inputJar;
@@ -226,7 +228,7 @@ public class Slicer {
     // Keep the return values
     for (int index = 0; index < instructions.length; index++) {
       IInstruction instruction = instructions[index];
-      if (instruction instanceof ReturnInstruction) {
+      if (instruction instanceof ReturnInstruction || instruction instanceof ThrowInstruction) {
         slice(
             controlFlow,
             controlDependency,
@@ -292,7 +294,8 @@ public class Slicer {
         // they are already kept in "indexesToKeep"
         for (int index = 0; index < recursiveInvokeInstructionIndex; index++) {
           IInstruction instruction = instructions[index];
-          if (!(instruction instanceof ReturnInstruction)) {
+          if (!(instruction instanceof ReturnInstruction)
+              || !(instruction instanceof ThrowInstruction)) {
             continue;
           }
           for (DefaultEdge incomingEdge : controlFlow.getGraph().incomingEdgesOf(index)) {
@@ -360,6 +363,9 @@ public class Slicer {
 
     Set<Integer> instructionIndexesToKeep = getInstructionIndexesToKeep();
     IInstruction[] instructions = getControlFlow().getMethodData().getInstructions();
+    ExceptionHandler[][] exceptionHandlers = getControlFlow().getMethodData().getHandlers();
+    Map<Integer, Set<String>> instructionExceptions =
+        Utilities.getInstructionExceptions(instructions, exceptionHandlers);
 
     // If there is a partial block (not all instructions are kept), the stack
     // must be corrected.
@@ -374,8 +380,34 @@ public class Slicer {
         // Iterate all instructions and build the control flow
         IInstruction instruction = instructions[blockInstructionIndex];
 
+        // Exception handling
+        Set<String> instructionException =
+            instructionExceptions.getOrDefault(blockInstructionIndex, Collections.emptySet());
+        int pushedExceptionCount = instructionException.size();
+
+        for (int pushedException = 0; pushedException < pushedExceptionCount; pushedException++) {
+          stack.push(-1 * blockInstructionIndex);
+        }
+
         int pushedSize = Utilities.getPushedSize(instruction);
         int poppedSize = Utilities.getPoppedSize(instruction);
+
+        // TODO That is maybe error-prone handling dup(2,0) is pain as hell
+        if (instruction instanceof DupInstruction) {
+          int topmostStackInstructionIndex = stack.elementAt(stack.size() - 1);
+          IInstruction lastPushedInstruction = instructions[topmostStackInstructionIndex];
+          String pushedType = lastPushedInstruction.getPushedType(null);
+          int wordSize;
+          if (lastPushedInstruction instanceof DupInstruction) {
+            wordSize = ((DupInstruction) lastPushedInstruction).getSize();
+          } else {
+            wordSize = Util.getWordSize(pushedType);
+          }
+          int poppedSizeForDupInstruction =
+              Utilities.getPoppedSizeForDupInstruction((DupInstruction) instruction, wordSize == 1);
+          pushedSize = 2 * poppedSizeForDupInstruction;
+          poppedSize = poppedSizeForDupInstruction;
+        }
 
         // Simulate stack execution
         for (int popIteration = 0; popIteration < poppedSize; popIteration++) {
@@ -391,8 +423,8 @@ public class Slicer {
       while (stack.size() > 0) {
         int pushedSize = stack.pop();
         // TODO There is at least one issue here when a remaining dup-instruction
-        // element should be popped. The instruction pushed size will not be the number
-        // of elements on the stack. Is 1 to use here always correct?
+        //  element should be popped. The instruction pushed size will not be the number
+        //  of elements on the stack. Is 1 to use here always correct?
         popSize += 1;
         //				popSize += pushedSize;
         //				popSize += Utilities.getPushedSize(instructions[stackInstructionIndex]);
@@ -457,8 +489,9 @@ public class Slicer {
         // for the evaluation of the condition. If the condition is not met, it jumps
         // back (in the control flow) to the start of the loop. If
         Integer cycleStartIndex = cycle.get(0);
-        if (controlFlow.getMethodData().getInstructions()[cycleStartIndex - 1]
-            instanceof GotoInstruction) {
+        if (cycleStartIndex > 0
+            && controlFlow.getMethodData().getInstructions()[cycleStartIndex - 1]
+                instanceof GotoInstruction) {
           GotoInstruction gotoInstruction =
               (GotoInstruction) controlFlow.getMethodData().getInstructions()[cycleStartIndex - 1];
           // The jump target must definitively in between the loop begin and end.
@@ -691,63 +724,6 @@ public class Slicer {
     slicer.setInstructionIndexes(instructionIndexes);
 
     return slicer.getSliceResult();
-  }
-
-  // TODO Extract to Analyzer?
-  public boolean isFunctional() throws IOException, InvalidClassFileException {
-    final String[] jvmAllowedPackagePrefixes = new String[] {"Ljava/"};
-
-    // TODO Functional if
-    // * Does not store class variables
-    // * Does not store fields
-    // * Calls only functional methods or jvm methods
-
-    MethodData methodData = getControlFlow().getMethodData();
-    if (!methodData.getIsStatic()) {
-      return false;
-    }
-
-    IInstruction[] instructions = methodData.getInstructions();
-    int maxLocalVarIndex = Utilities.getMaxLocalVarIndex(instructions);
-
-    for (IInstruction instruction : instructions) {
-      if (instruction instanceof InvokeInstruction) {
-        InvokeInstruction invokeInstruction = (InvokeInstruction) instruction;
-        String classType = invokeInstruction.getClassType();
-        String methodName = invokeInstruction.getMethodName();
-        String methodSignature = invokeInstruction.getMethodSignature();
-
-        boolean allowedPrefix =
-            Arrays.stream(jvmAllowedPackagePrefixes).anyMatch(classType::startsWith);
-        if (!allowedPrefix) {
-          // Iteratively check dependent invocations
-          Slicer slicer = new Slicer();
-          slicer.setInputJar(getInputJar());
-          slicer.setMethodSignature(classType + "." + methodName + methodSignature);
-          if (!slicer.isFunctional()) {
-            return false;
-          }
-        }
-      }
-
-      if (instruction instanceof IStoreInstruction) {
-        IStoreInstruction storeInstruction = (IStoreInstruction) instruction;
-        if (storeInstruction.getVarIndex() > maxLocalVarIndex) {
-          return false;
-        }
-      }
-
-      if (instruction instanceof IGetInstruction) {
-        IGetInstruction getInstruction = (IGetInstruction) instruction;
-        String classType = getInstruction.getClassType();
-        boolean allowedPrefix =
-            Arrays.stream(jvmAllowedPackagePrefixes).anyMatch(classType::startsWith);
-        if (!allowedPrefix) {
-          return false;
-        }
-      }
-    }
-    return true;
   }
 
   public void parseArgs(String[] args) throws ParseException {

@@ -1,9 +1,6 @@
 package de.uniks.vs.methodresourceprediction.slicer;
 
-import com.ibm.wala.shrikeBT.IInstruction;
-import com.ibm.wala.shrikeBT.ILoadInstruction;
-import com.ibm.wala.shrikeBT.IStoreInstruction;
-import com.ibm.wala.shrikeBT.MethodData;
+import com.ibm.wala.shrikeBT.*;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import de.uniks.vs.methodresourceprediction.utils.Utilities;
 import java.io.IOException;
@@ -36,10 +33,19 @@ public class ArgumentDependency extends SlicerGraph<Integer> {
     graph = new DefaultDirectedGraph<>(DefaultEdge.class);
 
     IInstruction[] instructions = controlFlow.getMethodData().getInstructions();
-    StackTrace stackTrace = new StackTrace(instructions);
+    ExceptionHandler[][] exceptionHandlers = controlFlow.getMethodData().getHandlers();
+    StackTrace stackTrace = new StackTrace(instructions, exceptionHandlers);
 
     // Add vertices (all instructions)
     IntStream.range(0, instructions.length).forEach(i -> graph.addVertex(i));
+
+    stackTrace.forEachException(
+            (index, stack) -> {
+              for (Integer exceptionInstructionIndex : stack) {
+                graph.addVertex(exceptionInstructionIndex);
+                graph.addEdge(index, exceptionInstructionIndex);
+              }
+            });
 
     stackTrace.forEachPopped(
         (index, stack) -> {

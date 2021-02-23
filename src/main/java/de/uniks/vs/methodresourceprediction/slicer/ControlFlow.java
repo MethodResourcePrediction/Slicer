@@ -1,22 +1,12 @@
 package de.uniks.vs.methodresourceprediction.slicer;
 
-import com.ibm.wala.shrikeBT.ConditionalBranchInstruction;
-import com.ibm.wala.shrikeBT.GotoInstruction;
-import com.ibm.wala.shrikeBT.IInstruction;
-import com.ibm.wala.shrikeBT.MethodData;
+import com.ibm.wala.shrikeBT.*;
 import com.ibm.wala.shrikeBT.shrikeCT.ClassInstrumenter;
 import com.ibm.wala.shrikeBT.shrikeCT.OfflineInstrumenter;
 import com.ibm.wala.shrikeCT.ClassReader;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import com.ibm.wala.util.collections.Pair;
 import de.uniks.vs.methodresourceprediction.utils.InstrumenterComparator;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import org.jgrapht.Graph;
 import org.jgrapht.alg.cycle.JohnsonSimpleCycles;
 import org.jgrapht.graph.DefaultDirectedGraph;
@@ -24,8 +14,13 @@ import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.io.ComponentNameProvider;
 import org.jgrapht.io.ExportException;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+
 public class ControlFlow extends SlicerGraph<Integer> {
   private String inputPath;
+  private String classPath;
   private String methodSignature;
 
   private MethodData methodData;
@@ -52,7 +47,9 @@ public class ControlFlow extends SlicerGraph<Integer> {
 
     MethodData methodData = getMethodData();
     IInstruction[] instructions = methodData.getInstructions();
-    stackTrace = new StackTrace(instructions);
+    ExceptionHandler[][] exceptionHandlers = methodData.getHandlers();
+
+    stackTrace = new StackTrace(instructions, exceptionHandlers);
     return stackTrace;
   }
 
@@ -175,7 +172,15 @@ public class ControlFlow extends SlicerGraph<Integer> {
     InstrumenterComparator comparator = InstrumenterComparator.of(methodSignature);
 
     OfflineInstrumenter inst = new OfflineInstrumenter();
-    inst.addInputJar(new File(inputPath));
+    if (!Objects.isNull(inputPath)) {
+      inst.addInputJar(new File(inputPath));
+    }
+    if (!Objects.isNull(classPath)) {
+      File classPathFile = new File(classPath);
+      File basePath = new File(classPathFile.getPath());
+      File classFilename = new File(classPathFile.getName());
+      inst.addInputClass(basePath, classFilename);
+    }
     inst.beginTraversal();
 
     // Iterate each class in the input program and instrument it
@@ -273,5 +278,9 @@ public class ControlFlow extends SlicerGraph<Integer> {
 
   public void setStartNode(Integer startNode) {
     this.startNode = startNode;
+  }
+
+  public void setClassPath(String classPath) {
+    this.classPath = classPath;
   }
 }
