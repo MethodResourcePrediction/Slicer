@@ -9,14 +9,15 @@ import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import de.uniks.vs.methodresourceprediction.slicer.Analyzer;
 import de.uniks.vs.methodresourceprediction.slicer.SliceResult;
 import de.uniks.vs.methodresourceprediction.slicer.Slicer;
+import org.jgrapht.io.ExportException;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.IntStream;
-import org.jgrapht.io.ExportException;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class AnalyzerTest {
@@ -34,16 +35,17 @@ public class AnalyzerTest {
     // "org/mariadb/jdbc/util/DefaultOptions.<clinit>()V", Set.of(8));
     //    sliceResult3.getSlice();
 
-    ExecutorService executor = Executors.newSingleThreadExecutor();
-
     for (ClassInstrumenter classInstrumenter : Analyzer.getClassInstrumenters(new File(jar))) {
+//      if (!classInstrumenter.getReader().getName().equals("org/mariadb/jdbc/UrlParser")) {
+//        continue;
+//      }
       for (MethodData method : Analyzer.getMethods(classInstrumenter)) {
         String methodSignature =
             classInstrumenter.getReader().getName()
                 + "."
                 + method.getName()
                 + method.getSignature();
-        //        methodSignature = "org/mariadb/jdbc/util/DefaultOptions.<clinit>()V";
+//                methodSignature = "org/mariadb/jdbc/util/DefaultOptions.getOptionName()Ljava/lang/String;";
 
         if (skippedPrefixes.stream().anyMatch(methodSignature::startsWith)) {
           System.out.println("Skipped: " + methodSignature);
@@ -66,6 +68,7 @@ public class AnalyzerTest {
           System.out.flush();
           slicer.setInstructionIndexes(Set.of(sliceCriterion));
 
+          ExecutorService executor = Executors.newSingleThreadExecutor();
           Future<SliceResult> submit =
               executor.submit(
                   () -> {
@@ -77,13 +80,16 @@ public class AnalyzerTest {
                     return null;
                   });
           try {
-            SliceResult sliceResult = submit.get(Long.MAX_VALUE, TimeUnit.SECONDS);
+            SliceResult sliceResult = submit.get(3, TimeUnit.SECONDS);
+//            SliceResult sliceResult = submit.get(Long.MAX_VALUE, TimeUnit.SECONDS);
             if (!Objects.isNull(sliceResult)) {
               sliceResults.add(sliceResult);
             }
           } catch (ExecutionException | TimeoutException e) {
-            System.out.print(": ");
-            System.out.print("Timeout or Error");
+            e.printStackTrace();
+            System.out.print(": Timeout or Error");
+            System.out.flush();
+            break;
           }
           System.out.print(", ");
           System.out.flush();
@@ -107,20 +113,32 @@ public class AnalyzerTest {
             Set<Integer> unionSet = new HashSet<>(instructionsToKeep1);
             unionSet.addAll(instructionsToKeep2);
 
-            boolean containsOtherInstructionThanExit =
+            boolean containsOnlyExitInstructions =
                 intersectionSet.stream()
-                    .anyMatch(
-                        i -> {
-                          if (instructions[i] instanceof ReturnInstruction
-                              || instructions[i] instanceof ThrowInstruction) {
-                            return false;
-                          }
-                          return true;
-                        });
+                    .allMatch(
+                        i ->
+                            instructions[i] instanceof ReturnInstruction
+                                || instructions[i] instanceof ThrowInstruction);
+            boolean slice1containsOnlyExitInstructions =
+                instructionsToKeep1.stream()
+                    .allMatch(
+                        i ->
+                            instructions[i] instanceof ReturnInstruction
+                                || instructions[i] instanceof ThrowInstruction);
+            boolean slice2containsOnlyExitInstructions =
+                instructionsToKeep2.stream()
+                    .allMatch(
+                        i ->
+                            instructions[i] instanceof ReturnInstruction
+                                || instructions[i] instanceof ThrowInstruction);
 
+            // Slices have the complete set of method instructions
             if (unionSet.equals(allInstructionIndexSet)) {
-              // Slices have the complete set of method instructions
-              if (intersectionSet.isEmpty() || !containsOtherInstructionThanExit) {
+
+              // Slice intersection should only consist out of exit instructions
+              if (containsOnlyExitInstructions
+                  && !slice1containsOnlyExitInstructions
+                  && !slice2containsOnlyExitInstructions) {
                 System.out.println(
                     "Independent slices from "
                         + instructionsToKeep1
@@ -134,10 +152,9 @@ public class AnalyzerTest {
             }
           }
         }
-
-        break;
+        System.gc();
       }
-      break;
+//      break;
     }
   }
 }

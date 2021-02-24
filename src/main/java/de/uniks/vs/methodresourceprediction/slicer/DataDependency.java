@@ -4,15 +4,16 @@ import com.ibm.wala.shrikeBT.*;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import com.ibm.wala.types.TypeName;
 import com.ibm.wala.util.strings.StringStuff;
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Stack;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.io.ComponentNameProvider;
 import org.jgrapht.io.ExportException;
+
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Stack;
 
 public class DataDependency extends SlicerGraph<Integer> {
   private ControlFlow controlFlow;
@@ -256,13 +257,26 @@ public class DataDependency extends SlicerGraph<Integer> {
   }
 
   private static boolean checkDataDependency(IInstruction instructionA, IInstruction instructionB) {
-    // A data dependency exists, if a there is a load instruction which are a
+    // A data dependency exists, if a there is a load instruction where are a
     // preceding store instruction in all possible execution paths.
     if (instructionA instanceof ILoadInstruction) {
       ILoadInstruction loadInstruction = (ILoadInstruction) instructionA;
       if (instructionB instanceof IStoreInstruction) {
         IStoreInstruction storeInstruction = (IStoreInstruction) instructionB;
         if (loadInstruction.getVarIndex() == storeInstruction.getVarIndex()) {
+          return true;
+        }
+      }
+    }
+
+    // A data dependency exists, if a there is a put instruction where are a
+    // preceding get instruction in all possible execution paths.
+    if (instructionA instanceof IGetInstruction) {
+      IGetInstruction getInstruction = (IGetInstruction) instructionA;
+      if (instructionB instanceof IPutInstruction) {
+        IPutInstruction putInstruction = (IPutInstruction) instructionB;
+        if (getInstruction.getClassType().contentEquals(putInstruction.getClassType())
+            && getInstruction.getFieldName().contentEquals(putInstruction.getFieldName())) {
           return true;
         }
       }

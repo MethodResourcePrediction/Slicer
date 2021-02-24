@@ -1,0 +1,1482 @@
+Starting Gradle Daemon...
+Gradle Daemon started in 575 ms
+
+> Task :compileJava UP-TO-DATE
+> Task :processResources NO-SOURCE
+> Task :classes UP-TO-DATE
+> Task :compileTestJava UP-TO-DATE
+> Task :processTestResources
+> Task :testClasses
+> Task :test
+org/mariadb/jdbc/BlobOutputStream.<init>(Lorg/mariadb/jdbc/MariaDbBlob;I)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 
+org/mariadb/jdbc/BlobOutputStream.write(I)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 
+org/mariadb/jdbc/BlobOutputStream.write([BII)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 
+org/mariadb/jdbc/BlobOutputStream.write([B)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/SimpleParameterMetaData.<init>(I)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 
+org/mariadb/jdbc/SimpleParameterMetaData.getParameterCount()I
+SliceCriterion: 0, 1, 2, 
+org/mariadb/jdbc/SimpleParameterMetaData.isNullable(I)I
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 
+org/mariadb/jdbc/SimpleParameterMetaData.isSigned(I)Z
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 
+org/mariadb/jdbc/SimpleParameterMetaData.getPrecision(I)I
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 
+org/mariadb/jdbc/SimpleParameterMetaData.getScale(I)I
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 
+org/mariadb/jdbc/SimpleParameterMetaData.getParameterType(I)I
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 
+org/mariadb/jdbc/SimpleParameterMetaData.getParameterTypeName(I)Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 
+org/mariadb/jdbc/SimpleParameterMetaData.getParameterClassName(I)Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 
+org/mariadb/jdbc/SimpleParameterMetaData.getParameterMode(I)I
+SliceCriterion: 0, 1, 
+org/mariadb/jdbc/SimpleParameterMetaData.unwrap(Ljava/lang/Class;)Ljava/lang/Object;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 
+org/mariadb/jdbc/SimpleParameterMetaData.isWrapperFor(Ljava/lang/Class;)Z
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/MariaDbProcedureStatement.<init>(Ljava/lang/String;Lorg/mariadb/jdbc/MariaDbConnection;Ljava/lang/String;Ljava/lang/String;IILorg/mariadb/jdbc/internal/util/exceptions/ExceptionFactory;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 
+org/mariadb/jdbc/MariaDbProcedureStatement.setParamsAccordingToSetArguments()V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 
+org/mariadb/jdbc/MariaDbProcedureStatement.setInputOutputParameterMap()V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 
+org/mariadb/jdbc/MariaDbProcedureStatement.getOutputResult()Lorg/mariadb/jdbc/internal/com/read/resultset/SelectResultSet;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 
+org/mariadb/jdbc/MariaDbProcedureStatement.clone(Lorg/mariadb/jdbc/MariaDbConnection;)Lorg/mariadb/jdbc/MariaDbProcedureStatement;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 
+org/mariadb/jdbc/MariaDbProcedureStatement.retrieveOutputResult()V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 
+org/mariadb/jdbc/MariaDbProcedureStatement.setParameter(ILorg/mariadb/jdbc/internal/com/send/parameters/ParameterHolder;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 
+Independent slices from [0, 1, 2, 3, 4, 5, 6, 7, 8, 13] and [9, 10, 11, 12, 13]
+[LocalLoad(Ljava/lang/Object;,0), Get(Ljava/util/List;,NONSTATIC,Lorg/mariadb/jdbc/MariaDbProcedureStatement;,params), LocalLoad(I,1), Constant(I,1), BinaryOp(I,sub), Invoke(INTERFACE,Ljava/util/List;,get,(I)Ljava/lang/Object;), CheckCast(Lorg/mariadb/jdbc/CallParameter;), Constant(I,1), Invoke(VIRTUAL,Lorg/mariadb/jdbc/CallParameter;,setInput,(Z)V), Return(V)]
+[LocalLoad(Ljava/lang/Object;,0), LocalLoad(I,1), LocalLoad(Ljava/lang/Object;,2), Invoke(SPECIAL,Lorg/mariadb/jdbc/CallableProcedureStatement;,setParameter,(ILorg/mariadb/jdbc/internal/com/send/parameters/ParameterHolder;)V), Return(V)]
+
+Independent slices from [9, 10, 11, 12, 13] and [0, 1, 2, 3, 4, 5, 6, 7, 8, 13]
+[LocalLoad(Ljava/lang/Object;,0), LocalLoad(I,1), LocalLoad(Ljava/lang/Object;,2), Invoke(SPECIAL,Lorg/mariadb/jdbc/CallableProcedureStatement;,setParameter,(ILorg/mariadb/jdbc/internal/com/send/parameters/ParameterHolder;)V), Return(V)]
+[LocalLoad(Ljava/lang/Object;,0), Get(Ljava/util/List;,NONSTATIC,Lorg/mariadb/jdbc/MariaDbProcedureStatement;,params), LocalLoad(I,1), Constant(I,1), BinaryOp(I,sub), Invoke(INTERFACE,Ljava/util/List;,get,(I)Ljava/lang/Object;), CheckCast(Lorg/mariadb/jdbc/CallParameter;), Constant(I,1), Invoke(VIRTUAL,Lorg/mariadb/jdbc/CallParameter;,setInput,(Z)V), Return(V)]
+
+org/mariadb/jdbc/MariaDbProcedureStatement.execute()Z
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 
+org/mariadb/jdbc/MariaDbProcedureStatement.validAllParameters()V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 
+org/mariadb/jdbc/MariaDbProcedureStatement.executeBatch()[I
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 
+org/mariadb/jdbc/MariaDbProcedureStatement.clone(Lorg/mariadb/jdbc/MariaDbConnection;)Lorg/mariadb/jdbc/CallableProcedureStatement;
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/MariaDbProcedureStatement.clone(Lorg/mariadb/jdbc/MariaDbConnection;)Lorg/mariadb/jdbc/ServerSidePreparedStatement;
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/MariaDbProcedureStatement.clone(Lorg/mariadb/jdbc/MariaDbConnection;)Lorg/mariadb/jdbc/BasePrepareStatement;
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/MariaDbProcedureStatement.clone(Lorg/mariadb/jdbc/MariaDbConnection;)Lorg/mariadb/jdbc/MariaDbStatement;
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/MariaDbProcedureStatement.clone(Lorg/mariadb/jdbc/MariaDbConnection;)Lorg/mariadb/jdbc/internal/util/dao/CloneableCallableStatement;
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/CallableFunctionStatement.<init>(Lorg/mariadb/jdbc/MariaDbConnection;Ljava/lang/String;IILorg/mariadb/jdbc/internal/util/exceptions/ExceptionFactory;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 
+org/mariadb/jdbc/CallableFunctionStatement.clone(Lorg/mariadb/jdbc/MariaDbConnection;)Lorg/mariadb/jdbc/CallableFunctionStatement;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 
+org/mariadb/jdbc/CallableFunctionStatement.initFunctionData(I)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 
+org/mariadb/jdbc/CallableFunctionStatement.getParameterMetaData()Ljava/sql/ParameterMetaData;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 
+org/mariadb/jdbc/CallableFunctionStatement.nameToIndex(Ljava/lang/String;)I
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 
+org/mariadb/jdbc/CallableFunctionStatement.nameToOutputIndex(Ljava/lang/String;)I
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 
+org/mariadb/jdbc/CallableFunctionStatement.indexToOutputIndex(I)I
+SliceCriterion: 0, 1, 
+org/mariadb/jdbc/CallableFunctionStatement.wasNull()Z
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/CallableFunctionStatement.getString(I)Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.getString(Ljava/lang/String;)Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.getBoolean(I)Z
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.getBoolean(Ljava/lang/String;)Z
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.getByte(I)B
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.getByte(Ljava/lang/String;)B
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.getShort(I)S
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.getShort(Ljava/lang/String;)S
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.getInt(Ljava/lang/String;)I
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.getInt(I)I
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.getLong(Ljava/lang/String;)J
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.getLong(I)J
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.getFloat(Ljava/lang/String;)F
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.getFloat(I)F
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.getDouble(I)D
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.getDouble(Ljava/lang/String;)D
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.getBigDecimal(II)Ljava/math/BigDecimal;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.getBigDecimal(I)Ljava/math/BigDecimal;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.getBigDecimal(Ljava/lang/String;)Ljava/math/BigDecimal;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.getBytes(Ljava/lang/String;)[B
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.getBytes(I)[B
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.getDate(I)Ljava/sql/Date;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.getDate(Ljava/lang/String;)Ljava/sql/Date;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.getDate(Ljava/lang/String;Ljava/util/Calendar;)Ljava/sql/Date;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 
+org/mariadb/jdbc/CallableFunctionStatement.getDate(ILjava/util/Calendar;)Ljava/sql/Date;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 
+org/mariadb/jdbc/CallableFunctionStatement.getTime(ILjava/util/Calendar;)Ljava/sql/Time;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 
+org/mariadb/jdbc/CallableFunctionStatement.getTime(Ljava/lang/String;)Ljava/sql/Time;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.getTime(Ljava/lang/String;Ljava/util/Calendar;)Ljava/sql/Time;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 
+org/mariadb/jdbc/CallableFunctionStatement.getTime(I)Ljava/sql/Time;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.getTimestamp(I)Ljava/sql/Timestamp;
+SliceCriterion: 0, 1, 2, 3, 4, 
+org/mariadb/jdbc/CallableFunctionStatement.getTimestamp(ILjava/util/Calendar;)Ljava/sql/Timestamp;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 
+org/mariadb/jdbc/CallableFunctionStatement.getTimestamp(Ljava/lang/String;)Ljava/sql/Timestamp;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.getTimestamp(Ljava/lang/String;Ljava/util/Calendar;)Ljava/sql/Timestamp;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 
+org/mariadb/jdbc/CallableFunctionStatement.getObject(I)Ljava/lang/Object;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 
+org/mariadb/jdbc/CallableFunctionStatement.getObject(Ljava/lang/String;)Ljava/lang/Object;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 
+org/mariadb/jdbc/CallableFunctionStatement.getObject(ILjava/util/Map;)Ljava/lang/Object;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 
+org/mariadb/jdbc/CallableFunctionStatement.getObject(Ljava/lang/String;Ljava/util/Map;)Ljava/lang/Object;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 
+org/mariadb/jdbc/CallableFunctionStatement.getObject(ILjava/lang/Class;)Ljava/lang/Object;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 
+org/mariadb/jdbc/CallableFunctionStatement.getObject(Ljava/lang/String;Ljava/lang/Class;)Ljava/lang/Object;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 
+org/mariadb/jdbc/CallableFunctionStatement.getRef(I)Ljava/sql/Ref;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.getRef(Ljava/lang/String;)Ljava/sql/Ref;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.getBlob(I)Ljava/sql/Blob;
+SliceCriterion: 0, 1, 2, 3, 4, 
+org/mariadb/jdbc/CallableFunctionStatement.getBlob(Ljava/lang/String;)Ljava/sql/Blob;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.getClob(Ljava/lang/String;)Ljava/sql/Clob;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.getClob(I)Ljava/sql/Clob;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.getArray(Ljava/lang/String;)Ljava/sql/Array;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.getArray(I)Ljava/sql/Array;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.getURL(I)Ljava/net/URL;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.getURL(Ljava/lang/String;)Ljava/net/URL;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.getRowId(I)Ljava/sql/RowId;
+SliceCriterion: 0, 1, 2, 3, 4, 
+org/mariadb/jdbc/CallableFunctionStatement.getRowId(Ljava/lang/String;)Ljava/sql/RowId;
+SliceCriterion: 0, 1, 2, 3, 4, 
+org/mariadb/jdbc/CallableFunctionStatement.getNClob(I)Ljava/sql/NClob;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.getNClob(Ljava/lang/String;)Ljava/sql/NClob;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.getSQLXML(I)Ljava/sql/SQLXML;
+SliceCriterion: 0, 1, 2, 3, 4, 
+org/mariadb/jdbc/CallableFunctionStatement.getSQLXML(Ljava/lang/String;)Ljava/sql/SQLXML;
+SliceCriterion: 0, 1, 2, 3, 4, 
+org/mariadb/jdbc/CallableFunctionStatement.getNString(I)Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.getNString(Ljava/lang/String;)Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.getNCharacterStream(I)Ljava/io/Reader;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.getNCharacterStream(Ljava/lang/String;)Ljava/io/Reader;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.getCharacterStream(I)Ljava/io/Reader;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.getCharacterStream(Ljava/lang/String;)Ljava/io/Reader;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.registerOutParameter(IILjava/lang/String;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 
+org/mariadb/jdbc/CallableFunctionStatement.registerOutParameter(II)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 
+org/mariadb/jdbc/CallableFunctionStatement.registerOutParameter(III)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 
+org/mariadb/jdbc/CallableFunctionStatement.registerOutParameter(Ljava/lang/String;I)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.registerOutParameter(Ljava/lang/String;II)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 
+org/mariadb/jdbc/CallableFunctionStatement.registerOutParameter(Ljava/lang/String;ILjava/lang/String;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 
+org/mariadb/jdbc/CallableFunctionStatement.registerOutParameter(ILjava/sql/SQLType;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.registerOutParameter(ILjava/sql/SQLType;I)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 
+org/mariadb/jdbc/CallableFunctionStatement.registerOutParameter(ILjava/sql/SQLType;Ljava/lang/String;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 
+org/mariadb/jdbc/CallableFunctionStatement.registerOutParameter(Ljava/lang/String;Ljava/sql/SQLType;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.registerOutParameter(Ljava/lang/String;Ljava/sql/SQLType;I)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 
+org/mariadb/jdbc/CallableFunctionStatement.registerOutParameter(Ljava/lang/String;Ljava/sql/SQLType;Ljava/lang/String;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 
+org/mariadb/jdbc/CallableFunctionStatement.getParameter(I)Lorg/mariadb/jdbc/CallParameter;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 
+org/mariadb/jdbc/CallableFunctionStatement.setSQLXML(Ljava/lang/String;Ljava/sql/SQLXML;)V
+SliceCriterion: 0, 1, 2, 3, 4, 
+org/mariadb/jdbc/CallableFunctionStatement.setRowId(Ljava/lang/String;Ljava/sql/RowId;)V
+SliceCriterion: 0, 1, 2, 3, 4, 
+org/mariadb/jdbc/CallableFunctionStatement.setNString(Ljava/lang/String;Ljava/lang/String;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.setNCharacterStream(Ljava/lang/String;Ljava/io/Reader;J)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 
+org/mariadb/jdbc/CallableFunctionStatement.setNCharacterStream(Ljava/lang/String;Ljava/io/Reader;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.setNClob(Ljava/lang/String;Ljava/sql/NClob;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.setNClob(Ljava/lang/String;Ljava/io/Reader;J)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 
+org/mariadb/jdbc/CallableFunctionStatement.setNClob(Ljava/lang/String;Ljava/io/Reader;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.setClob(Ljava/lang/String;Ljava/io/Reader;J)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 
+org/mariadb/jdbc/CallableFunctionStatement.setClob(Ljava/lang/String;Ljava/sql/Clob;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.setClob(Ljava/lang/String;Ljava/io/Reader;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.setBlob(Ljava/lang/String;Ljava/io/InputStream;J)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 
+org/mariadb/jdbc/CallableFunctionStatement.setBlob(Ljava/lang/String;Ljava/sql/Blob;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.setBlob(Ljava/lang/String;Ljava/io/InputStream;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.setAsciiStream(Ljava/lang/String;Ljava/io/InputStream;J)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 
+org/mariadb/jdbc/CallableFunctionStatement.setAsciiStream(Ljava/lang/String;Ljava/io/InputStream;I)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 
+org/mariadb/jdbc/CallableFunctionStatement.setAsciiStream(Ljava/lang/String;Ljava/io/InputStream;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.setBinaryStream(Ljava/lang/String;Ljava/io/InputStream;J)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 
+org/mariadb/jdbc/CallableFunctionStatement.setBinaryStream(Ljava/lang/String;Ljava/io/InputStream;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.setBinaryStream(Ljava/lang/String;Ljava/io/InputStream;I)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 
+org/mariadb/jdbc/CallableFunctionStatement.setCharacterStream(Ljava/lang/String;Ljava/io/Reader;J)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 
+org/mariadb/jdbc/CallableFunctionStatement.setCharacterStream(Ljava/lang/String;Ljava/io/Reader;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.setCharacterStream(Ljava/lang/String;Ljava/io/Reader;I)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 
+org/mariadb/jdbc/CallableFunctionStatement.setURL(Ljava/lang/String;Ljava/net/URL;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.setNull(Ljava/lang/String;I)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.setNull(Ljava/lang/String;ILjava/lang/String;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 
+org/mariadb/jdbc/CallableFunctionStatement.setBoolean(Ljava/lang/String;Z)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.setByte(Ljava/lang/String;B)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.setShort(Ljava/lang/String;S)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.setInt(Ljava/lang/String;I)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.setLong(Ljava/lang/String;J)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.setFloat(Ljava/lang/String;F)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.setDouble(Ljava/lang/String;D)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.setBigDecimal(Ljava/lang/String;Ljava/math/BigDecimal;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.setString(Ljava/lang/String;Ljava/lang/String;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.setBytes(Ljava/lang/String;[B)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.setDate(Ljava/lang/String;Ljava/sql/Date;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.setDate(Ljava/lang/String;Ljava/sql/Date;Ljava/util/Calendar;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 
+org/mariadb/jdbc/CallableFunctionStatement.setTime(Ljava/lang/String;Ljava/sql/Time;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.setTime(Ljava/lang/String;Ljava/sql/Time;Ljava/util/Calendar;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 
+org/mariadb/jdbc/CallableFunctionStatement.setTimestamp(Ljava/lang/String;Ljava/sql/Timestamp;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.setTimestamp(Ljava/lang/String;Ljava/sql/Timestamp;Ljava/util/Calendar;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 
+org/mariadb/jdbc/CallableFunctionStatement.setObject(Ljava/lang/String;Ljava/lang/Object;II)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 
+org/mariadb/jdbc/CallableFunctionStatement.setObject(Ljava/lang/String;Ljava/lang/Object;I)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 
+org/mariadb/jdbc/CallableFunctionStatement.setObject(Ljava/lang/String;Ljava/lang/Object;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/CallableFunctionStatement.setObject(Ljava/lang/String;Ljava/lang/Object;Ljava/sql/SQLType;I)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 
+org/mariadb/jdbc/CallableFunctionStatement.setObject(Ljava/lang/String;Ljava/lang/Object;Ljava/sql/SQLType;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 
+org/mariadb/jdbc/CallableFunctionStatement.clone(Lorg/mariadb/jdbc/MariaDbConnection;)Lorg/mariadb/jdbc/ClientSidePreparedStatement;
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/CallableFunctionStatement.clone(Lorg/mariadb/jdbc/MariaDbConnection;)Lorg/mariadb/jdbc/BasePrepareStatement;
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/CallableFunctionStatement.clone(Lorg/mariadb/jdbc/MariaDbConnection;)Lorg/mariadb/jdbc/MariaDbStatement;
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/MariaDbResultSetMetaData$1.<clinit>()V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 
+org/mariadb/jdbc/CallParameter.<init>()V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 
+org/mariadb/jdbc/CallParameter.isInput()Z
+SliceCriterion: 0, 1, 2, 
+org/mariadb/jdbc/CallParameter.setInput(Z)V
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/CallParameter.isOutput()Z
+SliceCriterion: 0, 1, 2, 
+org/mariadb/jdbc/CallParameter.setOutput(Z)V
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/CallParameter.getSqlType()I
+SliceCriterion: 0, 1, 2, 
+org/mariadb/jdbc/CallParameter.setSqlType(I)V
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/CallParameter.getOutputSqlType()I
+SliceCriterion: 0, 1, 2, 
+org/mariadb/jdbc/CallParameter.setOutputSqlType(I)V
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/CallParameter.getScale()I
+SliceCriterion: 0, 1, 2, 
+org/mariadb/jdbc/CallParameter.setScale(I)V
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/CallParameter.getTypeName()Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 
+org/mariadb/jdbc/CallParameter.setTypeName(Ljava/lang/String;)V
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/CallParameter.isSigned()Z
+SliceCriterion: 0, 1, 2, 
+org/mariadb/jdbc/CallParameter.setSigned(Z)V
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/CallParameter.getCanBeNull()I
+SliceCriterion: 0, 1, 2, 
+org/mariadb/jdbc/CallParameter.setCanBeNull(I)V
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/CallParameter.getPrecision()I
+SliceCriterion: 0, 1, 2, 
+org/mariadb/jdbc/CallParameter.setPrecision(I)V
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/CallParameter.getClassName()Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 
+org/mariadb/jdbc/CallParameter.setClassName(Ljava/lang/String;)V
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/CallParameter.getName()Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 
+org/mariadb/jdbc/CallParameter.setName(Ljava/lang/String;)V
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/authentication/AuthenticationPlugin.mustUseSsl()Z
+SliceCriterion: 0, 1, 
+org/mariadb/jdbc/authentication/AuthenticationPluginLoader.<init>()V
+SliceCriterion: 0, 1, 2, 
+org/mariadb/jdbc/authentication/AuthenticationPluginLoader.get(Ljava/lang/String;)Lorg/mariadb/jdbc/authentication/AuthenticationPlugin;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 
+org/mariadb/jdbc/util/DefaultOptions.values()[Lorg/mariadb/jdbc/util/DefaultOptions;
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/util/DefaultOptions.valueOf(Ljava/lang/String;)Lorg/mariadb/jdbc/util/DefaultOptions;
+SliceCriterion: 0, 1, 2, 3, 4, 
+org/mariadb/jdbc/util/DefaultOptions.<init>(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 
+org/mariadb/jdbc/util/DefaultOptions.<init>(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 
+org/mariadb/jdbc/util/DefaultOptions.<init>(Ljava/lang/String;ILjava/lang/String;Ljava/lang/Boolean;Ljava/lang/String;Ljava/lang/String;Z)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 
+org/mariadb/jdbc/util/DefaultOptions.<init>(Ljava/lang/String;ILjava/lang/String;Ljava/lang/Integer;Ljava/lang/Integer;Ljava/lang/String;Ljava/lang/String;Z)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 
+org/mariadb/jdbc/util/DefaultOptions.<init>(Ljava/lang/String;ILjava/lang/String;Ljava/lang/Long;Ljava/lang/Long;Ljava/lang/String;Ljava/lang/String;Z)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 
+org/mariadb/jdbc/util/DefaultOptions.<init>(Ljava/lang/String;ILjava/lang/String;[Ljava/lang/Integer;Ljava/lang/Integer;Ljava/lang/String;Ljava/lang/String;Z)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 
+org/mariadb/jdbc/util/DefaultOptions.defaultValues(Lorg/mariadb/jdbc/internal/util/constant/HaMode;)Lorg/mariadb/jdbc/util/Options;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/util/DefaultOptions.defaultValues(Lorg/mariadb/jdbc/internal/util/constant/HaMode;Z)Lorg/mariadb/jdbc/util/Options;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 
+org/mariadb/jdbc/util/DefaultOptions.parse(Lorg/mariadb/jdbc/internal/util/constant/HaMode;Ljava/lang/String;Lorg/mariadb/jdbc/util/Options;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 
+Independent slices from [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 13] and [10, 11, 12, 13]
+[New(Ljava/util/Properties;,0), Dup(1,0), Invoke(SPECIAL,Ljava/util/Properties;,<init>,()V), LocalStore(Ljava/lang/Object;,3), LocalLoad(Ljava/lang/Object;,0), LocalLoad(Ljava/lang/Object;,1), LocalLoad(Ljava/lang/Object;,3), LocalLoad(Ljava/lang/Object;,2), Invoke(STATIC,Lorg/mariadb/jdbc/util/DefaultOptions;,parse,(Lorg/mariadb/jdbc/internal/util/constant/HaMode;Ljava/lang/String;Ljava/util/Properties;Lorg/mariadb/jdbc/util/Options;)Lorg/mariadb/jdbc/util/Options;), Pop(1), Return(V)]
+[LocalLoad(Ljava/lang/Object;,2), Constant(L;,null), Invoke(STATIC,Lorg/mariadb/jdbc/util/DefaultOptions;,postOptionProcess,(Lorg/mariadb/jdbc/util/Options;Lorg/mariadb/jdbc/credential/CredentialPlugin;)V), Return(V)]
+
+Independent slices from [10, 11, 12, 13] and [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 13]
+[LocalLoad(Ljava/lang/Object;,2), Constant(L;,null), Invoke(STATIC,Lorg/mariadb/jdbc/util/DefaultOptions;,postOptionProcess,(Lorg/mariadb/jdbc/util/Options;Lorg/mariadb/jdbc/credential/CredentialPlugin;)V), Return(V)]
+[New(Ljava/util/Properties;,0), Dup(1,0), Invoke(SPECIAL,Ljava/util/Properties;,<init>,()V), LocalStore(Ljava/lang/Object;,3), LocalLoad(Ljava/lang/Object;,0), LocalLoad(Ljava/lang/Object;,1), LocalLoad(Ljava/lang/Object;,3), LocalLoad(Ljava/lang/Object;,2), Invoke(STATIC,Lorg/mariadb/jdbc/util/DefaultOptions;,parse,(Lorg/mariadb/jdbc/internal/util/constant/HaMode;Ljava/lang/String;Ljava/util/Properties;Lorg/mariadb/jdbc/util/Options;)Lorg/mariadb/jdbc/util/Options;), Pop(1), Return(V)]
+
+org/mariadb/jdbc/util/DefaultOptions.parse(Lorg/mariadb/jdbc/internal/util/constant/HaMode;Ljava/lang/String;Ljava/util/Properties;)Lorg/mariadb/jdbc/util/Options;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 
+org/mariadb/jdbc/util/DefaultOptions.parse(Lorg/mariadb/jdbc/internal/util/constant/HaMode;Ljava/lang/String;Ljava/util/Properties;Lorg/mariadb/jdbc/util/Options;)Lorg/mariadb/jdbc/util/Options;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 
+org/mariadb/jdbc/util/DefaultOptions.parse(Lorg/mariadb/jdbc/internal/util/constant/HaMode;Ljava/util/Properties;Lorg/mariadb/jdbc/util/Options;)Lorg/mariadb/jdbc/util/Options;
+SliceCriterion: 0: Timeout or Error
+org/mariadb/jdbc/util/DefaultOptions.postOptionProcess(Lorg/mariadb/jdbc/util/Options;Lorg/mariadb/jdbc/credential/CredentialPlugin;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 
+org/mariadb/jdbc/util/DefaultOptions.propertyString(Lorg/mariadb/jdbc/util/Options;Lorg/mariadb/jdbc/internal/util/constant/HaMode;Ljava/lang/StringBuilder;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 
+org/mariadb/jdbc/util/DefaultOptions.getOptionName()Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 
+org/mariadb/jdbc/util/DefaultOptions.getDescription()Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 
+org/mariadb/jdbc/util/DefaultOptions.isRequired()Z
+SliceCriterion: 0, 1, 2, 
+org/mariadb/jdbc/util/DefaultOptions.<clinit>()V
+SliceCriterion: 0: Timeout or Error
+org/mariadb/jdbc/util/ConfigurableSocketFactory.<init>()V
+SliceCriterion: 0, 1, 2, 
+org/mariadb/jdbc/util/Options.<init>()V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 
+org/mariadb/jdbc/util/Options.toString()Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 
+org/mariadb/jdbc/util/Options.equals(Ljava/lang/Object;)Z
+SliceCriterion: 0: Timeout or Error
+org/mariadb/jdbc/util/Options.hashCode()I
+SliceCriterion: 0: Timeout or Error
+org/mariadb/jdbc/util/Options.clone()Ljava/lang/Object;
+SliceCriterion: 0, 1, 2, 
+org/mariadb/jdbc/UrlParser.<init>()V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 
+org/mariadb/jdbc/UrlParser.<init>(Ljava/lang/String;Ljava/util/List;Lorg/mariadb/jdbc/util/Options;Lorg/mariadb/jdbc/internal/util/constant/HaMode;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 
+org/mariadb/jdbc/UrlParser.acceptsUrl(Ljava/lang/String;)Z
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 
+org/mariadb/jdbc/UrlParser.parse(Ljava/lang/String;)Lorg/mariadb/jdbc/UrlParser;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 
+org/mariadb/jdbc/UrlParser.parse(Ljava/lang/String;Ljava/util/Properties;)Lorg/mariadb/jdbc/UrlParser;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 
+org/mariadb/jdbc/UrlParser.parseInternal(Lorg/mariadb/jdbc/UrlParser;Ljava/lang/String;Ljava/util/Properties;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 
+org/mariadb/jdbc/UrlParser.defineUrlParserParameters(Lorg/mariadb/jdbc/UrlParser;Ljava/util/Properties;Ljava/lang/String;Ljava/lang/String;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 
+org/mariadb/jdbc/UrlParser.parseHaMode(Ljava/lang/String;I)Lorg/mariadb/jdbc/internal/util/constant/HaMode;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 
+org/mariadb/jdbc/UrlParser.setDefaultHostAddressType(Lorg/mariadb/jdbc/UrlParser;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 
+org/mariadb/jdbc/UrlParser.setInitialUrl()V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 
+org/mariadb/jdbc/UrlParser.auroraPipelineQuirks()Lorg/mariadb/jdbc/UrlParser;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 
+org/mariadb/jdbc/UrlParser.isAurora()Z
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 
+org/mariadb/jdbc/UrlParser.parseUrl(Ljava/lang/String;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 
+org/mariadb/jdbc/UrlParser.getUsername()Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/UrlParser.setUsername(Ljava/lang/String;)V
+SliceCriterion: 0, 1, 2, 3, 4, 
+org/mariadb/jdbc/UrlParser.getPassword()Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/UrlParser.setPassword(Ljava/lang/String;)V
+SliceCriterion: 0, 1, 2, 3, 4, 
+org/mariadb/jdbc/UrlParser.getDatabase()Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 
+org/mariadb/jdbc/UrlParser.setDatabase(Ljava/lang/String;)V
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/UrlParser.getHostAddresses()Ljava/util/List;
+SliceCriterion: 0, 1, 2, 
+org/mariadb/jdbc/UrlParser.getOptions()Lorg/mariadb/jdbc/util/Options;
+SliceCriterion: 0, 1, 2, 
+org/mariadb/jdbc/UrlParser.setProperties(Ljava/lang/String;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 
+Independent slices from [0, 1, 2, 3, 4, 5, 8] and [6, 7, 8]
+[LocalLoad(Ljava/lang/Object;,0), Get(Lorg/mariadb/jdbc/internal/util/constant/HaMode;,NONSTATIC,Lorg/mariadb/jdbc/UrlParser;,haMode), LocalLoad(Ljava/lang/Object;,1), LocalLoad(Ljava/lang/Object;,0), Get(Lorg/mariadb/jdbc/util/Options;,NONSTATIC,Lorg/mariadb/jdbc/UrlParser;,options), Invoke(STATIC,Lorg/mariadb/jdbc/util/DefaultOptions;,parse,(Lorg/mariadb/jdbc/internal/util/constant/HaMode;Ljava/lang/String;Lorg/mariadb/jdbc/util/Options;)V), Return(V)]
+[LocalLoad(Ljava/lang/Object;,0), Invoke(SPECIAL,Lorg/mariadb/jdbc/UrlParser;,setInitialUrl,()V), Return(V)]
+
+Independent slices from [6, 7, 8] and [0, 1, 2, 3, 4, 5, 8]
+[LocalLoad(Ljava/lang/Object;,0), Invoke(SPECIAL,Lorg/mariadb/jdbc/UrlParser;,setInitialUrl,()V), Return(V)]
+[LocalLoad(Ljava/lang/Object;,0), Get(Lorg/mariadb/jdbc/internal/util/constant/HaMode;,NONSTATIC,Lorg/mariadb/jdbc/UrlParser;,haMode), LocalLoad(Ljava/lang/Object;,1), LocalLoad(Ljava/lang/Object;,0), Get(Lorg/mariadb/jdbc/util/Options;,NONSTATIC,Lorg/mariadb/jdbc/UrlParser;,options), Invoke(STATIC,Lorg/mariadb/jdbc/util/DefaultOptions;,parse,(Lorg/mariadb/jdbc/internal/util/constant/HaMode;Ljava/lang/String;Lorg/mariadb/jdbc/util/Options;)V), Return(V)]
+
+org/mariadb/jdbc/UrlParser.getCredentialPlugin()Lorg/mariadb/jdbc/credential/CredentialPlugin;
+SliceCriterion: 0, 1, 2, 
+org/mariadb/jdbc/UrlParser.toString()Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 
+org/mariadb/jdbc/UrlParser.getInitialUrl()Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 
+org/mariadb/jdbc/UrlParser.getHaMode()Lorg/mariadb/jdbc/internal/util/constant/HaMode;
+SliceCriterion: 0, 1, 2, 
+org/mariadb/jdbc/UrlParser.equals(Ljava/lang/Object;)Z
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 
+org/mariadb/jdbc/UrlParser.hashCode()I
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 
+org/mariadb/jdbc/UrlParser.loadMultiMasterValue()V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 
+org/mariadb/jdbc/UrlParser.isMultiMaster()Z
+SliceCriterion: 0, 1, 2, 
+org/mariadb/jdbc/UrlParser.clone()Ljava/lang/Object;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 
+org/mariadb/jdbc/UrlParser.<clinit>()V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 
+Independent slices from [0, 1, 2, 3, 8] and [4, 5, 6, 7, 8]
+[Constant(Ljava/lang/String;,"(\/([^\?]*))?(\?(.+))*"), Constant(I,32), Invoke(STATIC,Ljava/util/regex/Pattern;,compile,(Ljava/lang/String;I)Ljava/util/regex/Pattern;), Put(Ljava/util/regex/Pattern;,STATIC,Lorg/mariadb/jdbc/UrlParser;,URL_PARAMETER), Return(V)]
+[Constant(Ljava/lang/String;,"(.+)\.([a-z0-9\-]+\.rds\.amazonaws\.com)"), Constant(I,2), Invoke(STATIC,Ljava/util/regex/Pattern;,compile,(Ljava/lang/String;I)Ljava/util/regex/Pattern;), Put(Ljava/util/regex/Pattern;,STATIC,Lorg/mariadb/jdbc/UrlParser;,AWS_PATTERN), Return(V)]
+
+Independent slices from [4, 5, 6, 7, 8] and [0, 1, 2, 3, 8]
+[Constant(Ljava/lang/String;,"(.+)\.([a-z0-9\-]+\.rds\.amazonaws\.com)"), Constant(I,2), Invoke(STATIC,Ljava/util/regex/Pattern;,compile,(Ljava/lang/String;I)Ljava/util/regex/Pattern;), Put(Ljava/util/regex/Pattern;,STATIC,Lorg/mariadb/jdbc/UrlParser;,AWS_PATTERN), Return(V)]
+[Constant(Ljava/lang/String;,"(\/([^\?]*))?(\?(.+))*"), Constant(I,32), Invoke(STATIC,Ljava/util/regex/Pattern;,compile,(Ljava/lang/String;I)Ljava/util/regex/Pattern;), Put(Ljava/util/regex/Pattern;,STATIC,Lorg/mariadb/jdbc/UrlParser;,URL_PARAMETER), Return(V)]
+
+org/mariadb/jdbc/ServerSidePreparedStatement.<init>(Lorg/mariadb/jdbc/MariaDbConnection;Ljava/lang/String;IIILorg/mariadb/jdbc/internal/util/exceptions/ExceptionFactory;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 
+org/mariadb/jdbc/ServerSidePreparedStatement.clone(Lorg/mariadb/jdbc/MariaDbConnection;)Lorg/mariadb/jdbc/ServerSidePreparedStatement;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 
+org/mariadb/jdbc/ServerSidePreparedStatement.prepare(Ljava/lang/String;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 
+org/mariadb/jdbc/ServerSidePreparedStatement.setMetaFromResult()V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 
+org/mariadb/jdbc/ServerSidePreparedStatement.setParameter(ILorg/mariadb/jdbc/internal/com/send/parameters/ParameterHolder;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 
+org/mariadb/jdbc/ServerSidePreparedStatement.addBatch()V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 
+Independent slices from [0, 1, 13] and [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+[LocalLoad(Ljava/lang/Object;,0), Invoke(VIRTUAL,Lorg/mariadb/jdbc/ServerSidePreparedStatement;,validParameters,()V), Return(V)]
+[LocalLoad(Ljava/lang/Object;,0), Get(Ljava/util/List;,NONSTATIC,Lorg/mariadb/jdbc/ServerSidePreparedStatement;,queryParameters), LocalLoad(Ljava/lang/Object;,0), Get(Ljava/util/Map;,NONSTATIC,Lorg/mariadb/jdbc/ServerSidePreparedStatement;,currentParameterHolder), Invoke(INTERFACE,Ljava/util/Map;,values,()Ljava/util/Collection;), Constant(I,0), New([Lorg/mariadb/jdbc/internal/com/send/parameters/ParameterHolder;,1), Invoke(INTERFACE,Ljava/util/Collection;,toArray,([Ljava/lang/Object;)[Ljava/lang/Object;), CheckCast([Lorg/mariadb/jdbc/internal/com/send/parameters/ParameterHolder;), Invoke(INTERFACE,Ljava/util/List;,add,(Ljava/lang/Object;)Z), Pop(1), Return(V)]
+
+Independent slices from [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13] and [0, 1, 13]
+[LocalLoad(Ljava/lang/Object;,0), Get(Ljava/util/List;,NONSTATIC,Lorg/mariadb/jdbc/ServerSidePreparedStatement;,queryParameters), LocalLoad(Ljava/lang/Object;,0), Get(Ljava/util/Map;,NONSTATIC,Lorg/mariadb/jdbc/ServerSidePreparedStatement;,currentParameterHolder), Invoke(INTERFACE,Ljava/util/Map;,values,()Ljava/util/Collection;), Constant(I,0), New([Lorg/mariadb/jdbc/internal/com/send/parameters/ParameterHolder;,1), Invoke(INTERFACE,Ljava/util/Collection;,toArray,([Ljava/lang/Object;)[Ljava/lang/Object;), CheckCast([Lorg/mariadb/jdbc/internal/com/send/parameters/ParameterHolder;), Invoke(INTERFACE,Ljava/util/List;,add,(Ljava/lang/Object;)Z), Pop(1), Return(V)]
+[LocalLoad(Ljava/lang/Object;,0), Invoke(VIRTUAL,Lorg/mariadb/jdbc/ServerSidePreparedStatement;,validParameters,()V), Return(V)]
+
+org/mariadb/jdbc/ServerSidePreparedStatement.addBatch(Ljava/lang/String;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 
+org/mariadb/jdbc/ServerSidePreparedStatement.clearBatch()V
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/ServerSidePreparedStatement.getParameterMetaData()Ljava/sql/ParameterMetaData;
+SliceCriterion: 0, 1, 2, 
+org/mariadb/jdbc/ServerSidePreparedStatement.getMetaData()Ljava/sql/ResultSetMetaData;
+SliceCriterion: 0, 1, 2, 
+org/mariadb/jdbc/ServerSidePreparedStatement.executeBatch()[I
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 
+org/mariadb/jdbc/ServerSidePreparedStatement.executeLargeBatch()[J
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 
+org/mariadb/jdbc/ServerSidePreparedStatement.executeBatchInternal(I)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 
+org/mariadb/jdbc/ServerSidePreparedStatement.executeQueryPrologue(Lorg/mariadb/jdbc/internal/util/dao/ServerPrepareResult;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 
+org/mariadb/jdbc/ServerSidePreparedStatement.executeQuery()Ljava/sql/ResultSet;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 
+org/mariadb/jdbc/ServerSidePreparedStatement.executeUpdate()I
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 
+org/mariadb/jdbc/ServerSidePreparedStatement.clearParameters()V
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/ServerSidePreparedStatement.execute()Z
+SliceCriterion: 0, 1, 2, 3, 4, 
+org/mariadb/jdbc/ServerSidePreparedStatement.validParameters()V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 
+org/mariadb/jdbc/ServerSidePreparedStatement.executeInternal(I)Z
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 
+org/mariadb/jdbc/ServerSidePreparedStatement.close()V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 
+org/mariadb/jdbc/ServerSidePreparedStatement.getParameterCount()I
+SliceCriterion: 0, 1, 2, 
+org/mariadb/jdbc/ServerSidePreparedStatement.toString()Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 
+org/mariadb/jdbc/ServerSidePreparedStatement.getServerThreadId()J
+SliceCriterion: 0, 1, 2, 3, 4, 
+org/mariadb/jdbc/ServerSidePreparedStatement.clone(Lorg/mariadb/jdbc/MariaDbConnection;)Lorg/mariadb/jdbc/BasePrepareStatement;
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/ServerSidePreparedStatement.clone(Lorg/mariadb/jdbc/MariaDbConnection;)Lorg/mariadb/jdbc/MariaDbStatement;
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/ServerSidePreparedStatement.<clinit>()V
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/MariaDbClob.<init>([B)V
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/MariaDbClob.<init>([BII)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 
+org/mariadb/jdbc/MariaDbClob.<init>()V
+SliceCriterion: 0, 1, 2, 
+org/mariadb/jdbc/MariaDbClob.toString()Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 
+org/mariadb/jdbc/MariaDbClob.getSubString(JI)Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 
+org/mariadb/jdbc/MariaDbClob.getCharacterStream()Ljava/io/Reader;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 
+org/mariadb/jdbc/MariaDbClob.getCharacterStream(JJ)Ljava/io/Reader;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 
+org/mariadb/jdbc/MariaDbClob.setCharacterStream(J)Ljava/io/Writer;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 
+org/mariadb/jdbc/MariaDbClob.getAsciiStream()Ljava/io/InputStream;
+SliceCriterion: 0, 1, 2, 
+org/mariadb/jdbc/MariaDbClob.position(Ljava/lang/String;J)J
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 
+org/mariadb/jdbc/MariaDbClob.position(Ljava/sql/Clob;J)J
+SliceCriterion: 0, 1, 2, 3, 4, 5, 
+org/mariadb/jdbc/MariaDbClob.utf8Position(I)I
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 
+org/mariadb/jdbc/MariaDbClob.setString(JLjava/lang/String;)I
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 
+org/mariadb/jdbc/MariaDbClob.setString(JLjava/lang/String;II)I
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 
+org/mariadb/jdbc/MariaDbClob.setAsciiStream(J)Ljava/io/OutputStream;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 
+org/mariadb/jdbc/MariaDbClob.length()J
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 
+org/mariadb/jdbc/MariaDbClob.truncate(J)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 
+org/mariadb/jdbc/MariaDbSavepoint.<init>(Ljava/lang/String;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 
+org/mariadb/jdbc/MariaDbSavepoint.getSavepointId()I
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/MariaDbSavepoint.getSavepointName()Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 
+org/mariadb/jdbc/MariaDbSavepoint.toString()Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 
+org/mariadb/jdbc/MariaDbResultSetMetaData.<init>([Lorg/mariadb/jdbc/internal/com/read/resultset/ColumnDefinition;Lorg/mariadb/jdbc/util/Options;Z)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 
+org/mariadb/jdbc/MariaDbResultSetMetaData.getColumnCount()I
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/MariaDbResultSetMetaData.isAutoIncrement(I)Z
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 
+org/mariadb/jdbc/MariaDbResultSetMetaData.isCaseSensitive(I)Z
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 
+org/mariadb/jdbc/MariaDbResultSetMetaData.isSearchable(I)Z
+SliceCriterion: 0, 1, 
+org/mariadb/jdbc/MariaDbResultSetMetaData.isCurrency(I)Z
+SliceCriterion: 0, 1, 
+org/mariadb/jdbc/MariaDbResultSetMetaData.isNullable(I)I
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 
+org/mariadb/jdbc/MariaDbResultSetMetaData.isSigned(I)Z
+SliceCriterion: 0, 1, 2, 3, 4, 
+org/mariadb/jdbc/MariaDbResultSetMetaData.getColumnDisplaySize(I)I
+SliceCriterion: 0, 1, 2, 3, 4, 
+org/mariadb/jdbc/MariaDbResultSetMetaData.getColumnLabel(I)Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 3, 4, 
+org/mariadb/jdbc/MariaDbResultSetMetaData.getColumnName(I)Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 
+org/mariadb/jdbc/MariaDbResultSetMetaData.getCatalogName(I)Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 3, 4, 
+org/mariadb/jdbc/MariaDbResultSetMetaData.getPrecision(I)I
+SliceCriterion: 0, 1, 2, 3, 4, 5, 
+org/mariadb/jdbc/MariaDbResultSetMetaData.getScale(I)I
+SliceCriterion: 0, 1, 2, 3, 4, 
+org/mariadb/jdbc/MariaDbResultSetMetaData.getTableName(I)Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 
+org/mariadb/jdbc/MariaDbResultSetMetaData.getSchemaName(I)Ljava/lang/String;
+SliceCriterion: 0, 1, 
+org/mariadb/jdbc/MariaDbResultSetMetaData.getColumnType(I)I
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 
+org/mariadb/jdbc/MariaDbResultSetMetaData.getColumnTypeName(I)Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 
+org/mariadb/jdbc/MariaDbResultSetMetaData.isReadOnly(I)Z
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 
+org/mariadb/jdbc/MariaDbResultSetMetaData.isWritable(I)Z
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 
+org/mariadb/jdbc/MariaDbResultSetMetaData.isDefinitelyWritable(I)Z
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 
+org/mariadb/jdbc/MariaDbResultSetMetaData.getColumnClassName(I)Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 
+org/mariadb/jdbc/MariaDbResultSetMetaData.getColumnInformation(I)Lorg/mariadb/jdbc/internal/com/read/resultset/ColumnDefinition;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 
+org/mariadb/jdbc/MariaDbResultSetMetaData.unwrap(Ljava/lang/Class;)Ljava/lang/Object;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 
+org/mariadb/jdbc/MariaDbResultSetMetaData.isWrapperFor(Ljava/lang/Class;)Z
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/ClientSidePreparedStatement.<init>(Lorg/mariadb/jdbc/MariaDbConnection;Ljava/lang/String;IIILorg/mariadb/jdbc/internal/util/exceptions/ExceptionFactory;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 
+org/mariadb/jdbc/ClientSidePreparedStatement.clone(Lorg/mariadb/jdbc/MariaDbConnection;)Lorg/mariadb/jdbc/ClientSidePreparedStatement;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 
+org/mariadb/jdbc/ClientSidePreparedStatement.execute()Z
+SliceCriterion: 0, 1, 2, 3, 4, 
+org/mariadb/jdbc/ClientSidePreparedStatement.executeQuery()Ljava/sql/ResultSet;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 
+org/mariadb/jdbc/ClientSidePreparedStatement.executeUpdate()I
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 
+org/mariadb/jdbc/ClientSidePreparedStatement.executeInternal(I)Z
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 
+org/mariadb/jdbc/ClientSidePreparedStatement.addBatch()V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 
+org/mariadb/jdbc/ClientSidePreparedStatement.addBatch(Ljava/lang/String;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 
+org/mariadb/jdbc/ClientSidePreparedStatement.clearBatch()V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 
+Independent slices from [0, 1, 2, 9] and [3, 4, 5, 6, 7, 8, 9]
+[LocalLoad(Ljava/lang/Object;,0), Get(Ljava/util/List;,NONSTATIC,Lorg/mariadb/jdbc/ClientSidePreparedStatement;,parameterList), Invoke(INTERFACE,Ljava/util/List;,clear,()V), Return(V)]
+[LocalLoad(Ljava/lang/Object;,0), LocalLoad(Ljava/lang/Object;,0), Get(Lorg/mariadb/jdbc/internal/util/dao/ClientPrepareResult;,NONSTATIC,Lorg/mariadb/jdbc/ClientSidePreparedStatement;,prepareResult), Invoke(VIRTUAL,Lorg/mariadb/jdbc/internal/util/dao/ClientPrepareResult;,getParamCount,()I), New([Lorg/mariadb/jdbc/internal/com/send/parameters/ParameterHolder;,1), Put([Lorg/mariadb/jdbc/internal/com/send/parameters/ParameterHolder;,NONSTATIC,Lorg/mariadb/jdbc/ClientSidePreparedStatement;,parameters), Return(V)]
+
+Independent slices from [3, 4, 5, 6, 7, 8, 9] and [0, 1, 2, 9]
+[LocalLoad(Ljava/lang/Object;,0), LocalLoad(Ljava/lang/Object;,0), Get(Lorg/mariadb/jdbc/internal/util/dao/ClientPrepareResult;,NONSTATIC,Lorg/mariadb/jdbc/ClientSidePreparedStatement;,prepareResult), Invoke(VIRTUAL,Lorg/mariadb/jdbc/internal/util/dao/ClientPrepareResult;,getParamCount,()I), New([Lorg/mariadb/jdbc/internal/com/send/parameters/ParameterHolder;,1), Put([Lorg/mariadb/jdbc/internal/com/send/parameters/ParameterHolder;,NONSTATIC,Lorg/mariadb/jdbc/ClientSidePreparedStatement;,parameters), Return(V)]
+[LocalLoad(Ljava/lang/Object;,0), Get(Ljava/util/List;,NONSTATIC,Lorg/mariadb/jdbc/ClientSidePreparedStatement;,parameterList), Invoke(INTERFACE,Ljava/util/List;,clear,()V), Return(V)]
+
+org/mariadb/jdbc/ClientSidePreparedStatement.executeBatch()[I
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 
+org/mariadb/jdbc/ClientSidePreparedStatement.getServerUpdateCounts()[I
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 
+org/mariadb/jdbc/ClientSidePreparedStatement.executeLargeBatch()[J
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 
+org/mariadb/jdbc/ClientSidePreparedStatement.executeInternalBatch(I)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 
+org/mariadb/jdbc/ClientSidePreparedStatement.getMetaData()Ljava/sql/ResultSetMetaData;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 
+org/mariadb/jdbc/ClientSidePreparedStatement.setParameter(ILorg/mariadb/jdbc/internal/com/send/parameters/ParameterHolder;)V
+SliceCriterion: 0: Timeout or Error
+org/mariadb/jdbc/ClientSidePreparedStatement.getParameterMetaData()Ljava/sql/ParameterMetaData;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 
+org/mariadb/jdbc/ClientSidePreparedStatement.loadParametersData()V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 
+org/mariadb/jdbc/ClientSidePreparedStatement.clearParameters()V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/ClientSidePreparedStatement.close()V
+SliceCriterion: 0, 1, 2, 
+org/mariadb/jdbc/ClientSidePreparedStatement.getParameterCount()I
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/ClientSidePreparedStatement.toString()Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 
+org/mariadb/jdbc/ClientSidePreparedStatement.getPrepareResult()Lorg/mariadb/jdbc/internal/util/dao/ClientPrepareResult;
+SliceCriterion: 0, 1, 2, 
+org/mariadb/jdbc/ClientSidePreparedStatement.clone(Lorg/mariadb/jdbc/MariaDbConnection;)Lorg/mariadb/jdbc/BasePrepareStatement;
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/ClientSidePreparedStatement.clone(Lorg/mariadb/jdbc/MariaDbConnection;)Lorg/mariadb/jdbc/MariaDbStatement;
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/ClientSidePreparedStatement.<clinit>()V
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/MariaDbPoolDataSource.<init>(Ljava/lang/String;ILjava/lang/String;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 
+org/mariadb/jdbc/MariaDbPoolDataSource.<init>(Ljava/lang/String;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 
+org/mariadb/jdbc/MariaDbPoolDataSource.<init>()V
+SliceCriterion: 0, 1, 2, 
+org/mariadb/jdbc/MariaDbPoolDataSource.getDatabaseName()Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 
+org/mariadb/jdbc/MariaDbPoolDataSource.setDatabaseName(Ljava/lang/String;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 
+Independent slices from [0, 1, 5] and [2, 3, 4, 5]
+[LocalLoad(Ljava/lang/Object;,0), Invoke(SPECIAL,Lorg/mariadb/jdbc/MariaDbPoolDataSource;,checkNotInitialized,()V), Return(V)]
+[LocalLoad(Ljava/lang/Object;,0), LocalLoad(Ljava/lang/Object;,1), Put(Ljava/lang/String;,NONSTATIC,Lorg/mariadb/jdbc/MariaDbPoolDataSource;,database), Return(V)]
+
+Independent slices from [2, 3, 4, 5] and [0, 1, 5]
+[LocalLoad(Ljava/lang/Object;,0), LocalLoad(Ljava/lang/Object;,1), Put(Ljava/lang/String;,NONSTATIC,Lorg/mariadb/jdbc/MariaDbPoolDataSource;,database), Return(V)]
+[LocalLoad(Ljava/lang/Object;,0), Invoke(SPECIAL,Lorg/mariadb/jdbc/MariaDbPoolDataSource;,checkNotInitialized,()V), Return(V)]
+
+org/mariadb/jdbc/MariaDbPoolDataSource.checkNotInitialized()V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 
+org/mariadb/jdbc/MariaDbPoolDataSource.getUser()Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 
+org/mariadb/jdbc/MariaDbPoolDataSource.setUser(Ljava/lang/String;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 
+Independent slices from [0, 1, 5] and [2, 3, 4, 5]
+[LocalLoad(Ljava/lang/Object;,0), Invoke(SPECIAL,Lorg/mariadb/jdbc/MariaDbPoolDataSource;,checkNotInitialized,()V), Return(V)]
+[LocalLoad(Ljava/lang/Object;,0), LocalLoad(Ljava/lang/Object;,1), Put(Ljava/lang/String;,NONSTATIC,Lorg/mariadb/jdbc/MariaDbPoolDataSource;,user), Return(V)]
+
+Independent slices from [2, 3, 4, 5] and [0, 1, 5]
+[LocalLoad(Ljava/lang/Object;,0), LocalLoad(Ljava/lang/Object;,1), Put(Ljava/lang/String;,NONSTATIC,Lorg/mariadb/jdbc/MariaDbPoolDataSource;,user), Return(V)]
+[LocalLoad(Ljava/lang/Object;,0), Invoke(SPECIAL,Lorg/mariadb/jdbc/MariaDbPoolDataSource;,checkNotInitialized,()V), Return(V)]
+
+org/mariadb/jdbc/MariaDbPoolDataSource.setPassword(Ljava/lang/String;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 
+Independent slices from [0, 1, 5] and [2, 3, 4, 5]
+[LocalLoad(Ljava/lang/Object;,0), Invoke(SPECIAL,Lorg/mariadb/jdbc/MariaDbPoolDataSource;,checkNotInitialized,()V), Return(V)]
+[LocalLoad(Ljava/lang/Object;,0), LocalLoad(Ljava/lang/Object;,1), Put(Ljava/lang/String;,NONSTATIC,Lorg/mariadb/jdbc/MariaDbPoolDataSource;,password), Return(V)]
+
+Independent slices from [2, 3, 4, 5] and [0, 1, 5]
+[LocalLoad(Ljava/lang/Object;,0), LocalLoad(Ljava/lang/Object;,1), Put(Ljava/lang/String;,NONSTATIC,Lorg/mariadb/jdbc/MariaDbPoolDataSource;,password), Return(V)]
+[LocalLoad(Ljava/lang/Object;,0), Invoke(SPECIAL,Lorg/mariadb/jdbc/MariaDbPoolDataSource;,checkNotInitialized,()V), Return(V)]
+
+org/mariadb/jdbc/MariaDbPoolDataSource.getPort()I
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 
+org/mariadb/jdbc/MariaDbPoolDataSource.setPort(I)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+Independent slices from [0, 1, 6] and [2, 3, 4, 5, 6]
+[LocalLoad(Ljava/lang/Object;,0), Invoke(SPECIAL,Lorg/mariadb/jdbc/MariaDbPoolDataSource;,checkNotInitialized,()V), Return(V)]
+[LocalLoad(Ljava/lang/Object;,0), LocalLoad(I,1), Invoke(STATIC,Ljava/lang/Integer;,valueOf,(I)Ljava/lang/Integer;), Put(Ljava/lang/Integer;,NONSTATIC,Lorg/mariadb/jdbc/MariaDbPoolDataSource;,port), Return(V)]
+
+Independent slices from [2, 3, 4, 5, 6] and [0, 1, 6]
+[LocalLoad(Ljava/lang/Object;,0), LocalLoad(I,1), Invoke(STATIC,Ljava/lang/Integer;,valueOf,(I)Ljava/lang/Integer;), Put(Ljava/lang/Integer;,NONSTATIC,Lorg/mariadb/jdbc/MariaDbPoolDataSource;,port), Return(V)]
+[LocalLoad(Ljava/lang/Object;,0), Invoke(SPECIAL,Lorg/mariadb/jdbc/MariaDbPoolDataSource;,checkNotInitialized,()V), Return(V)]
+
+org/mariadb/jdbc/MariaDbPoolDataSource.getPortNumber()I
+SliceCriterion: 0, 1, 2, 
+org/mariadb/jdbc/MariaDbPoolDataSource.setPortNumber(I)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 
+Independent slices from [0, 1, 8] and [2, 3, 4, 5, 6, 7, 8]
+[LocalLoad(Ljava/lang/Object;,0), Invoke(SPECIAL,Lorg/mariadb/jdbc/MariaDbPoolDataSource;,checkNotInitialized,()V), Return(V)]
+[LocalLoad(I,1), Constant(I,0), ConditionalBranch(I,le,8), LocalLoad(Ljava/lang/Object;,0), LocalLoad(I,1), Invoke(VIRTUAL,Lorg/mariadb/jdbc/MariaDbPoolDataSource;,setPort,(I)V), Return(V)]
+
+Independent slices from [2, 3, 4, 5, 6, 7, 8] and [0, 1, 8]
+[LocalLoad(I,1), Constant(I,0), ConditionalBranch(I,le,8), LocalLoad(Ljava/lang/Object;,0), LocalLoad(I,1), Invoke(VIRTUAL,Lorg/mariadb/jdbc/MariaDbPoolDataSource;,setPort,(I)V), Return(V)]
+[LocalLoad(Ljava/lang/Object;,0), Invoke(SPECIAL,Lorg/mariadb/jdbc/MariaDbPoolDataSource;,checkNotInitialized,()V), Return(V)]
+
+org/mariadb/jdbc/MariaDbPoolDataSource.setUrl(Ljava/lang/String;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 
+Independent slices from [0, 1, 5] and [2, 3, 4, 5]
+[LocalLoad(Ljava/lang/Object;,0), Invoke(SPECIAL,Lorg/mariadb/jdbc/MariaDbPoolDataSource;,checkNotInitialized,()V), Return(V)]
+[LocalLoad(Ljava/lang/Object;,0), LocalLoad(Ljava/lang/Object;,1), Put(Ljava/lang/String;,NONSTATIC,Lorg/mariadb/jdbc/MariaDbPoolDataSource;,url), Return(V)]
+
+Independent slices from [2, 3, 4, 5] and [0, 1, 5]
+[LocalLoad(Ljava/lang/Object;,0), LocalLoad(Ljava/lang/Object;,1), Put(Ljava/lang/String;,NONSTATIC,Lorg/mariadb/jdbc/MariaDbPoolDataSource;,url), Return(V)]
+[LocalLoad(Ljava/lang/Object;,0), Invoke(SPECIAL,Lorg/mariadb/jdbc/MariaDbPoolDataSource;,checkNotInitialized,()V), Return(V)]
+
+org/mariadb/jdbc/MariaDbPoolDataSource.getServerName()Ljava/lang/String;
+SliceCriterion: 0: Timeout or Error
+org/mariadb/jdbc/MariaDbPoolDataSource.setServerName(Ljava/lang/String;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 
+Independent slices from [0, 1, 5] and [2, 3, 4, 5]
+[LocalLoad(Ljava/lang/Object;,0), Invoke(SPECIAL,Lorg/mariadb/jdbc/MariaDbPoolDataSource;,checkNotInitialized,()V), Return(V)]
+[LocalLoad(Ljava/lang/Object;,0), LocalLoad(Ljava/lang/Object;,1), Put(Ljava/lang/String;,NONSTATIC,Lorg/mariadb/jdbc/MariaDbPoolDataSource;,hostname), Return(V)]
+
+Independent slices from [2, 3, 4, 5] and [0, 1, 5]
+[LocalLoad(Ljava/lang/Object;,0), LocalLoad(Ljava/lang/Object;,1), Put(Ljava/lang/String;,NONSTATIC,Lorg/mariadb/jdbc/MariaDbPoolDataSource;,hostname), Return(V)]
+[LocalLoad(Ljava/lang/Object;,0), Invoke(SPECIAL,Lorg/mariadb/jdbc/MariaDbPoolDataSource;,checkNotInitialized,()V), Return(V)]
+
+org/mariadb/jdbc/MariaDbPoolDataSource.getConnection()Ljava/sql/Connection;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 
+org/mariadb/jdbc/MariaDbPoolDataSource.getConnection(Ljava/lang/String;Ljava/lang/String;)Ljava/sql/Connection;
+SliceCriterion: 0: Timeout or Error
+org/mariadb/jdbc/MariaDbPoolDataSource.getPooledConnection()Ljavax/sql/PooledConnection;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/MariaDbPoolDataSource.getPooledConnection(Ljava/lang/String;Ljava/lang/String;)Ljavax/sql/PooledConnection;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 
+org/mariadb/jdbc/MariaDbPoolDataSource.getLogWriter()Ljava/io/PrintWriter;
+SliceCriterion: 0, 1, 
+org/mariadb/jdbc/MariaDbPoolDataSource.setLogWriter(Ljava/io/PrintWriter;)V
+SliceCriterion: 0, 
+org/mariadb/jdbc/MariaDbPoolDataSource.getLoginTimeout()I
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 
+org/mariadb/jdbc/MariaDbPoolDataSource.setLoginTimeout(I)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 
+Independent slices from [0, 1, 8] and [2, 3, 4, 5, 6, 7, 8]
+[LocalLoad(Ljava/lang/Object;,0), Invoke(SPECIAL,Lorg/mariadb/jdbc/MariaDbPoolDataSource;,checkNotInitialized,()V), Return(V)]
+[LocalLoad(Ljava/lang/Object;,0), LocalLoad(I,1), Constant(I,1000), BinaryOp(I,mul), Invoke(STATIC,Ljava/lang/Integer;,valueOf,(I)Ljava/lang/Integer;), Put(Ljava/lang/Integer;,NONSTATIC,Lorg/mariadb/jdbc/MariaDbPoolDataSource;,connectTimeout), Return(V)]
+
+Independent slices from [2, 3, 4, 5, 6, 7, 8] and [0, 1, 8]
+[LocalLoad(Ljava/lang/Object;,0), LocalLoad(I,1), Constant(I,1000), BinaryOp(I,mul), Invoke(STATIC,Ljava/lang/Integer;,valueOf,(I)Ljava/lang/Integer;), Put(Ljava/lang/Integer;,NONSTATIC,Lorg/mariadb/jdbc/MariaDbPoolDataSource;,connectTimeout), Return(V)]
+[LocalLoad(Ljava/lang/Object;,0), Invoke(SPECIAL,Lorg/mariadb/jdbc/MariaDbPoolDataSource;,checkNotInitialized,()V), Return(V)]
+
+org/mariadb/jdbc/MariaDbPoolDataSource.unwrap(Ljava/lang/Class;)Ljava/lang/Object;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 
+org/mariadb/jdbc/MariaDbPoolDataSource.isWrapperFor(Ljava/lang/Class;)Z
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/MariaDbPoolDataSource.getXAConnection()Ljavax/sql/XAConnection;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/MariaDbPoolDataSource.getXAConnection(Ljava/lang/String;Ljava/lang/String;)Ljavax/sql/XAConnection;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 
+org/mariadb/jdbc/MariaDbPoolDataSource.getParentLogger()Ljava/util/logging/Logger;
+SliceCriterion: 0, 1, 
+org/mariadb/jdbc/MariaDbPoolDataSource.getUrlParser()Lorg/mariadb/jdbc/UrlParser;
+SliceCriterion: 0, 1, 2, 
+org/mariadb/jdbc/MariaDbPoolDataSource.getPoolName()Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 
+org/mariadb/jdbc/MariaDbPoolDataSource.setPoolName(Ljava/lang/String;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 
+Independent slices from [0, 1, 5] and [2, 3, 4, 5]
+[LocalLoad(Ljava/lang/Object;,0), Invoke(SPECIAL,Lorg/mariadb/jdbc/MariaDbPoolDataSource;,checkNotInitialized,()V), Return(V)]
+[LocalLoad(Ljava/lang/Object;,0), LocalLoad(Ljava/lang/Object;,1), Put(Ljava/lang/String;,NONSTATIC,Lorg/mariadb/jdbc/MariaDbPoolDataSource;,poolName), Return(V)]
+
+Independent slices from [2, 3, 4, 5] and [0, 1, 5]
+[LocalLoad(Ljava/lang/Object;,0), LocalLoad(Ljava/lang/Object;,1), Put(Ljava/lang/String;,NONSTATIC,Lorg/mariadb/jdbc/MariaDbPoolDataSource;,poolName), Return(V)]
+[LocalLoad(Ljava/lang/Object;,0), Invoke(SPECIAL,Lorg/mariadb/jdbc/MariaDbPoolDataSource;,checkNotInitialized,()V), Return(V)]
+
+org/mariadb/jdbc/MariaDbPoolDataSource.getMaxPoolSize()I
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 
+org/mariadb/jdbc/MariaDbPoolDataSource.setMaxPoolSize(I)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+Independent slices from [0, 1, 6] and [2, 3, 4, 5, 6]
+[LocalLoad(Ljava/lang/Object;,0), Invoke(SPECIAL,Lorg/mariadb/jdbc/MariaDbPoolDataSource;,checkNotInitialized,()V), Return(V)]
+[LocalLoad(Ljava/lang/Object;,0), LocalLoad(I,1), Invoke(STATIC,Ljava/lang/Integer;,valueOf,(I)Ljava/lang/Integer;), Put(Ljava/lang/Integer;,NONSTATIC,Lorg/mariadb/jdbc/MariaDbPoolDataSource;,maxPoolSize), Return(V)]
+
+Independent slices from [2, 3, 4, 5, 6] and [0, 1, 6]
+[LocalLoad(Ljava/lang/Object;,0), LocalLoad(I,1), Invoke(STATIC,Ljava/lang/Integer;,valueOf,(I)Ljava/lang/Integer;), Put(Ljava/lang/Integer;,NONSTATIC,Lorg/mariadb/jdbc/MariaDbPoolDataSource;,maxPoolSize), Return(V)]
+[LocalLoad(Ljava/lang/Object;,0), Invoke(SPECIAL,Lorg/mariadb/jdbc/MariaDbPoolDataSource;,checkNotInitialized,()V), Return(V)]
+
+org/mariadb/jdbc/MariaDbPoolDataSource.getMinPoolSize()I
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 
+org/mariadb/jdbc/MariaDbPoolDataSource.setMinPoolSize(I)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+Independent slices from [0, 1, 6] and [2, 3, 4, 5, 6]
+[LocalLoad(Ljava/lang/Object;,0), Invoke(SPECIAL,Lorg/mariadb/jdbc/MariaDbPoolDataSource;,checkNotInitialized,()V), Return(V)]
+[LocalLoad(Ljava/lang/Object;,0), LocalLoad(I,1), Invoke(STATIC,Ljava/lang/Integer;,valueOf,(I)Ljava/lang/Integer;), Put(Ljava/lang/Integer;,NONSTATIC,Lorg/mariadb/jdbc/MariaDbPoolDataSource;,minPoolSize), Return(V)]
+
+Independent slices from [2, 3, 4, 5, 6] and [0, 1, 6]
+[LocalLoad(Ljava/lang/Object;,0), LocalLoad(I,1), Invoke(STATIC,Ljava/lang/Integer;,valueOf,(I)Ljava/lang/Integer;), Put(Ljava/lang/Integer;,NONSTATIC,Lorg/mariadb/jdbc/MariaDbPoolDataSource;,minPoolSize), Return(V)]
+[LocalLoad(Ljava/lang/Object;,0), Invoke(SPECIAL,Lorg/mariadb/jdbc/MariaDbPoolDataSource;,checkNotInitialized,()V), Return(V)]
+
+org/mariadb/jdbc/MariaDbPoolDataSource.getMaxIdleTime()I
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 
+org/mariadb/jdbc/MariaDbPoolDataSource.setMaxIdleTime(I)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+Independent slices from [0, 1, 6] and [2, 3, 4, 5, 6]
+[LocalLoad(Ljava/lang/Object;,0), Invoke(SPECIAL,Lorg/mariadb/jdbc/MariaDbPoolDataSource;,checkNotInitialized,()V), Return(V)]
+[LocalLoad(Ljava/lang/Object;,0), LocalLoad(I,1), Invoke(STATIC,Ljava/lang/Integer;,valueOf,(I)Ljava/lang/Integer;), Put(Ljava/lang/Integer;,NONSTATIC,Lorg/mariadb/jdbc/MariaDbPoolDataSource;,maxIdleTime), Return(V)]
+
+Independent slices from [2, 3, 4, 5, 6] and [0, 1, 6]
+[LocalLoad(Ljava/lang/Object;,0), LocalLoad(I,1), Invoke(STATIC,Ljava/lang/Integer;,valueOf,(I)Ljava/lang/Integer;), Put(Ljava/lang/Integer;,NONSTATIC,Lorg/mariadb/jdbc/MariaDbPoolDataSource;,maxIdleTime), Return(V)]
+[LocalLoad(Ljava/lang/Object;,0), Invoke(SPECIAL,Lorg/mariadb/jdbc/MariaDbPoolDataSource;,checkNotInitialized,()V), Return(V)]
+
+org/mariadb/jdbc/MariaDbPoolDataSource.getStaticGlobal()Ljava/lang/Boolean;
+SliceCriterion: 0, 1, 2, 
+org/mariadb/jdbc/MariaDbPoolDataSource.setStaticGlobal(Ljava/lang/Boolean;)V
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/MariaDbPoolDataSource.getPoolValidMinDelay()Ljava/lang/Integer;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 
+org/mariadb/jdbc/MariaDbPoolDataSource.setPoolValidMinDelay(Ljava/lang/Integer;)V
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/MariaDbPoolDataSource.initializeUrlParser()V
+SliceCriterion: 0: Timeout or Error
+org/mariadb/jdbc/MariaDbPoolDataSource.close()V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 
+org/mariadb/jdbc/MariaDbPoolDataSource.initialize()V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 
+org/mariadb/jdbc/MariaDbPoolDataSource.testGetConnectionIdleThreadIds()Ljava/util/List;
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/MariaDbPoolDataSource.testForceMaxIdleTime(I)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 
+org/mariadb/jdbc/MariaDbPoolDataSource.testGetPool()Lorg/mariadb/jdbc/internal/util/pool/Pool;
+SliceCriterion: 0, 1, 2, 
+org/mariadb/jdbc/MariaDbFunctionStatement.<init>(Lorg/mariadb/jdbc/MariaDbConnection;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IILorg/mariadb/jdbc/internal/util/exceptions/ExceptionFactory;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 
+org/mariadb/jdbc/MariaDbFunctionStatement.getResult()Lorg/mariadb/jdbc/internal/com/read/resultset/SelectResultSet;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 
+org/mariadb/jdbc/MariaDbFunctionStatement.clone(Lorg/mariadb/jdbc/MariaDbConnection;)Lorg/mariadb/jdbc/MariaDbFunctionStatement;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 
+org/mariadb/jdbc/MariaDbFunctionStatement.executeUpdate()I
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 
+org/mariadb/jdbc/MariaDbFunctionStatement.retrieveOutputResult()V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 
+org/mariadb/jdbc/MariaDbFunctionStatement.setParameter(ILorg/mariadb/jdbc/internal/com/send/parameters/ParameterHolder;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/MariaDbFunctionStatement.executeQuery()Ljava/sql/ResultSet;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 
+org/mariadb/jdbc/MariaDbFunctionStatement.execute()Z
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 
+org/mariadb/jdbc/MariaDbFunctionStatement.clone(Lorg/mariadb/jdbc/MariaDbConnection;)Lorg/mariadb/jdbc/CallableFunctionStatement;
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/MariaDbFunctionStatement.clone(Lorg/mariadb/jdbc/MariaDbConnection;)Lorg/mariadb/jdbc/ClientSidePreparedStatement;
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/MariaDbFunctionStatement.clone(Lorg/mariadb/jdbc/MariaDbConnection;)Lorg/mariadb/jdbc/BasePrepareStatement;
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/MariaDbFunctionStatement.clone(Lorg/mariadb/jdbc/MariaDbConnection;)Lorg/mariadb/jdbc/MariaDbStatement;
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/MariaDbFunctionStatement.clone(Lorg/mariadb/jdbc/MariaDbConnection;)Lorg/mariadb/jdbc/internal/util/dao/CloneableCallableStatement;
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/MariaDbConnection.<init>(Lorg/mariadb/jdbc/internal/protocol/Protocol;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 
+org/mariadb/jdbc/MariaDbConnection.newConnection(Lorg/mariadb/jdbc/UrlParser;Lorg/mariadb/jdbc/internal/util/pool/GlobalStateInfo;)Lorg/mariadb/jdbc/MariaDbConnection;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 
+org/mariadb/jdbc/MariaDbConnection.quoteIdentifier(Ljava/lang/String;)Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 
+org/mariadb/jdbc/MariaDbConnection.unquoteIdentifier(Ljava/lang/String;)Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 
+org/mariadb/jdbc/MariaDbConnection.getProtocol()Lorg/mariadb/jdbc/internal/protocol/Protocol;
+SliceCriterion: 0, 1, 2, 
+org/mariadb/jdbc/MariaDbConnection.createStatement()Ljava/sql/Statement;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 
+org/mariadb/jdbc/MariaDbConnection.createStatement(II)Ljava/sql/Statement;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 
+org/mariadb/jdbc/MariaDbConnection.createStatement(III)Ljava/sql/Statement;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 
+org/mariadb/jdbc/MariaDbConnection.checkConnection()V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 
+org/mariadb/jdbc/MariaDbConnection.clientPrepareStatement(Ljava/lang/String;)Lorg/mariadb/jdbc/ClientSidePreparedStatement;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 
+org/mariadb/jdbc/MariaDbConnection.serverPrepareStatement(Ljava/lang/String;)Lorg/mariadb/jdbc/ServerSidePreparedStatement;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 
+org/mariadb/jdbc/MariaDbConnection.prepareStatement(Ljava/lang/String;)Ljava/sql/PreparedStatement;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/MariaDbConnection.prepareStatement(Ljava/lang/String;II)Ljava/sql/PreparedStatement;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/MariaDbConnection.prepareStatement(Ljava/lang/String;III)Ljava/sql/PreparedStatement;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/MariaDbConnection.prepareStatement(Ljava/lang/String;I)Ljava/sql/PreparedStatement;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/MariaDbConnection.prepareStatement(Ljava/lang/String;[I)Ljava/sql/PreparedStatement;
+SliceCriterion: 0, 1, 2, 3, 4, 
+org/mariadb/jdbc/MariaDbConnection.prepareStatement(Ljava/lang/String;[Ljava/lang/String;)Ljava/sql/PreparedStatement;
+SliceCriterion: 0, 1, 2, 3, 4, 
+org/mariadb/jdbc/MariaDbConnection.internalPrepareStatement(Ljava/lang/String;III)Ljava/sql/PreparedStatement;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 
+org/mariadb/jdbc/MariaDbConnection.prepareCall(Ljava/lang/String;)Ljava/sql/CallableStatement;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 
+org/mariadb/jdbc/MariaDbConnection.prepareCall(Ljava/lang/String;II)Ljava/sql/CallableStatement;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 
+org/mariadb/jdbc/MariaDbConnection.prepareCall(Ljava/lang/String;III)Ljava/sql/CallableStatement;
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/MariaDbConnection.createNewCallableStatement(Ljava/lang/String;Ljava/lang/String;ZLjava/lang/String;Ljava/lang/String;Ljava/lang/String;IILorg/mariadb/jdbc/internal/util/exceptions/ExceptionFactory;)Ljava/sql/CallableStatement;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 
+org/mariadb/jdbc/MariaDbConnection.nativeSQL(Ljava/lang/String;)Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 3, 4, 
+org/mariadb/jdbc/MariaDbConnection.getAutoCommit()Z
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/MariaDbConnection.setAutoCommit(Z)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 
+org/mariadb/jdbc/MariaDbConnection.commit()V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 
+org/mariadb/jdbc/MariaDbConnection.rollback()V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 
+org/mariadb/jdbc/MariaDbConnection.rollback(Ljava/sql/Savepoint;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 
+org/mariadb/jdbc/MariaDbConnection.close()V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 
+org/mariadb/jdbc/MariaDbConnection.isClosed()Z
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/MariaDbConnection.getMetaData()Ljava/sql/DatabaseMetaData;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 
+org/mariadb/jdbc/MariaDbConnection.isReadOnly()Z
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/MariaDbConnection.setReadOnly(Z)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 
+org/mariadb/jdbc/MariaDbConnection.getCatalog()Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/MariaDbConnection.setCatalog(Ljava/lang/String;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 
+org/mariadb/jdbc/MariaDbConnection.isServerMariaDb()Z
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/MariaDbConnection.versionGreaterOrEqual(III)Z
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/MariaDbConnection.getTransactionIsolation()I
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 
+org/mariadb/jdbc/MariaDbConnection.setTransactionIsolation(I)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 
+org/mariadb/jdbc/MariaDbConnection.getWarnings()Ljava/sql/SQLWarning;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 
+org/mariadb/jdbc/MariaDbConnection.clearWarnings()V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 
+org/mariadb/jdbc/MariaDbConnection.reenableWarnings()V
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/MariaDbConnection.getTypeMap()Ljava/util/Map;
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/MariaDbConnection.setTypeMap(Ljava/util/Map;)V
+SliceCriterion: 0, 1, 2, 3, 4, 
+org/mariadb/jdbc/MariaDbConnection.getHoldability()I
+SliceCriterion: 0, 1, 
+org/mariadb/jdbc/MariaDbConnection.setHoldability(I)V
+SliceCriterion: 0, 
+org/mariadb/jdbc/MariaDbConnection.setSavepoint()Ljava/sql/Savepoint;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/MariaDbConnection.setSavepoint(Ljava/lang/String;)Ljava/sql/Savepoint;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 
+org/mariadb/jdbc/MariaDbConnection.releaseSavepoint(Ljava/sql/Savepoint;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 
+org/mariadb/jdbc/MariaDbConnection.createClob()Ljava/sql/Clob;
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/MariaDbConnection.createBlob()Ljava/sql/Blob;
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/MariaDbConnection.createNClob()Ljava/sql/NClob;
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/MariaDbConnection.createSQLXML()Ljava/sql/SQLXML;
+SliceCriterion: 0, 1, 2, 3, 4, 
+org/mariadb/jdbc/MariaDbConnection.isValid(I)Z
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 
+org/mariadb/jdbc/MariaDbConnection.checkClientClose(Ljava/lang/String;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 
+org/mariadb/jdbc/MariaDbConnection.checkClientReconnect(Ljava/lang/String;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 
+org/mariadb/jdbc/MariaDbConnection.checkClientValidProperty(Ljava/lang/String;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 
+org/mariadb/jdbc/MariaDbConnection.buildClientQuery(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 
+org/mariadb/jdbc/MariaDbConnection.setClientInfo(Ljava/lang/String;Ljava/lang/String;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 
+org/mariadb/jdbc/MariaDbConnection.getClientInfo()Ljava/util/Properties;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 
+org/mariadb/jdbc/MariaDbConnection.setClientInfo(Ljava/util/Properties;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 
+org/mariadb/jdbc/MariaDbConnection.getClientInfo(Ljava/lang/String;)Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 
+org/mariadb/jdbc/MariaDbConnection.createArrayOf(Ljava/lang/String;[Ljava/lang/Object;)Ljava/sql/Array;
+SliceCriterion: 0, 1, 2, 3, 4, 
+org/mariadb/jdbc/MariaDbConnection.createStruct(Ljava/lang/String;[Ljava/lang/Object;)Ljava/sql/Struct;
+SliceCriterion: 0, 1, 2, 3, 4, 
+org/mariadb/jdbc/MariaDbConnection.unwrap(Ljava/lang/Class;)Ljava/lang/Object;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 
+org/mariadb/jdbc/MariaDbConnection.isWrapperFor(Ljava/lang/Class;)Z
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/MariaDbConnection.getUsername()Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/MariaDbConnection.getHostname()Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/MariaDbConnection.getPort()I
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/MariaDbConnection.getPinGlobalTxToPhysicalConnection()Z
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/MariaDbConnection.setHostFailed()V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 
+org/mariadb/jdbc/MariaDbConnection.getLowercaseTableNames()I
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 
+org/mariadb/jdbc/MariaDbConnection.abort(Ljava/util/concurrent/Executor;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 
+org/mariadb/jdbc/MariaDbConnection.getNetworkTimeout()I
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/MariaDbConnection.getSchema()Ljava/lang/String;
+SliceCriterion: 0, 1, 
+org/mariadb/jdbc/MariaDbConnection.setSchema(Ljava/lang/String;)V
+SliceCriterion: 0, 
+org/mariadb/jdbc/MariaDbConnection.setNetworkTimeout(Ljava/util/concurrent/Executor;I)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 
+org/mariadb/jdbc/MariaDbConnection.getServerThreadId()J
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/MariaDbConnection.canUseServerTimeout()Z
+SliceCriterion: 0, 1, 2, 
+org/mariadb/jdbc/MariaDbConnection.setDefaultTransactionIsolation(I)V
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/MariaDbConnection.reset()V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 
+org/mariadb/jdbc/MariaDbConnection.includeDeadLockInfo()Z
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/MariaDbConnection.includeThreadsTraces()Z
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/MariaDbConnection.<clinit>()V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 
+org/mariadb/jdbc/MariaDbDataSource.<init>(Ljava/lang/String;ILjava/lang/String;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 
+org/mariadb/jdbc/MariaDbDataSource.<init>(Ljava/lang/String;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 
+org/mariadb/jdbc/MariaDbDataSource.<init>()V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/MariaDbDataSource.getDatabaseName()Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 
+org/mariadb/jdbc/MariaDbDataSource.setDatabaseName(Ljava/lang/String;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 
+Independent slices from [0, 1, 2, 5] and [3, 4, 5]
+[LocalLoad(Ljava/lang/Object;,0), LocalLoad(Ljava/lang/Object;,1), Put(Ljava/lang/String;,NONSTATIC,Lorg/mariadb/jdbc/MariaDbDataSource;,database), Return(V)]
+[LocalLoad(Ljava/lang/Object;,0), Invoke(SPECIAL,Lorg/mariadb/jdbc/MariaDbDataSource;,reInitializeIfNeeded,()V), Return(V)]
+
+Independent slices from [3, 4, 5] and [0, 1, 2, 5]
+[LocalLoad(Ljava/lang/Object;,0), Invoke(SPECIAL,Lorg/mariadb/jdbc/MariaDbDataSource;,reInitializeIfNeeded,()V), Return(V)]
+[LocalLoad(Ljava/lang/Object;,0), LocalLoad(Ljava/lang/Object;,1), Put(Ljava/lang/String;,NONSTATIC,Lorg/mariadb/jdbc/MariaDbDataSource;,database), Return(V)]
+
+org/mariadb/jdbc/MariaDbDataSource.getUser()Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 
+org/mariadb/jdbc/MariaDbDataSource.setUser(Ljava/lang/String;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 
+Independent slices from [0, 1, 2, 5] and [3, 4, 5]
+[LocalLoad(Ljava/lang/Object;,0), LocalLoad(Ljava/lang/Object;,1), Put(Ljava/lang/String;,NONSTATIC,Lorg/mariadb/jdbc/MariaDbDataSource;,user), Return(V)]
+[LocalLoad(Ljava/lang/Object;,0), Invoke(SPECIAL,Lorg/mariadb/jdbc/MariaDbDataSource;,reInitializeIfNeeded,()V), Return(V)]
+
+Independent slices from [3, 4, 5] and [0, 1, 2, 5]
+[LocalLoad(Ljava/lang/Object;,0), Invoke(SPECIAL,Lorg/mariadb/jdbc/MariaDbDataSource;,reInitializeIfNeeded,()V), Return(V)]
+[LocalLoad(Ljava/lang/Object;,0), LocalLoad(Ljava/lang/Object;,1), Put(Ljava/lang/String;,NONSTATIC,Lorg/mariadb/jdbc/MariaDbDataSource;,user), Return(V)]
+
+org/mariadb/jdbc/MariaDbDataSource.getUserName()Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 
+org/mariadb/jdbc/MariaDbDataSource.setUserName(Ljava/lang/String;)V
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/MariaDbDataSource.setPassword(Ljava/lang/String;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 
+Independent slices from [0, 1, 2, 5] and [3, 4, 5]
+[LocalLoad(Ljava/lang/Object;,0), LocalLoad(Ljava/lang/Object;,1), Put(Ljava/lang/String;,NONSTATIC,Lorg/mariadb/jdbc/MariaDbDataSource;,password), Return(V)]
+[LocalLoad(Ljava/lang/Object;,0), Invoke(SPECIAL,Lorg/mariadb/jdbc/MariaDbDataSource;,reInitializeIfNeeded,()V), Return(V)]
+
+Independent slices from [3, 4, 5] and [0, 1, 2, 5]
+[LocalLoad(Ljava/lang/Object;,0), Invoke(SPECIAL,Lorg/mariadb/jdbc/MariaDbDataSource;,reInitializeIfNeeded,()V), Return(V)]
+[LocalLoad(Ljava/lang/Object;,0), LocalLoad(Ljava/lang/Object;,1), Put(Ljava/lang/String;,NONSTATIC,Lorg/mariadb/jdbc/MariaDbDataSource;,password), Return(V)]
+
+org/mariadb/jdbc/MariaDbDataSource.getPort()I
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 
+org/mariadb/jdbc/MariaDbDataSource.setPort(I)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+Independent slices from [0, 1, 2, 3, 6] and [4, 5, 6]
+[LocalLoad(Ljava/lang/Object;,0), LocalLoad(I,1), Invoke(STATIC,Ljava/lang/Integer;,valueOf,(I)Ljava/lang/Integer;), Put(Ljava/lang/Integer;,NONSTATIC,Lorg/mariadb/jdbc/MariaDbDataSource;,port), Return(V)]
+[LocalLoad(Ljava/lang/Object;,0), Invoke(SPECIAL,Lorg/mariadb/jdbc/MariaDbDataSource;,reInitializeIfNeeded,()V), Return(V)]
+
+Independent slices from [4, 5, 6] and [0, 1, 2, 3, 6]
+[LocalLoad(Ljava/lang/Object;,0), Invoke(SPECIAL,Lorg/mariadb/jdbc/MariaDbDataSource;,reInitializeIfNeeded,()V), Return(V)]
+[LocalLoad(Ljava/lang/Object;,0), LocalLoad(I,1), Invoke(STATIC,Ljava/lang/Integer;,valueOf,(I)Ljava/lang/Integer;), Put(Ljava/lang/Integer;,NONSTATIC,Lorg/mariadb/jdbc/MariaDbDataSource;,port), Return(V)]
+
+org/mariadb/jdbc/MariaDbDataSource.getPortNumber()I
+SliceCriterion: 0, 1, 2, 
+org/mariadb/jdbc/MariaDbDataSource.setPortNumber(I)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/MariaDbDataSource.setProperties(Ljava/lang/String;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 
+Independent slices from [0, 1, 2, 5] and [3, 4, 5]
+[LocalLoad(Ljava/lang/Object;,0), LocalLoad(Ljava/lang/Object;,1), Put(Ljava/lang/String;,NONSTATIC,Lorg/mariadb/jdbc/MariaDbDataSource;,properties), Return(V)]
+[LocalLoad(Ljava/lang/Object;,0), Invoke(SPECIAL,Lorg/mariadb/jdbc/MariaDbDataSource;,reInitializeIfNeeded,()V), Return(V)]
+
+Independent slices from [3, 4, 5] and [0, 1, 2, 5]
+[LocalLoad(Ljava/lang/Object;,0), Invoke(SPECIAL,Lorg/mariadb/jdbc/MariaDbDataSource;,reInitializeIfNeeded,()V), Return(V)]
+[LocalLoad(Ljava/lang/Object;,0), LocalLoad(Ljava/lang/Object;,1), Put(Ljava/lang/String;,NONSTATIC,Lorg/mariadb/jdbc/MariaDbDataSource;,properties), Return(V)]
+
+org/mariadb/jdbc/MariaDbDataSource.setUrl(Ljava/lang/String;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 
+Independent slices from [0, 1, 2, 5] and [3, 4, 5]
+[LocalLoad(Ljava/lang/Object;,0), LocalLoad(Ljava/lang/Object;,1), Put(Ljava/lang/String;,NONSTATIC,Lorg/mariadb/jdbc/MariaDbDataSource;,url), Return(V)]
+[LocalLoad(Ljava/lang/Object;,0), Invoke(SPECIAL,Lorg/mariadb/jdbc/MariaDbDataSource;,reInitializeIfNeeded,()V), Return(V)]
+
+Independent slices from [3, 4, 5] and [0, 1, 2, 5]
+[LocalLoad(Ljava/lang/Object;,0), Invoke(SPECIAL,Lorg/mariadb/jdbc/MariaDbDataSource;,reInitializeIfNeeded,()V), Return(V)]
+[LocalLoad(Ljava/lang/Object;,0), LocalLoad(Ljava/lang/Object;,1), Put(Ljava/lang/String;,NONSTATIC,Lorg/mariadb/jdbc/MariaDbDataSource;,url), Return(V)]
+
+org/mariadb/jdbc/MariaDbDataSource.getServerName()Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 
+org/mariadb/jdbc/MariaDbDataSource.setServerName(Ljava/lang/String;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 
+Independent slices from [0, 1, 2, 5] and [3, 4, 5]
+[LocalLoad(Ljava/lang/Object;,0), LocalLoad(Ljava/lang/Object;,1), Put(Ljava/lang/String;,NONSTATIC,Lorg/mariadb/jdbc/MariaDbDataSource;,hostname), Return(V)]
+[LocalLoad(Ljava/lang/Object;,0), Invoke(SPECIAL,Lorg/mariadb/jdbc/MariaDbDataSource;,reInitializeIfNeeded,()V), Return(V)]
+
+Independent slices from [3, 4, 5] and [0, 1, 2, 5]
+[LocalLoad(Ljava/lang/Object;,0), Invoke(SPECIAL,Lorg/mariadb/jdbc/MariaDbDataSource;,reInitializeIfNeeded,()V), Return(V)]
+[LocalLoad(Ljava/lang/Object;,0), LocalLoad(Ljava/lang/Object;,1), Put(Ljava/lang/String;,NONSTATIC,Lorg/mariadb/jdbc/MariaDbDataSource;,hostname), Return(V)]
+
+org/mariadb/jdbc/MariaDbDataSource.getConnection()Ljava/sql/Connection;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 
+org/mariadb/jdbc/MariaDbDataSource.getConnection(Ljava/lang/String;Ljava/lang/String;)Ljava/sql/Connection;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 
+org/mariadb/jdbc/MariaDbDataSource.getLogWriter()Ljava/io/PrintWriter;
+SliceCriterion: 0, 1, 
+org/mariadb/jdbc/MariaDbDataSource.setLogWriter(Ljava/io/PrintWriter;)V
+SliceCriterion: 0, 
+org/mariadb/jdbc/MariaDbDataSource.getLoginTimeout()I
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 
+org/mariadb/jdbc/MariaDbDataSource.setLoginTimeout(I)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/MariaDbDataSource.unwrap(Ljava/lang/Class;)Ljava/lang/Object;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 
+org/mariadb/jdbc/MariaDbDataSource.isWrapperFor(Ljava/lang/Class;)Z
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/MariaDbDataSource.getPooledConnection()Ljavax/sql/PooledConnection;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/MariaDbDataSource.getPooledConnection(Ljava/lang/String;Ljava/lang/String;)Ljavax/sql/PooledConnection;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 
+org/mariadb/jdbc/MariaDbDataSource.getXAConnection()Ljavax/sql/XAConnection;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/MariaDbDataSource.getXAConnection(Ljava/lang/String;Ljava/lang/String;)Ljavax/sql/XAConnection;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 
+org/mariadb/jdbc/MariaDbDataSource.getParentLogger()Ljava/util/logging/Logger;
+SliceCriterion: 0, 1, 
+org/mariadb/jdbc/MariaDbDataSource.getUrlParser()Lorg/mariadb/jdbc/UrlParser;
+SliceCriterion: 0, 1, 2, 
+org/mariadb/jdbc/MariaDbDataSource.reInitializeIfNeeded()V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 
+org/mariadb/jdbc/MariaDbDataSource.initialize()V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 
+org/mariadb/jdbc/tls/TlsSocketPluginLoader.<init>()V
+SliceCriterion: 0, 1, 2, 
+org/mariadb/jdbc/tls/TlsSocketPluginLoader.get(Ljava/lang/String;)Lorg/mariadb/jdbc/tls/TlsSocketPlugin;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 
+org/mariadb/jdbc/tls/TlsSocketPlugin.createSocket(Ljava/net/Socket;Ljavax/net/ssl/SSLSocketFactory;)Ljavax/net/ssl/SSLSocket;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.<init>(Ljava/sql/Connection;Lorg/mariadb/jdbc/UrlParser;)V
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.columnTypeClause(Lorg/mariadb/jdbc/util/Options;)Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.skipWhite([CI)I
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.parseIdentifier([CILorg/mariadb/jdbc/internal/util/dao/Identifier;)I
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.parseIdentifierList([CILjava/util/List;)I
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.skipKeyword([CILjava/lang/String;)I
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.getImportedKeyAction(Ljava/lang/String;)I
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.getImportedKeys(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lorg/mariadb/jdbc/MariaDbConnection;)Ljava/sql/ResultSet;
+SliceCriterion: 0: Timeout or Error
+org/mariadb/jdbc/MariaDbDatabaseMetaData.getImportedKeys(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/sql/ResultSet;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.dataTypeClause(Ljava/lang/String;)Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.executeQuery(Ljava/lang/String;)Ljava/sql/ResultSet;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.escapeQuote(Ljava/lang/String;)Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.catalogCond(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.patternCond(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.getPrimaryKeys(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/sql/ResultSet;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.getTables(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;)Ljava/sql/ResultSet;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.getColumns(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/sql/ResultSet;
+SliceCriterion: 0: Timeout or Error
+org/mariadb/jdbc/MariaDbDatabaseMetaData.getExportedKeys(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/sql/ResultSet;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.getImportedKeysUsingInformationSchema(Ljava/lang/String;Ljava/lang/String;)Ljava/sql/ResultSet;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.getImportedKeysUsingShowCreateTable(Ljava/lang/String;Ljava/lang/String;)Ljava/sql/ResultSet;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.getBestRowIdentifier(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IZ)Ljava/sql/ResultSet;
+SliceCriterion: 0: Timeout or Error
+org/mariadb/jdbc/MariaDbDatabaseMetaData.generatedKeyAlwaysReturned()Z
+SliceCriterion: 0, 1, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.getPseudoColumns(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/sql/ResultSet;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.allProceduresAreCallable()Z
+SliceCriterion: 0, 1, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.allTablesAreSelectable()Z
+SliceCriterion: 0, 1, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.getURL()Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.getUserName()Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 3, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.isReadOnly()Z
+SliceCriterion: 0, 1, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.nullsAreSortedHigh()Z
+SliceCriterion: 0, 1, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.nullsAreSortedLow()Z
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.nullsAreSortedAtStart()Z
+SliceCriterion: 0, 1, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.nullsAreSortedAtEnd()Z
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.getDatabaseProductName()Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.getDatabaseProductVersion()Ljava/lang/String;
+SliceCriterion: 0, 1, 2, 3, 4, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.getDriverName()Ljava/lang/String;
+SliceCriterion: 0, 1, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.getDriverVersion()Ljava/lang/String;
+SliceCriterion: 0, 1, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.getDriverMajorVersion()I
+SliceCriterion: 0, 1, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.getDriverMinorVersion()I
+SliceCriterion: 0, 1, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.usesLocalFiles()Z
+SliceCriterion: 0, 1, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.usesLocalFilePerTable()Z
+SliceCriterion: 0, 1, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.supportsMixedCaseIdentifiers()Z
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.storesUpperCaseIdentifiers()Z
+SliceCriterion: 0, 1, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.storesLowerCaseIdentifiers()Z
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.storesMixedCaseIdentifiers()Z
+SliceCriterion: 0, 1, 2, 3, 4, 5, 6, 7, 8, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.supportsMixedCaseQuotedIdentifiers()Z
+SliceCriterion: 0, 1, 2, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.storesUpperCaseQuotedIdentifiers()Z
+SliceCriterion: 0, 1, 2, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.storesLowerCaseQuotedIdentifiers()Z
+SliceCriterion: 0, 1, 2, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.storesMixedCaseQuotedIdentifiers()Z
+SliceCriterion: 0, 1, 2, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.getIdentifierQuoteString()Ljava/lang/String;
+SliceCriterion: 0, 1, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.getSQLKeywords()Ljava/lang/String;
+SliceCriterion: 0, 1, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.getNumericFunctions()Ljava/lang/String;
+SliceCriterion: 0, 1, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.getStringFunctions()Ljava/lang/String;
+SliceCriterion: 0, 1, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.getSystemFunctions()Ljava/lang/String;
+SliceCriterion: 0, 1, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.getTimeDateFunctions()Ljava/lang/String;
+SliceCriterion: 0, 1, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.getSearchStringEscape()Ljava/lang/String;
+SliceCriterion: 0, 1, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.getExtraNameCharacters()Ljava/lang/String;
+SliceCriterion: 0, 1, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.supportsAlterTableWithAddColumn()Z
+SliceCriterion: 0, 1, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.supportsAlterTableWithDropColumn()Z
+SliceCriterion: 0, 1, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.supportsColumnAliasing()Z
+SliceCriterion: 0, 1, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.nullPlusNonNullIsNull()Z
+SliceCriterion: 0, 1, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.supportsConvert()Z
+SliceCriterion: 0, 1, 
+org/mariadb/jdbc/MariaDbDatabaseMetaData.supportsConvert(II)Z
+Fatal error at index 1630
+Fatal error at index 1616
+Fatal error at index 1592
+Fatal error at index 1574
+Fatal error at index 1530
+Fatal error at index 1496
+Fatal error at index 1472
+Fatal error at index 1454
+Fatal error at index 1436
+Fatal error at index 1418
+Fatal error at index 1400
+Fatal error at index 1382
+Fatal error at index 1324
+Fatal error at index 1306
+Fatal error at index 1288
+Fatal error at index 1270
+Fatal error at index 1246
+Fatal error at index 1218
+Fatal error at index 1200
+Fatal error at index 1182
+Fatal error at index 1154
+Fatal error at index 1136
+Fatal error at index 1118
+Fatal error at index 1100
+Fatal error at index 1076
+Fatal error at index 1042
+Fatal error at index 1018
+Fatal error at index 990
+Fatal error at index 972
+Fatal error at index 954
+Fatal error at index 936
+Fatal error at index 918
+Fatal error at index 900
+Fatal error at index 882
+Fatal error at index 844
+Fatal error at index 826
+Fatal error at index 808
+Fatal error at index 790
+Fatal error at index 772
+Fatal error at index 748
+Fatal error at index 730
+Fatal error at index 712
+Fatal error at index 694
+Fatal error at index 670
+Fatal error at index 646
+Fatal error at index 628
+Fatal error at index 601
+Fatal error at index 583
+Fatal error at index 565
+Fatal error at index 547
+Fatal error at index 529
+Fatal error at index 505
+Fatal error at index 481
+Fatal error at index 463
+Fatal error at index 439
+Fatal error at index 415
+Fatal error at index 397
+Fatal error at index 379
+Fatal error at index 355
+Fatal error at index 331
+Fatal error at index 307
+Fatal error at index 273
+Fatal error at index 255
+Fatal error at index 237
+Fatal error at index 213
+Fatal error at index 189
+Fatal error at index 165
+Fatal error at index 141
+Fatal error at index 117
+Fatal error at index 93
+Fatal error at index 69
+Fatal error at index 51
+Fatal error at index 27
+Fatal error at index 4
+Feb 24, 2021 6:08:14 PM org.junit.platform.launcher.core.DefaultLauncher handleThrowable
+WARNING: TestEngine with ID 'junit-jupiter' failed to execute tests
+java.lang.OutOfMemoryError: Java heap space
+
+> Task :test FAILED
+FAILURE: Build failed with an exception.
+* What went wrong:
+Execution failed for task ':test'.
+> There were failing tests. See the report at: file:///DATA/VorhersageVonMethodenlaufzeiten/Projekte/Slicer/build/reports/tests/test/index.html
+* Try:
+Run with --stacktrace option to get the stack trace. Run with --info or --debug option to get more log output. Run with --scan to get full insights.
+* Get more help at https://help.gradle.org
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 7.0.
+Use '--warning-mode all' to show the individual deprecation warnings.
+See https://docs.gradle.org/6.1/userguide/command_line_interface.html#sec:command_line_warnings
+BUILD FAILED in 11m 52s
+4 actionable tasks: 2 executed, 2 up-to-date
+
+

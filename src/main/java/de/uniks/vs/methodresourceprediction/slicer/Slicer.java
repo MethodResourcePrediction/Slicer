@@ -1,19 +1,20 @@
 package de.uniks.vs.methodresourceprediction.slicer;
 
-import com.ibm.wala.shrikeBT.*;
 import com.ibm.wala.shrikeBT.Util;
+import com.ibm.wala.shrikeBT.*;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import de.uniks.vs.methodresourceprediction.slicer.dominance.*;
 import de.uniks.vs.methodresourceprediction.slicer.export.SliceWriter.ExportFormat;
 import de.uniks.vs.methodresourceprediction.utils.Utilities;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.*;
 import org.apache.commons.cli.*;
 import org.apache.commons.codec.DecoderException;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.io.ExportException;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
 
 public class Slicer {
   private String inputJar;
@@ -237,6 +238,25 @@ public class Slicer {
             initializerDependency,
             indexesToKeep,
             index);
+      }
+    }
+
+    // Keep parent constructor call
+    Block firstBlock = getBlockDependency().getBlockForIndex(0);
+    if (instructions[firstBlock.getLowestIndex()] instanceof LoadInstruction) {
+      if (instructions[firstBlock.getHighestIndex()] instanceof InvokeInstruction) {
+        InvokeInstruction invokeInstruction = (InvokeInstruction) instructions[firstBlock.getHighestIndex()];
+        if ("<init>".contentEquals(invokeInstruction.getMethodName())) {
+          slice(
+                  controlFlow,
+                  controlDependency,
+                  blockDependency,
+                  argumentDependency,
+                  dataDependency,
+                  initializerDependency,
+                  indexesToKeep,
+                  firstBlock.getHighestIndex());
+        }
       }
     }
 
@@ -544,29 +564,29 @@ public class Slicer {
           initializerDependency,
           dependendInstructions,
           dataDependentIndex);
-
-      // Check transitive data dependency for example thought this (-1)
-      // This can be the cast if a class in inherited and the constructor <init> is called on the
-      // parent class
-      for (Integer transitiveDataDependentIndex :
-          dataDependency.getAffectedDataDependencyInstructions(dataDependentIndex)) {
-        if (transitiveDataDependentIndex < 0
-            || transitiveDataDependentIndex > index
-            || initializerDependency
-                .getClassInitializerDependencyInstructions(transitiveDataDependentIndex)
-                .isEmpty()) {
-          continue;
-        }
-        slice(
-            controlFlow,
-            controlDependency,
-            blockDependency,
-            argumentDependency,
-            dataDependency,
-            initializerDependency,
-            dependendInstructions,
-            transitiveDataDependentIndex);
-      }
+//
+//      // Check transitive data dependency for example thought this (-1)
+//      // This can be the cast if a class in inherited and the constructor <init> is called on the
+//      // parent class
+//      for (Integer transitiveDataDependentIndex :
+//          dataDependency.getAffectedDataDependencyInstructions(dataDependentIndex)) {
+//        if (transitiveDataDependentIndex < 0
+//            || transitiveDataDependentIndex > index
+//            || initializerDependency
+//                .getClassInitializerDependencyInstructions(transitiveDataDependentIndex)
+//                .isEmpty()) {
+//          continue;
+//        }
+//        slice(
+//            controlFlow,
+//            controlDependency,
+//            blockDependency,
+//            argumentDependency,
+//            dataDependency,
+//            initializerDependency,
+//            dependendInstructions,
+//            transitiveDataDependentIndex);
+//      }
     }
 
     // TODO Why do we not need to consider control dependencies? Implied by the

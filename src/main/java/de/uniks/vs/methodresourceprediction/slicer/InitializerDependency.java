@@ -2,19 +2,18 @@ package de.uniks.vs.methodresourceprediction.slicer;
 
 import com.ibm.wala.shrikeBT.IInstruction;
 import com.ibm.wala.shrikeBT.InvokeInstruction;
-import com.ibm.wala.shrikeBT.LoadInstruction;
-import com.ibm.wala.shrikeBT.NewInstruction;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
-import de.uniks.vs.methodresourceprediction.utils.Utilities;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map.Entry;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.io.ComponentNameProvider;
 import org.jgrapht.io.ExportException;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Stack;
 
 public class InitializerDependency extends SlicerGraph<Integer> {
   private BlockDependency blockDependency;
@@ -31,59 +30,42 @@ public class InitializerDependency extends SlicerGraph<Integer> {
     }
     graph = new DefaultDirectedGraph<>(DefaultEdge.class);
 
+    StackTrace stackTrace = new StackTrace(blockDependency.getControlFlow().getMethodData());
+
     // At first iterate all blocks since the constructor to any new object is
     // usually encapsulated
     // TODO always?
     for (Block block : blockDependency.getBlocks()) {
-      // Iterate all instructions inside the block to find the New-Instruction
+      // Iterate all instructions inside the block to find an InvokeInstruction
       for (Entry<Integer, IInstruction> entry : block.getInstructions().entrySet()) {
         final Integer instructionIndex = entry.getKey();
         final IInstruction instruction = entry.getValue();
 
         graph.addVertex(instructionIndex);
 
-        // Check if the instruction creates or loads an object
-        if (!(instruction instanceof NewInstruction) && !(instruction instanceof LoadInstruction)) {
+        if (!(instruction instanceof InvokeInstruction)) {
           continue;
         }
-
-        // Next, find the constructor invoke instruction to the new-Instruction.
-        // It must be inside the same block, so the index runs until block end index.
-        for (int succeedingInstructionIndex = instructionIndex + 1;
-            succeedingInstructionIndex <= block.getHighestIndex();
-            succeedingInstructionIndex++) {
-          final IInstruction succeedingInstruction =
-              block.getInstructions().get(succeedingInstructionIndex);
-
-          // If there is an invoke Instruction found, check if it is the constructor call
-          if (succeedingInstruction instanceof InvokeInstruction) {
-            InvokeInstruction succeedingInvokeInstruction =
-                (InvokeInstruction) succeedingInstruction;
-            try {
-              if (instruction instanceof NewInstruction) {
-                // NewInstruction
-                if (Utilities.isInitializerInstruction(
-                    (NewInstruction) instruction, succeedingInvokeInstruction)) {
-                  // Finally the constructor instruction to any NewInstruction was found and
-                  // added to the graph.
-                  graph.addVertex(succeedingInstructionIndex);
-                  graph.addEdge(instructionIndex, succeedingInstructionIndex);
-                }
-              } else {
-                // LoadInstruction
-                if (Utilities.isInitializerInstruction(
-                    (LoadInstruction) instruction, succeedingInvokeInstruction)) {
-                  // Finally the constructor instruction to any LoadInstruction was found and
-                  // added to the graph.
-                  graph.addVertex(succeedingInstructionIndex);
-                  graph.addEdge(instructionIndex, succeedingInstructionIndex);
-                }
-              }
-            } catch (ClassNotFoundException e) {
-              e.printStackTrace();
-            }
-          }
+        // Check if the invoke instruction is calling the constructor
+        InvokeInstruction invokeInstruction = (InvokeInstruction) instruction;
+        if (!invokeInstruction.getMethodName().equals("<init>")) {
+          continue;
         }
+        // TODO What about static invocations? Can there be a static constructor call which is not
+        //  <clinit>?
+
+        // Get popped elements stack for InvokeInstruction to figure out on which top stack element
+        // the constructor is called
+        Stack<Integer> poppedStack = stackTrace.getPoppedStackAtInstructionIndex(instructionIndex);
+        if (poppedStack.isEmpty()) {
+          throw new RuntimeException(
+              "There must be an object popped by an constructor invoke instruction");
+        }
+        // The last popped element (arguments were popped before) is the object
+        int poppedInstructionIndex = poppedStack.firstElement();
+
+        graph.addVertex(poppedInstructionIndex);
+        graph.addEdge(poppedInstructionIndex, instructionIndex);
       }
     }
     return graph;

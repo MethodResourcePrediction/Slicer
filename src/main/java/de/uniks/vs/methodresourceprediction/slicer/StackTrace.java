@@ -1,9 +1,6 @@
 package de.uniks.vs.methodresourceprediction.slicer;
 
-import com.ibm.wala.shrikeBT.DupInstruction;
-import com.ibm.wala.shrikeBT.ExceptionHandler;
-import com.ibm.wala.shrikeBT.IInstruction;
-import com.ibm.wala.shrikeBT.Util;
+import com.ibm.wala.shrikeBT.*;
 import de.uniks.vs.methodresourceprediction.utils.Utilities;
 import java.util.*;
 import java.util.Map.Entry;
@@ -18,6 +15,13 @@ public class StackTrace implements Iterable<Entry<Integer, Stack<Integer>>> {
   private Map<Integer, Stack<Integer>> exceptionStackTrace;
   private Map<Integer, Stack<Integer>> poppedStackTrace;
   private Map<Integer, Stack<Integer>> pushedStackTrace;
+
+  public StackTrace(MethodData methodData) {
+    this.instructions = methodData.getInstructions();
+    this.exceptionHandlers = methodData.getHandlers();
+
+    createStackTraces();
+  }
 
   public StackTrace(IInstruction[] instructions, ExceptionHandler[][] exceptionHandlers) {
     this.instructions = instructions;
