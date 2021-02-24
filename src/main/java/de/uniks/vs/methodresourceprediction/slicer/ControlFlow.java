@@ -7,16 +7,15 @@ import com.ibm.wala.shrikeCT.ClassReader;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import com.ibm.wala.util.collections.Pair;
 import de.uniks.vs.methodresourceprediction.utils.InstrumenterComparator;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
 import org.jgrapht.Graph;
 import org.jgrapht.alg.cycle.JohnsonSimpleCycles;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.io.ComponentNameProvider;
 import org.jgrapht.io.ExportException;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
 
 public class ControlFlow extends SlicerGraph<Integer> {
   private String inputPath;

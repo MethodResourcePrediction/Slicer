@@ -1,20 +1,19 @@
 package de.uniks.vs.methodresourceprediction.slicer;
 
-import com.ibm.wala.shrikeBT.Util;
 import com.ibm.wala.shrikeBT.*;
+import com.ibm.wala.shrikeBT.Util;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import de.uniks.vs.methodresourceprediction.slicer.dominance.*;
 import de.uniks.vs.methodresourceprediction.slicer.export.SliceWriter.ExportFormat;
 import de.uniks.vs.methodresourceprediction.utils.Utilities;
-import org.apache.commons.cli.*;
-import org.apache.commons.codec.DecoderException;
-import org.jgrapht.graph.DefaultEdge;
-import org.jgrapht.io.ExportException;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import org.apache.commons.cli.*;
+import org.apache.commons.codec.DecoderException;
+import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.io.ExportException;
 
 public class Slicer {
   private String inputJar;
@@ -33,7 +32,7 @@ public class Slicer {
   private BlockDependency blockDependency;
   private DataDependency dataDependency;
   private ArgumentDependency argumentDependency;
-  private ClassObjectDependency classObjectDependency;
+  private InitializerDependency initializerDependency;
 
   // Dominance
   private Dominance dominance;
@@ -68,7 +67,7 @@ public class Slicer {
     BlockDependency blockDependency = getBlockDependency();
     DataDependency dataDependency = getDataDependency();
     ArgumentDependency argumentDependency = getArgumentDependency();
-    ClassObjectDependency classObjectDependency = getClassObjectDependency();
+    InitializerDependency initializerDependency = getClassObjectDependency();
 
     //    Dominance dominance = getDominance();
     //    StrictDominance strictDominance = getStrictDominance();
@@ -92,14 +91,14 @@ public class Slicer {
             blockDependency,
             argumentDependency,
             dataDependency,
-            classObjectDependency);
+            initializerDependency);
     Set<Integer> instructionIndexesToIgnore =
         getInstructionIndexesToIgnore(
             controlFlow,
             controlDependency,
             argumentDependency,
             dataDependency,
-            classObjectDependency);
+            initializerDependency);
     Map<Integer, Integer> instructionPopMap = getInstructionPopMap();
 
     //		System.out.println(getSliceResult());
@@ -144,7 +143,7 @@ public class Slicer {
       BlockDependency blockDependency,
       ArgumentDependency argumentDependency,
       DataDependency dataDependency,
-      ClassObjectDependency classObjectDependency)
+      InitializerDependency initializerDependency)
       throws IOException, InterruptedException, InvalidClassFileException, ExportException {
     final Path dir = Files.createTempDirectory("slicer-");
     controlFlow.showPlot(dir);
@@ -152,7 +151,7 @@ public class Slicer {
     blockDependency.showPlot(dir);
     dataDependency.showPlot(dir);
     argumentDependency.showPlot(dir);
-    classObjectDependency.showPlot(dir);
+    initializerDependency.showPlot(dir);
   }
 
   public Set<Integer> getInstructionIndexesToIgnore()
@@ -170,7 +169,7 @@ public class Slicer {
       ControlDependency controlDependency,
       ArgumentDependency argumentDependency,
       DataDependency dataDependency,
-      ClassObjectDependency classObjectDependency)
+      InitializerDependency initializerDependency)
       throws IOException, InvalidClassFileException {
     Set<Integer> instructionIndexesToKeep =
         getInstructionIndexesToKeep(
@@ -179,7 +178,7 @@ public class Slicer {
             blockDependency,
             argumentDependency,
             dataDependency,
-            classObjectDependency);
+            initializerDependency);
     Set<Integer> instructionIndexesToIgnore = new HashSet<>();
 
     IInstruction[] instructions = controlFlow.getMethodData().getInstructions();
@@ -220,7 +219,7 @@ public class Slicer {
       BlockDependency blockDependency,
       ArgumentDependency argumentDependency,
       DataDependency dataDependency,
-      ClassObjectDependency classObjectDependency)
+      InitializerDependency initializerDependency)
       throws IOException, InvalidClassFileException {
     IInstruction[] instructions = controlFlow.getMethodData().getInstructions();
     Set<Integer> indexesToKeep = new HashSet<>();
@@ -235,7 +234,7 @@ public class Slicer {
             blockDependency,
             argumentDependency,
             dataDependency,
-            classObjectDependency,
+            initializerDependency,
             indexesToKeep,
             index);
       }
@@ -249,7 +248,7 @@ public class Slicer {
           blockDependency,
           argumentDependency,
           dataDependency,
-          classObjectDependency,
+          initializerDependency,
           indexesToKeep,
           instructionIndex);
     }
@@ -286,7 +285,7 @@ public class Slicer {
             blockDependency,
             argumentDependency,
             dataDependency,
-            classObjectDependency,
+            initializerDependency,
             indexesToKeep,
             recursiveInvokeInstructionIndex);
 
@@ -295,7 +294,7 @@ public class Slicer {
         for (int index = 0; index < recursiveInvokeInstructionIndex; index++) {
           IInstruction instruction = instructions[index];
           if (!(instruction instanceof ReturnInstruction)
-              || !(instruction instanceof ThrowInstruction)) {
+              && !(instruction instanceof ThrowInstruction)) {
             continue;
           }
           for (DefaultEdge incomingEdge : controlFlow.getGraph().incomingEdgesOf(index)) {
@@ -309,7 +308,7 @@ public class Slicer {
                 blockDependency,
                 argumentDependency,
                 dataDependency,
-                classObjectDependency,
+                initializerDependency,
                 indexesToKeep,
                 index);
           }
@@ -334,7 +333,7 @@ public class Slicer {
             blockDependency,
             argumentDependency,
             dataDependency,
-            classObjectDependency,
+            initializerDependency,
             indexesToKeep2,
             recursiveInvokeInstructionIndex);
       }
@@ -442,7 +441,7 @@ public class Slicer {
       BlockDependency blockDependency,
       ArgumentDependency argumentDependency,
       DataDependency dataDependency,
-      ClassObjectDependency classObjectDependency,
+      InitializerDependency initializerDependency,
       Set<Integer> dependendInstructions,
       int index)
       throws IOException, InvalidClassFileException {
@@ -465,7 +464,7 @@ public class Slicer {
           blockDependency,
           argumentDependency,
           dataDependency,
-          classObjectDependency,
+          initializerDependency,
           dependendInstructions,
           argumentIndex);
     }
@@ -507,7 +506,7 @@ public class Slicer {
               blockDependency,
               argumentDependency,
               dataDependency,
-              classObjectDependency,
+              initializerDependency,
               dependendInstructions,
               cycleStartIndex - 1);
         }
@@ -523,7 +522,7 @@ public class Slicer {
             blockDependency,
             argumentDependency,
             dataDependency,
-            classObjectDependency,
+            initializerDependency,
             dependendInstructions,
             highestIndex);
       }
@@ -542,9 +541,32 @@ public class Slicer {
           blockDependency,
           argumentDependency,
           dataDependency,
-          classObjectDependency,
+          initializerDependency,
           dependendInstructions,
           dataDependentIndex);
+
+      // Check transitive data dependency for example thought this (-1)
+      // This can be the cast if a class in inherited and the constructor <init> is called on the
+      // parent class
+      for (Integer transitiveDataDependentIndex :
+          dataDependency.getAffectedDataDependencyInstructions(dataDependentIndex)) {
+        if (transitiveDataDependentIndex < 0
+            || transitiveDataDependentIndex > index
+            || initializerDependency
+                .getClassInitializerDependencyInstructions(transitiveDataDependentIndex)
+                .isEmpty()) {
+          continue;
+        }
+        slice(
+            controlFlow,
+            controlDependency,
+            blockDependency,
+            argumentDependency,
+            dataDependency,
+            initializerDependency,
+            dependendInstructions,
+            transitiveDataDependentIndex);
+      }
     }
 
     // TODO Why do we not need to consider control dependencies? Implied by the
@@ -565,21 +587,21 @@ public class Slicer {
           blockDependency,
           argumentDependency,
           dataDependency,
-          classObjectDependency,
+          initializerDependency,
           dependendInstructions,
           controlDependentIndex);
     }
 
     // Class Object Dependencies
     for (Integer classObjectDependentIndex :
-        classObjectDependency.getClassObjectDependencyInstructions(index)) {
+        initializerDependency.getClassInitializerDependencyInstructions(index)) {
       slice(
           controlFlow,
           controlDependency,
           blockDependency,
           argumentDependency,
           dataDependency,
-          classObjectDependency,
+          initializerDependency,
           dependendInstructions,
           classObjectDependentIndex);
     }
@@ -625,13 +647,13 @@ public class Slicer {
     return argumentDependency;
   }
 
-  public ClassObjectDependency getClassObjectDependency()
+  public InitializerDependency getClassObjectDependency()
       throws IOException, InvalidClassFileException {
-    if (classObjectDependency != null) {
-      return classObjectDependency;
+    if (initializerDependency != null) {
+      return initializerDependency;
     }
-    classObjectDependency = new ClassObjectDependency(getBlockDependency());
-    return classObjectDependency;
+    initializerDependency = new InitializerDependency(getBlockDependency());
+    return initializerDependency;
   }
 
   public Dominance getDominance() throws IOException, InvalidClassFileException {

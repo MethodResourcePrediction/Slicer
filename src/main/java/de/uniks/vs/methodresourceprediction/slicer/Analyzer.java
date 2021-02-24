@@ -7,7 +7,6 @@ import com.ibm.wala.shrikeCT.ClassReader;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import de.uniks.vs.methodresourceprediction.utils.InstrumenterComparator;
 import de.uniks.vs.methodresourceprediction.utils.Utilities;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;

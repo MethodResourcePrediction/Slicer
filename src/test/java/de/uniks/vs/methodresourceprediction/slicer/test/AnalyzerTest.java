@@ -9,14 +9,14 @@ import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import de.uniks.vs.methodresourceprediction.slicer.Analyzer;
 import de.uniks.vs.methodresourceprediction.slicer.SliceResult;
 import de.uniks.vs.methodresourceprediction.slicer.Slicer;
-import org.jgrapht.io.ExportException;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.stream.IntStream;
+import org.jgrapht.io.ExportException;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class AnalyzerTest {
@@ -60,6 +60,7 @@ public class AnalyzerTest {
         IInstruction[] instructions = slicer.getControlFlow().getMethodData().getInstructions();
         int instructionCount = instructions.length;
         System.out.print("SliceCriterion: ");
+
         for (int sliceCriterion = 0; sliceCriterion < instructionCount; sliceCriterion++) {
           System.out.print(sliceCriterion);
           System.out.flush();
@@ -76,7 +77,7 @@ public class AnalyzerTest {
                     return null;
                   });
           try {
-            SliceResult sliceResult = submit.get(10, TimeUnit.SECONDS);
+            SliceResult sliceResult = submit.get(Long.MAX_VALUE, TimeUnit.SECONDS);
             if (!Objects.isNull(sliceResult)) {
               sliceResults.add(sliceResult);
             }
@@ -89,6 +90,9 @@ public class AnalyzerTest {
         }
         System.out.println();
 
+        Set<Integer> allInstructionIndexSet = new HashSet<>();
+        IntStream.range(0, instructionCount).forEach(allInstructionIndexSet::add);
+
         for (SliceResult sliceResult1 : sliceResults) {
           for (SliceResult sliceResult2 : sliceResults) {
             if (sliceResult1.equals(sliceResult2)) {
@@ -99,6 +103,9 @@ public class AnalyzerTest {
 
             Set<Integer> intersectionSet = new HashSet<>(instructionsToKeep1);
             intersectionSet.retainAll(instructionsToKeep2);
+
+            Set<Integer> unionSet = new HashSet<>(instructionsToKeep1);
+            unionSet.addAll(instructionsToKeep2);
 
             boolean containsOtherInstructionThanExit =
                 intersectionSet.stream()
@@ -111,20 +118,26 @@ public class AnalyzerTest {
                           return true;
                         });
 
-            if (intersectionSet.isEmpty() || !containsOtherInstructionThanExit) {
-              System.out.println(
-                  "Independent slices from " + instructionsToKeep1 + " and " + instructionsToKeep2);
-              System.out.println(sliceResult1.getSlice());
-              System.out.println(sliceResult2.getSlice());
-              System.out.println();
-              System.out.flush();
+            if (unionSet.equals(allInstructionIndexSet)) {
+              // Slices have the complete set of method instructions
+              if (intersectionSet.isEmpty() || !containsOtherInstructionThanExit) {
+                System.out.println(
+                    "Independent slices from "
+                        + instructionsToKeep1
+                        + " and "
+                        + instructionsToKeep2);
+                System.out.println(sliceResult1.getSlice());
+                System.out.println(sliceResult2.getSlice());
+                System.out.println();
+                System.out.flush();
+              }
             }
           }
         }
 
-        //        break;
+        break;
       }
-      //      break;
+      break;
     }
   }
 }

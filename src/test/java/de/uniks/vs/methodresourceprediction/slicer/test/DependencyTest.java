@@ -2,19 +2,18 @@ package de.uniks.vs.methodresourceprediction.slicer.test;
 
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import de.uniks.vs.methodresourceprediction.slicer.Slicer;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.TestInstance.Lifecycle;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
 
 @TestInstance(Lifecycle.PER_CLASS)
 public class DependencyTest {
@@ -56,7 +55,7 @@ public class DependencyTest {
   public void testStaticMethodWithoutDependencies() throws IOException, InvalidClassFileException {
     slicer.setMethodSignature(
         "Lde.uniks.vs.methodresourceprediction.slicer.test.DependencyValidation;.staticMethodWithoutDependencies(I)I");
-//    assertTrue(slice.isFunctional());
+    //    assertTrue(slice.isFunctional());
   }
 
   @Test
@@ -64,7 +63,7 @@ public class DependencyTest {
       throws IOException, InvalidClassFileException {
     slicer.setMethodSignature(
         "Lde.uniks.vs.methodresourceprediction.slicer.test.DependencyValidation;.staticMethodWithStaticFieldDependency(I)I");
-//    assertTrue(slicer.isFunctional());
+    //    assertTrue(slicer.isFunctional());
   }
 
   @Test
@@ -72,14 +71,14 @@ public class DependencyTest {
       throws IOException, InvalidClassFileException {
     slicer.setMethodSignature(
         "Lde.uniks.vs.methodresourceprediction.slicer.test.DependencyValidation;.staticMethodWithStaticVariableDependency(I)I");
-//    assertFalse(slicer.isFunctional());
+    //    assertFalse(slicer.isFunctional());
   }
 
   @Test
   public void testMethodWithoutDependency() throws IOException, InvalidClassFileException {
     slicer.setMethodSignature(
         "Lde.uniks.vs.methodresourceprediction.slicer.test.DependencyValidation;.methodWithoutDependency(I)I");
-//    assertFalse(slicer.isFunctional());
+    //    assertFalse(slicer.isFunctional());
   }
 
   @Test
@@ -87,35 +86,35 @@ public class DependencyTest {
       throws IOException, InvalidClassFileException {
     slicer.setMethodSignature(
         "Lde.uniks.vs.methodresourceprediction.slicer.test.DependencyValidation;.staticMethodWithJavaLangDependency(I)I");
-//    assertTrue(slicer.isFunctional());
+    //    assertTrue(slicer.isFunctional());
   }
 
   @Test
   public void testMethodWithVariableDependency() throws IOException, InvalidClassFileException {
     slicer.setMethodSignature(
         "Lde.uniks.vs.methodresourceprediction.slicer.test.DependencyValidation;.methodWithVariableDependency(I)I");
-//    assertFalse(slicer.isFunctional());
+    //    assertFalse(slicer.isFunctional());
   }
 
   @Test
   public void testMethodCallWithoutDependency() throws IOException, InvalidClassFileException {
     slicer.setMethodSignature(
         "Lde.uniks.vs.methodresourceprediction.slicer.test.DependencyValidation;.methodCallWithoutDependency(I)I");
-//    assertFalse(slicer.isFunctional());
+    //    assertFalse(slicer.isFunctional());
   }
 
   @Test
   public void testMethodCallWithDependency() throws IOException, InvalidClassFileException {
     slicer.setMethodSignature(
         "Lde.uniks.vs.methodresourceprediction.slicer.test.DependencyValidation;.methodCallWithDependency(I)I");
-//    assertFalse(slicer.isFunctional());
+    //    assertFalse(slicer.isFunctional());
   }
 
   @Test
   public void testStaticMethodNew() throws IOException, InvalidClassFileException {
     slicer.setMethodSignature(
         "Lde.uniks.vs.methodresourceprediction.slicer.test.DependencyValidation;.staticMethodNew(I)I");
-//    assertFalse(slicer.isFunctional());
+    //    assertFalse(slicer.isFunctional());
   }
 
   @Test
@@ -123,14 +122,14 @@ public class DependencyTest {
       throws IOException, InvalidClassFileException {
     slicer.setMethodSignature(
         "Lde.uniks.vs.methodresourceprediction.slicer.test.DependencyValidation;.staticMethodCallWithoutDependency(I)I");
-//    assertTrue(slicer.isFunctional());
+    //    assertTrue(slicer.isFunctional());
   }
 
   @Test
   public void testStaticMethodCallWithDependency() throws IOException, InvalidClassFileException {
     slicer.setMethodSignature(
         "Lde.uniks.vs.methodresourceprediction.slicer.test.DependencyValidation;.staticMethodCallWithDependency(I)I");
-//    assertTrue(slicer.isFunctional());
+    //    assertTrue(slicer.isFunctional());
   }
 
   private String readInputStream(InputStream inputStream) {

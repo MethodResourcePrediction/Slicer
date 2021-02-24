@@ -1,12 +1,6 @@
 package de.uniks.vs.methodresourceprediction.slicer;
 
-import com.ibm.wala.shrikeBT.ArrayStoreInstruction;
-import com.ibm.wala.shrikeBT.Constants;
-import com.ibm.wala.shrikeBT.DupInstruction;
-import com.ibm.wala.shrikeBT.IInstruction;
-import com.ibm.wala.shrikeBT.ILoadInstruction;
-import com.ibm.wala.shrikeBT.IStoreInstruction;
-import com.ibm.wala.shrikeBT.ReturnInstruction;
+import com.ibm.wala.shrikeBT.*;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import com.ibm.wala.types.TypeName;
 import com.ibm.wala.util.strings.StringStuff;
@@ -84,11 +78,21 @@ public class DataDependency extends SlicerGraph<Integer> {
 
     Set<Integer> dataDependentInstructionSet = new HashSet<>();
     for (DefaultEdge dataDependencyEdge : edges) {
-      //			Integer edgeSource = dataDependencyGraph.getEdgeSource(dataDependencyEdge);
-      //			dataDependentInstructionSet.add(edgeSource);
-
       Integer edgeTarget = dataDependencyGraph.getEdgeTarget(dataDependencyEdge);
       dataDependentInstructionSet.add(edgeTarget);
+    }
+    return dataDependentInstructionSet;
+  }
+
+  public Set<Integer> getAffectedDataDependencyInstructions(int index)
+      throws IOException, InvalidClassFileException {
+    Graph<Integer, DefaultEdge> dataDependencyGraph = getGraph();
+    Set<DefaultEdge> edges = dataDependencyGraph.edgesOf(index);
+
+    Set<Integer> dataDependentInstructionSet = new HashSet<>();
+    for (DefaultEdge dataDependencyEdge : edges) {
+      Integer edgeSource = dataDependencyGraph.getEdgeSource(dataDependencyEdge);
+      dataDependentInstructionSet.add(edgeSource);
     }
     return dataDependentInstructionSet;
   }

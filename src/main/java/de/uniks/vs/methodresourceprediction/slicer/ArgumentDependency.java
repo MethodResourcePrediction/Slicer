@@ -40,12 +40,12 @@ public class ArgumentDependency extends SlicerGraph<Integer> {
     IntStream.range(0, instructions.length).forEach(i -> graph.addVertex(i));
 
     stackTrace.forEachException(
-            (index, stack) -> {
-              for (Integer exceptionInstructionIndex : stack) {
-                graph.addVertex(exceptionInstructionIndex);
-                graph.addEdge(index, exceptionInstructionIndex);
-              }
-            });
+        (index, stack) -> {
+          for (Integer exceptionInstructionIndex : stack) {
+            graph.addVertex(exceptionInstructionIndex);
+            graph.addEdge(index, exceptionInstructionIndex);
+          }
+        });
 
     stackTrace.forEachPopped(
         (index, stack) -> {

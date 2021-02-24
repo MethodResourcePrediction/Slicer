@@ -5,7 +5,6 @@ import com.ibm.wala.shrikeBT.ExceptionHandler;
 import com.ibm.wala.shrikeBT.IInstruction;
 import com.ibm.wala.shrikeBT.Util;
 import de.uniks.vs.methodresourceprediction.utils.Utilities;
-
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.function.BiConsumer;
