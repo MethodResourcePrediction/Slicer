@@ -1,21 +1,21 @@
 package de.uniks.vs.methodresourceprediction.slicer;
 
-import com.ibm.wala.shrikeBT.*;
+import com.ibm.wala.shrikeBT.IInstruction;
+import com.ibm.wala.shrikeBT.ILoadInstruction;
+import com.ibm.wala.shrikeBT.IStoreInstruction;
+import com.ibm.wala.shrikeBT.MethodData;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import de.uniks.vs.methodresourceprediction.utils.Utilities;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.stream.IntStream;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.io.ComponentNameProvider;
 import org.jgrapht.io.ExportException;
+
+import java.io.IOException;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.stream.IntStream;
 
 public class ArgumentDependency extends SlicerGraph<Integer> {
   private ControlFlow controlFlow;
@@ -30,27 +30,31 @@ public class ArgumentDependency extends SlicerGraph<Integer> {
     if (graph != null) {
       return graph;
     }
+
+    StackTrace stackTrace = new StackTrace(controlFlow.getMethodData());
+
     graph = new DefaultDirectedGraph<>(DefaultEdge.class);
 
-    IInstruction[] instructions = controlFlow.getMethodData().getInstructions();
-    ExceptionHandler[][] exceptionHandlers = controlFlow.getMethodData().getHandlers();
-    StackTrace stackTrace = new StackTrace(instructions, exceptionHandlers);
-
     // Add vertices (all instructions)
+    IInstruction[] instructions = controlFlow.getMethodData().getInstructions();
     IntStream.range(0, instructions.length).forEach(i -> graph.addVertex(i));
 
     stackTrace.forEachException(
-        (index, stack) -> {
-          for (Integer exceptionInstructionIndex : stack) {
-            graph.addVertex(exceptionInstructionIndex);
-            graph.addEdge(index, exceptionInstructionIndex);
+        (index, stacks) -> {
+          for (Stack<Integer> stack : stacks) {
+            for (Integer exceptionInstructionIndex : stack) {
+              graph.addVertex(exceptionInstructionIndex);
+              graph.addEdge(index, exceptionInstructionIndex);
+            }
           }
         });
 
     stackTrace.forEachPopped(
-        (index, stack) -> {
-          for (Integer poppedInstructionIndex : stack) {
-            graph.addEdge(index, poppedInstructionIndex);
+        (index, stacks) -> {
+          for (Stack<Integer> stack : stacks) {
+            for (Integer poppedInstructionIndex : stack) {
+              graph.addEdge(index, poppedInstructionIndex);
+            }
           }
         });
     return graph;

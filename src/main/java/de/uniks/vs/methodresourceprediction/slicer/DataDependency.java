@@ -12,6 +12,7 @@ import org.jgrapht.io.ExportException;
 
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 
@@ -75,7 +76,7 @@ public class DataDependency extends SlicerGraph<Integer> {
       throws IOException, InvalidClassFileException {
     // TODO In both directions?
     Graph<Integer, DefaultEdge> dataDependencyGraph = getGraph();
-    Set<DefaultEdge> edges = dataDependencyGraph.edgesOf(index);
+    Set<DefaultEdge> edges = dataDependencyGraph.outgoingEdgesOf(index);
 
     Set<Integer> dataDependentInstructionSet = new HashSet<>();
     for (DefaultEdge dataDependencyEdge : edges) {
@@ -114,24 +115,27 @@ public class DataDependency extends SlicerGraph<Integer> {
     IInstruction[] instructions = controlFlow.getMethodData().getInstructions();
     IInstruction instructionA = instructions[focusedIndex];
 
+    // TODO Uncomment 3 if's
     // Check data dependency for ArrayStoreInstruction using stack simulation
     if (instructionA instanceof ArrayStoreInstruction) {
-      Stack<Integer> poppedStack =
+      List<Stack<Integer>> poppedStacks =
           controlFlow.getStackTrace().getPoppedStackAtInstructionIndex(focusedIndex);
-      poppedStack.pop(); // elementInstructionIndex
-      poppedStack.pop(); // indexInstructionIndex
-      Integer arrayRefInstructionIndex = poppedStack.pop();
-
-      dependencyGraph.addEdge(focusedIndex, arrayRefInstructionIndex);
+      for (Stack<Integer> poppedStack : poppedStacks) {
+        poppedStack.pop(); // elementInstructionIndex
+        poppedStack.pop(); // indexInstructionIndex
+        Integer arrayRefInstructionIndex = poppedStack.pop();
+        dependencyGraph.addEdge(focusedIndex, arrayRefInstructionIndex);
+      }
     }
 
     // Check data dependency for DupInstruction using stack simulation
     if (instructionA instanceof DupInstruction) {
-      Stack<Integer> poppedStack =
+      List<Stack<Integer>> poppedStacks =
           controlFlow.getStackTrace().getPoppedStackAtInstructionIndex(focusedIndex);
-      Integer elementInstructionIndex = poppedStack.pop();
-
-      dependencyGraph.addEdge(focusedIndex, elementInstructionIndex);
+      for (Stack<Integer> poppedStack : poppedStacks) {
+        Integer elementInstructionIndex = poppedStack.pop();
+        dependencyGraph.addEdge(focusedIndex, elementInstructionIndex);
+      }
     }
 
     // Check data dependency for ReturnInstruction using stack simulation
@@ -140,11 +144,12 @@ public class DataDependency extends SlicerGraph<Integer> {
       // Exclude void return type since there cannot be an object on the stack to
       // which a data dependency could exist
       if (!instruction.getType().contentEquals(Constants.TYPE_void)) {
-        Stack<Integer> poppedStack =
+        List<Stack<Integer>> poppedStacks =
             controlFlow.getStackTrace().getPoppedStackAtInstructionIndex(focusedIndex);
-        Integer elementInstructionIndex = poppedStack.pop();
-
-        dependencyGraph.addEdge(focusedIndex, elementInstructionIndex);
+        for (Stack<Integer> poppedStack : poppedStacks) {
+          Integer elementInstructionIndex = poppedStack.pop();
+          dependencyGraph.addEdge(focusedIndex, elementInstructionIndex);
+        }
       }
     }
 

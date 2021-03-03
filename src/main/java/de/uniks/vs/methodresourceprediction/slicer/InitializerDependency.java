@@ -56,16 +56,19 @@ public class InitializerDependency extends SlicerGraph<Integer> {
 
         // Get popped elements stack for InvokeInstruction to figure out on which top stack element
         // the constructor is called
-        Stack<Integer> poppedStack = stackTrace.getPoppedStackAtInstructionIndex(instructionIndex);
-        if (poppedStack.isEmpty()) {
+        List<Stack<Integer>> poppedStacks =
+            stackTrace.getPoppedStackAtInstructionIndex(instructionIndex);
+        if (poppedStacks.isEmpty()) {
           throw new RuntimeException(
               "There must be an object popped by an constructor invoke instruction");
         }
-        // The last popped element (arguments were popped before) is the object
-        int poppedInstructionIndex = poppedStack.firstElement();
+        for (Stack<Integer> poppedStack : poppedStacks) {
+          // The last popped element (arguments were popped before) is the object
+          int poppedInstructionIndex = poppedStack.firstElement();
 
-        graph.addVertex(poppedInstructionIndex);
-        graph.addEdge(poppedInstructionIndex, instructionIndex);
+          graph.addVertex(poppedInstructionIndex);
+          graph.addEdge(poppedInstructionIndex, instructionIndex);
+        }
       }
     }
     return graph;

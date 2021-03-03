@@ -1,20 +1,18 @@
 package de.uniks.vs.methodresourceprediction.slicer;
 
-import com.ibm.wala.shrikeBT.Util;
 import com.ibm.wala.shrikeBT.*;
+import com.ibm.wala.shrikeBT.Util;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import de.uniks.vs.methodresourceprediction.slicer.dominance.*;
 import de.uniks.vs.methodresourceprediction.slicer.export.SliceWriter.ExportFormat;
 import de.uniks.vs.methodresourceprediction.utils.Utilities;
-import org.apache.commons.cli.*;
-import org.apache.commons.codec.DecoderException;
-import org.jgrapht.graph.DefaultEdge;
-import org.jgrapht.io.ExportException;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import org.apache.commons.cli.*;
+import org.apache.commons.codec.DecoderException;
+import org.jgrapht.io.ExportException;
 
 public class Slicer {
   private String inputJar;
@@ -68,7 +66,7 @@ public class Slicer {
     BlockDependency blockDependency = getBlockDependency();
     DataDependency dataDependency = getDataDependency();
     ArgumentDependency argumentDependency = getArgumentDependency();
-    InitializerDependency initializerDependency = getClassObjectDependency();
+    InitializerDependency initializerDependency = getInitializerDependency();
 
     //    Dominance dominance = getDominance();
     //    StrictDominance strictDominance = getStrictDominance();
@@ -135,7 +133,7 @@ public class Slicer {
         getBlockDependency(),
         getArgumentDependency(),
         getDataDependency(),
-        getClassObjectDependency());
+        getInitializerDependency());
   }
 
   public static void showPlots(
@@ -162,7 +160,7 @@ public class Slicer {
         getControlDependency(),
         getArgumentDependency(),
         getDataDependency(),
-        getClassObjectDependency());
+        getInitializerDependency());
   }
 
   public Set<Integer> getInstructionIndexesToIgnore(
@@ -211,7 +209,7 @@ public class Slicer {
         getBlockDependency(),
         getArgumentDependency(),
         getDataDependency(),
-        getClassObjectDependency());
+        getInitializerDependency());
   }
 
   public Set<Integer> getInstructionIndexesToKeep(
@@ -245,17 +243,18 @@ public class Slicer {
     Block firstBlock = getBlockDependency().getBlockForIndex(0);
     if (instructions[firstBlock.getLowestIndex()] instanceof LoadInstruction) {
       if (instructions[firstBlock.getHighestIndex()] instanceof InvokeInstruction) {
-        InvokeInstruction invokeInstruction = (InvokeInstruction) instructions[firstBlock.getHighestIndex()];
+        InvokeInstruction invokeInstruction =
+            (InvokeInstruction) instructions[firstBlock.getHighestIndex()];
         if ("<init>".contentEquals(invokeInstruction.getMethodName())) {
           slice(
-                  controlFlow,
-                  controlDependency,
-                  blockDependency,
-                  argumentDependency,
-                  dataDependency,
-                  initializerDependency,
-                  indexesToKeep,
-                  firstBlock.getHighestIndex());
+              controlFlow,
+              controlDependency,
+              blockDependency,
+              argumentDependency,
+              dataDependency,
+              initializerDependency,
+              indexesToKeep,
+              firstBlock.getHighestIndex());
         }
       }
     }
@@ -275,9 +274,9 @@ public class Slicer {
 
     // Check if the slice will depend on the parameters (can be affected by
     // recursive invocations)
-    boolean dependendOnParameters = false;
+    boolean dependentOnParameters = false;
     for (int indexToKeep : indexesToKeep) {
-      dependendOnParameters |= dataDependency.hasDependencyToMethodParameter(indexToKeep);
+      dependentOnParameters |= dataDependency.hasDependencyToMethodParameter(indexToKeep);
     }
 
     // Search for recursive invoke instructions
@@ -293,55 +292,57 @@ public class Slicer {
       }
     }
 
-    // If there are recursive invoke instructions, add them to the instruction index
-    // set and also keep all return statements (possible exit point for recursive
-    // invoke instructions)
-    if (dependendOnParameters && !recursiveInvokeInstructions.isEmpty()) {
-      for (int recursiveInvokeInstructionIndex : recursiveInvokeInstructions) {
-        // Slice the recursive invoke instruction
-        slice(
-            controlFlow,
-            controlDependency,
-            blockDependency,
-            argumentDependency,
-            dataDependency,
-            initializerDependency,
-            indexesToKeep,
-            recursiveInvokeInstructionIndex);
-
-        // Include all return statements that are reachable from any instruction if
-        // they are already kept in "indexesToKeep"
-        for (int index = 0; index < recursiveInvokeInstructionIndex; index++) {
-          IInstruction instruction = instructions[index];
-          if (!(instruction instanceof ReturnInstruction)
-              && !(instruction instanceof ThrowInstruction)) {
-            continue;
-          }
-          for (DefaultEdge incomingEdge : controlFlow.getGraph().incomingEdgesOf(index)) {
-            Integer instructionSourceIndex = controlFlow.getGraph().getEdgeSource(incomingEdge);
-            if (!indexesToKeep.contains(instructionSourceIndex)) {
-              continue;
-            }
-            slice(
-                controlFlow,
-                controlDependency,
-                blockDependency,
-                argumentDependency,
-                dataDependency,
-                initializerDependency,
-                indexesToKeep,
-                index);
-          }
-        }
-      }
-    }
+    // TODO still necessary?
+    //    // If there are recursive invoke instructions, add them to the instruction index
+    //    // set and also keep all return statements (possible exit point for recursive
+    //    // invoke instructions)
+    //    if (dependentOnParameters && !recursiveInvokeInstructions.isEmpty()) {
+    //      for (int recursiveInvokeInstructionIndex : recursiveInvokeInstructions) {
+    //        // Slice the recursive invoke instruction
+    //        slice(
+    //            controlFlow,
+    //            controlDependency,
+    //            blockDependency,
+    //            argumentDependency,
+    //            dataDependency,
+    //            initializerDependency,
+    //            indexesToKeep,
+    //            recursiveInvokeInstructionIndex);
+    //
+    //        // Include all return statements that are reachable from any instruction if
+    //        // they are already kept in "indexesToKeep"
+    //        for (int index = 0; index < recursiveInvokeInstructionIndex; index++) {
+    //          IInstruction instruction = instructions[index];
+    //          if (!(instruction instanceof ReturnInstruction)
+    //              && !(instruction instanceof ThrowInstruction)) {
+    //            continue;
+    //          }
+    //          for (DefaultEdge incomingEdge : controlFlow.getGraph().incomingEdgesOf(index)) {
+    //            Integer instructionSourceIndex =
+    // controlFlow.getGraph().getEdgeSource(incomingEdge);
+    //            if (!indexesToKeep.contains(instructionSourceIndex)) {
+    //              continue;
+    //            }
+    //            slice(
+    //                controlFlow,
+    //                controlDependency,
+    //                blockDependency,
+    //                argumentDependency,
+    //                dataDependency,
+    //                initializerDependency,
+    //                indexesToKeep,
+    //                index);
+    //          }
+    //        }
+    //      }
+    //    }
 
     // Concurrent modification handling since we iterate through indexesToKeep while
     // changing inside slice(...)
     Set<Integer> indexesToKeep2 = new HashSet<>();
     // Check if there is a data dependency to method parameters. If there is
     // further a recursive method call, include it into slicing
-    if (dependendOnParameters) {
+    if (dependentOnParameters) {
       // Add all indexes where recursive invoke instructions are performed
       for (int recursiveInvokeInstructionIndex : recursiveInvokeInstructions) {
         //				if (!indexesToKeep.contains(recursiveInvokeInstructionIndex)) {
@@ -462,7 +463,7 @@ public class Slicer {
       ArgumentDependency argumentDependency,
       DataDependency dataDependency,
       InitializerDependency initializerDependency,
-      Set<Integer> dependendInstructions,
+      Set<Integer> dependentInstructions,
       int index)
       throws IOException, InvalidClassFileException {
     if (index < 0) {
@@ -471,7 +472,7 @@ public class Slicer {
       return;
     }
 
-    boolean addedAny = dependendInstructions.add(index);
+    boolean addedAny = dependentInstructions.add(index);
     if (!addedAny) {
       return;
     }
@@ -485,7 +486,7 @@ public class Slicer {
           argumentDependency,
           dataDependency,
           initializerDependency,
-          dependendInstructions,
+          dependentInstructions,
           argumentIndex);
     }
 
@@ -506,7 +507,7 @@ public class Slicer {
 
         // TODO Usually a loop is compiled by jumping to the end (except for do-while)
         // for the evaluation of the condition. If the condition is not met, it jumps
-        // back (in the control flow) to the start of the loop. If
+        // back (in the control flow) to the start of the loop.
         Integer cycleStartIndex = cycle.get(0);
         if (cycleStartIndex > 0
             && controlFlow.getMethodData().getInstructions()[cycleStartIndex - 1]
@@ -527,7 +528,7 @@ public class Slicer {
               argumentDependency,
               dataDependency,
               initializerDependency,
-              dependendInstructions,
+              dependentInstructions,
               cycleStartIndex - 1);
         }
 
@@ -543,7 +544,7 @@ public class Slicer {
             argumentDependency,
             dataDependency,
             initializerDependency,
-            dependendInstructions,
+            dependentInstructions,
             highestIndex);
       }
     }
@@ -562,31 +563,32 @@ public class Slicer {
           argumentDependency,
           dataDependency,
           initializerDependency,
-          dependendInstructions,
+          dependentInstructions,
           dataDependentIndex);
-//
-//      // Check transitive data dependency for example thought this (-1)
-//      // This can be the cast if a class in inherited and the constructor <init> is called on the
-//      // parent class
-//      for (Integer transitiveDataDependentIndex :
-//          dataDependency.getAffectedDataDependencyInstructions(dataDependentIndex)) {
-//        if (transitiveDataDependentIndex < 0
-//            || transitiveDataDependentIndex > index
-//            || initializerDependency
-//                .getClassInitializerDependencyInstructions(transitiveDataDependentIndex)
-//                .isEmpty()) {
-//          continue;
-//        }
-//        slice(
-//            controlFlow,
-//            controlDependency,
-//            blockDependency,
-//            argumentDependency,
-//            dataDependency,
-//            initializerDependency,
-//            dependendInstructions,
-//            transitiveDataDependentIndex);
-//      }
+      //
+      //      // Check transitive data dependency for example thought this (-1)
+      //      // This can be the cast if a class in inherited and the constructor <init> is called
+      // on the
+      //      // parent class
+      //      for (Integer transitiveDataDependentIndex :
+      //          dataDependency.getAffectedDataDependencyInstructions(dataDependentIndex)) {
+      //        if (transitiveDataDependentIndex < 0
+      //            || transitiveDataDependentIndex > index
+      //            || initializerDependency
+      //                .getClassInitializerDependencyInstructions(transitiveDataDependentIndex)
+      //                .isEmpty()) {
+      //          continue;
+      //        }
+      //        slice(
+      //            controlFlow,
+      //            controlDependency,
+      //            blockDependency,
+      //            argumentDependency,
+      //            dataDependency,
+      //            initializerDependency,
+      //            dependentInstructions,
+      //            transitiveDataDependentIndex);
+      //      }
     }
 
     // TODO Why do we not need to consider control dependencies? Implied by the
@@ -597,10 +599,10 @@ public class Slicer {
       if (controlDependentIndex == ControlDependency.ROOT_INDEX) {
         continue;
       }
-      if ((controlFlow.getMethodData().getInstructions()[index] instanceof ConstantInstruction)) {
-        // Constant-Instructions are independent of any control dependency
-        continue;
-      }
+//      if ((controlFlow.getMethodData().getInstructions()[index] instanceof ConstantInstruction)) {
+//        // Constant-Instructions are independent of any control dependency
+//        continue;
+//      }
       slice(
           controlFlow,
           controlDependency,
@@ -608,7 +610,7 @@ public class Slicer {
           argumentDependency,
           dataDependency,
           initializerDependency,
-          dependendInstructions,
+          dependentInstructions,
           controlDependentIndex);
     }
 
@@ -622,7 +624,7 @@ public class Slicer {
           argumentDependency,
           dataDependency,
           initializerDependency,
-          dependendInstructions,
+          dependentInstructions,
           classObjectDependentIndex);
     }
   }
@@ -667,7 +669,7 @@ public class Slicer {
     return argumentDependency;
   }
 
-  public InitializerDependency getClassObjectDependency()
+  public InitializerDependency getInitializerDependency()
       throws IOException, InvalidClassFileException {
     if (initializerDependency != null) {
       return initializerDependency;

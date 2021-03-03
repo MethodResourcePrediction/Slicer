@@ -21,6 +21,23 @@ import java.util.stream.IntStream;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class AnalyzerTest {
+  public boolean randomBoolean() {
+    Random random = new Random();
+    double d = random.nextDouble();
+    return d > 0.5;
+  }
+
+  @Test
+  public void testRandomSlice() throws IOException, InvalidClassFileException {
+    Slicer slicer = new Slicer();
+    slicer.setInputJar("build/libs/slicer-1.0.0-SNAPSHOT-tests.jar");
+    slicer.setMethodSignature(
+        "Lde/uniks/vs/methodresourceprediction/slicer/test/AnalyzerTest;.randomBoolean()Z");
+    slicer.setInstructionIndexes(Set.of(5));
+    SliceResult sliceResult = slicer.getSliceResult();
+    System.out.println(sliceResult);
+  }
+
   @Test
   public void testAnalyzer()
       throws IOException, InvalidClassFileException, ExportException, InterruptedException {
@@ -36,16 +53,17 @@ public class AnalyzerTest {
     //    sliceResult3.getSlice();
 
     for (ClassInstrumenter classInstrumenter : Analyzer.getClassInstrumenters(new File(jar))) {
-//      if (!classInstrumenter.getReader().getName().equals("org/mariadb/jdbc/UrlParser")) {
-//        continue;
-//      }
+      //      if (!classInstrumenter.getReader().getName().equals("org/mariadb/jdbc/UrlParser")) {
+      //        continue;
+      //      }
       for (MethodData method : Analyzer.getMethods(classInstrumenter)) {
         String methodSignature =
             classInstrumenter.getReader().getName()
                 + "."
                 + method.getName()
                 + method.getSignature();
-//                methodSignature = "org/mariadb/jdbc/util/DefaultOptions.getOptionName()Ljava/lang/String;";
+        //                methodSignature =
+        // "org/mariadb/jdbc/util/DefaultOptions.getOptionName()Ljava/lang/String;";
 
         if (skippedPrefixes.stream().anyMatch(methodSignature::startsWith)) {
           System.out.println("Skipped: " + methodSignature);
@@ -81,7 +99,8 @@ public class AnalyzerTest {
                   });
           try {
             SliceResult sliceResult = submit.get(3, TimeUnit.SECONDS);
-//            SliceResult sliceResult = submit.get(Long.MAX_VALUE, TimeUnit.SECONDS);
+            //            SliceResult sliceResult = submit.get(Long.MAX_VALUE, TimeUnit.SECONDS);
+            //            slicer.getArgumentDependency().showPlot();
             if (!Objects.isNull(sliceResult)) {
               sliceResults.add(sliceResult);
             }
@@ -154,7 +173,7 @@ public class AnalyzerTest {
         }
         System.gc();
       }
-//      break;
+      //      break;
     }
   }
 }

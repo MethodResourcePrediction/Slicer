@@ -44,11 +44,7 @@ public class ControlFlow extends SlicerGraph<Integer> {
       return stackTrace;
     }
 
-    MethodData methodData = getMethodData();
-    IInstruction[] instructions = methodData.getInstructions();
-    ExceptionHandler[][] exceptionHandlers = methodData.getHandlers();
-
-    stackTrace = new StackTrace(instructions, exceptionHandlers);
+    stackTrace = new StackTrace(getMethodData());
     return stackTrace;
   }
 
