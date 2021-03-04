@@ -1,18 +1,21 @@
 package de.uniks.vs.methodresourceprediction.slicer;
 
 import com.ibm.wala.shrikeBT.*;
-import com.ibm.wala.shrikeBT.Util;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import de.uniks.vs.methodresourceprediction.slicer.dominance.*;
 import de.uniks.vs.methodresourceprediction.slicer.export.SliceWriter.ExportFormat;
 import de.uniks.vs.methodresourceprediction.utils.Utilities;
+import org.apache.commons.cli.*;
+import org.apache.commons.codec.DecoderException;
+import org.jgrapht.Graph;
+import org.jgrapht.graph.DefaultDirectedGraph;
+import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.io.ExportException;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import org.apache.commons.cli.*;
-import org.apache.commons.codec.DecoderException;
-import org.jgrapht.io.ExportException;
 
 public class Slicer {
   private String inputJar;
@@ -32,6 +35,7 @@ public class Slicer {
   private DataDependency dataDependency;
   private ArgumentDependency argumentDependency;
   private InitializerDependency initializerDependency;
+  private ConditionalDependency conditionalDependency;
 
   // Dominance
   private Dominance dominance;
@@ -67,6 +71,7 @@ public class Slicer {
     DataDependency dataDependency = getDataDependency();
     ArgumentDependency argumentDependency = getArgumentDependency();
     InitializerDependency initializerDependency = getInitializerDependency();
+    ConditionalDependency conditionalDependency = getConditionalDependency();
 
     //    Dominance dominance = getDominance();
     //    StrictDominance strictDominance = getStrictDominance();
@@ -90,14 +95,17 @@ public class Slicer {
             blockDependency,
             argumentDependency,
             dataDependency,
-            initializerDependency);
+            initializerDependency,
+            conditionalDependency);
     Set<Integer> instructionIndexesToIgnore =
         getInstructionIndexesToIgnore(
             controlFlow,
             controlDependency,
+            blockDependency,
             argumentDependency,
             dataDependency,
-            initializerDependency);
+            initializerDependency,
+            conditionalDependency);
     Map<Integer, Integer> instructionPopMap = getInstructionPopMap();
 
     //		System.out.println(getSliceResult());
@@ -158,17 +166,21 @@ public class Slicer {
     return getInstructionIndexesToIgnore(
         getControlFlow(),
         getControlDependency(),
+        getBlockDependency(),
         getArgumentDependency(),
         getDataDependency(),
-        getInitializerDependency());
+        getInitializerDependency(),
+        getConditionalDependency());
   }
 
   public Set<Integer> getInstructionIndexesToIgnore(
       ControlFlow controlFlow,
       ControlDependency controlDependency,
+      BlockDependency blockDependency,
       ArgumentDependency argumentDependency,
       DataDependency dataDependency,
-      InitializerDependency initializerDependency)
+      InitializerDependency initializerDependency,
+      ConditionalDependency conditionalDependency)
       throws IOException, InvalidClassFileException {
     Set<Integer> instructionIndexesToKeep =
         getInstructionIndexesToKeep(
@@ -177,7 +189,8 @@ public class Slicer {
             blockDependency,
             argumentDependency,
             dataDependency,
-            initializerDependency);
+            initializerDependency,
+            conditionalDependency);
     Set<Integer> instructionIndexesToIgnore = new HashSet<>();
 
     IInstruction[] instructions = controlFlow.getMethodData().getInstructions();
@@ -209,7 +222,8 @@ public class Slicer {
         getBlockDependency(),
         getArgumentDependency(),
         getDataDependency(),
-        getInitializerDependency());
+        getInitializerDependency(),
+        getConditionalDependency());
   }
 
   public Set<Integer> getInstructionIndexesToKeep(
@@ -218,7 +232,8 @@ public class Slicer {
       BlockDependency blockDependency,
       ArgumentDependency argumentDependency,
       DataDependency dataDependency,
-      InitializerDependency initializerDependency)
+      InitializerDependency initializerDependency,
+      ConditionalDependency conditionalDependency)
       throws IOException, InvalidClassFileException {
     IInstruction[] instructions = controlFlow.getMethodData().getInstructions();
     Set<Integer> indexesToKeep = new HashSet<>();
@@ -234,6 +249,7 @@ public class Slicer {
             argumentDependency,
             dataDependency,
             initializerDependency,
+            conditionalDependency,
             indexesToKeep,
             index);
       }
@@ -253,6 +269,7 @@ public class Slicer {
               argumentDependency,
               dataDependency,
               initializerDependency,
+              conditionalDependency,
               indexesToKeep,
               firstBlock.getHighestIndex());
         }
@@ -268,6 +285,7 @@ public class Slicer {
           argumentDependency,
           dataDependency,
           initializerDependency,
+          conditionalDependency,
           indexesToKeep,
           instructionIndex);
     }
@@ -355,6 +373,7 @@ public class Slicer {
             argumentDependency,
             dataDependency,
             initializerDependency,
+            conditionalDependency,
             indexesToKeep2,
             recursiveInvokeInstructionIndex);
       }
@@ -381,9 +400,10 @@ public class Slicer {
     // elements to pop.
     // Like that, we can archive a consistent stack size slice
 
-    Set<Integer> instructionIndexesToKeep = getInstructionIndexesToKeep();
-    IInstruction[] instructions = getControlFlow().getMethodData().getInstructions();
-    ExceptionHandler[][] exceptionHandlers = getControlFlow().getMethodData().getHandlers();
+    final DefaultDirectedGraph<Integer, DefaultEdge> cfg = getControlFlow().getGraph();
+    final Set<Integer> instructionIndexesToKeep = getInstructionIndexesToKeep();
+    final IInstruction[] instructions = getControlFlow().getMethodData().getInstructions();
+    final ExceptionHandler[][] exceptionHandlers = getControlFlow().getMethodData().getHandlers();
     Map<Integer, Set<String>> instructionExceptions =
         Utilities.getInstructionExceptions(instructions, exceptionHandlers);
 
@@ -391,67 +411,53 @@ public class Slicer {
     // must be corrected.
     Map<Integer, Integer> instructionPopAfterMap = new HashMap<>();
     for (Block block : getBlockDependency().getBlocks()) {
-      List<Integer> blockInstructionIndexes = block.getInstructionIndexes();
+      Map<Integer, IInstruction> blockInstructionMap = block.getInstructions();
+
+      List<Integer> blockInstructionIndexes = new ArrayList<>(block.getInstructionIndexes());
       blockInstructionIndexes.retainAll(instructionIndexesToKeep);
+      if (blockInstructionIndexes.isEmpty()) {
+        continue;
+      }
 
-      // Simulate stack execution
-      Stack<Integer> stack = new Stack<>();
-      for (int blockInstructionIndex : blockInstructionIndexes) {
-        // Iterate all instructions and build the control flow
-        IInstruction instruction = instructions[blockInstructionIndex];
+      Set<Integer> cfgVerticesWithoutBlock = new HashSet<>(cfg.vertexSet());
+      cfgVerticesWithoutBlock.removeAll(blockInstructionIndexes);
 
-        // Exception handling
-        Set<String> instructionException =
-            instructionExceptions.getOrDefault(blockInstructionIndex, Collections.emptySet());
-        int pushedExceptionCount = instructionException.size();
+      Graph<Integer, DefaultEdge> blockCfg = (Graph<Integer, DefaultEdge>) cfg.clone();
+      blockCfg.removeAllVertices(cfgVerticesWithoutBlock);
 
-        for (int pushedException = 0; pushedException < pushedExceptionCount; pushedException++) {
-          stack.push(-1 * blockInstructionIndex);
+      int blockStartIndex = blockInstructionIndexes.get(0);
+      final int endIndex = blockInstructionIndexes.get(blockInstructionIndexes.size() - 1);
+
+      StackTrace stackTrace =
+          new StackTrace(blockInstructionMap, exceptionHandlers, blockCfg, blockStartIndex);
+
+      List<Stack<Integer>> stackAtInstructionIndex =
+          stackTrace.getStackAtInstructionIndex(endIndex);
+      for (Stack<Integer> stack : stackAtInstructionIndex) {
+        int popSize = 0;
+        for (Integer stackIndex : stack) {
+          popSize += Utilities.getPushedSize(blockInstructionMap.get(stackIndex));
         }
-
-        int pushedSize = Utilities.getPushedSize(instruction);
-        int poppedSize = Utilities.getPoppedSize(instruction);
-
-        // TODO That is maybe error-prone handling dup(2,0) is pain as hell
-        if (instruction instanceof DupInstruction) {
-          int topmostStackInstructionIndex = stack.elementAt(stack.size() - 1);
-          IInstruction lastPushedInstruction = instructions[topmostStackInstructionIndex];
-          String pushedType = lastPushedInstruction.getPushedType(null);
-          int wordSize;
-          if (lastPushedInstruction instanceof DupInstruction) {
-            wordSize = ((DupInstruction) lastPushedInstruction).getSize();
-          } else {
-            wordSize = Util.getWordSize(pushedType);
-          }
-          int poppedSizeForDupInstruction =
-              Utilities.getPoppedSizeForDupInstruction((DupInstruction) instruction, wordSize == 1);
-          pushedSize = 2 * poppedSizeForDupInstruction;
-          poppedSize = poppedSizeForDupInstruction;
-        }
-
-        // Simulate stack execution
-        for (int popIteration = 0; popIteration < poppedSize; popIteration++) {
-          stack.pop();
-        }
-        for (int pushIteration = 0; pushIteration < pushedSize; pushIteration++) {
-          stack.push(blockInstructionIndex);
+        if (popSize > 0) {
+          instructionPopAfterMap.put(endIndex, popSize);
         }
       }
 
-      // The remaining elements on the stack are the ones to be popped
-      int popSize = 0;
-      while (stack.size() > 0) {
-        int pushedSize = stack.pop();
-        // TODO There is at least one issue here when a remaining dup-instruction
-        //  element should be popped. The instruction pushed size will not be the number
-        //  of elements on the stack. Is 1 to use here always correct?
-        popSize += 1;
-        //				popSize += pushedSize;
-        //				popSize += Utilities.getPushedSize(instructions[stackInstructionIndex]);
-      }
-      if (popSize > 0) {
-        instructionPopAfterMap.put(block.getHighestIndex(), popSize);
-      }
+      //      // The remaining elements on the stack are the ones to be popped
+      //      int popSize = 0;
+      //      while (stack.size() > 0) {
+      //        pushedSize = stack.pop();
+      //        // TODO There is at least one issue here when a remaining dup-instruction
+      //        //  element should be popped. The instruction pushed size will not be the number
+      //        //  of elements on the stack. Is 1 to use here always correct?
+      //        popSize += 1;
+      //        //				popSize += pushedSize;
+      //        //				popSize += Utilities.getPushedSize(instructions[stackInstructionIndex]);
+      //      }
+      //      if (popSize > 0) {
+      //        instructionPopAfterMap.put(block.getHighestIndex(), popSize);
+      //      }
+
     }
     return instructionPopAfterMap;
   }
@@ -463,6 +469,7 @@ public class Slicer {
       ArgumentDependency argumentDependency,
       DataDependency dataDependency,
       InitializerDependency initializerDependency,
+      ConditionalDependency conditionalDependency,
       Set<Integer> dependentInstructions,
       int index)
       throws IOException, InvalidClassFileException {
@@ -476,6 +483,7 @@ public class Slicer {
     if (!addedAny) {
       return;
     }
+    IInstruction[] instructions = controlFlow.getMethodData().getInstructions();
 
     // Add dependent argument instructions
     for (Integer argumentIndex : argumentDependency.getArgumentInstructionIndexes(index)) {
@@ -486,6 +494,7 @@ public class Slicer {
           argumentDependency,
           dataDependency,
           initializerDependency,
+          conditionalDependency,
           dependentInstructions,
           argumentIndex);
     }
@@ -493,7 +502,7 @@ public class Slicer {
     // Add cycle dependencies (goto)
     // If our current instruction is a ConstantInstruction, it cannot be affected by
     // any loop iteration count. This is the only exception for loops here.
-    if (!(controlFlow.getMethodData().getInstructions()[index] instanceof ConstantInstruction)) {
+    if (!(instructions[index] instanceof ConstantInstruction)) {
       List<List<Integer>> cycles = controlFlow.getCyclesForInstruction(index);
       for (List<Integer> cycle : cycles) {
         // NOTE: Slicing a loop is a bit tricky. Usually, the start and the end of the
@@ -509,11 +518,8 @@ public class Slicer {
         // for the evaluation of the condition. If the condition is not met, it jumps
         // back (in the control flow) to the start of the loop.
         Integer cycleStartIndex = cycle.get(0);
-        if (cycleStartIndex > 0
-            && controlFlow.getMethodData().getInstructions()[cycleStartIndex - 1]
-                instanceof GotoInstruction) {
-          GotoInstruction gotoInstruction =
-              (GotoInstruction) controlFlow.getMethodData().getInstructions()[cycleStartIndex - 1];
+        if (cycleStartIndex > 0 && instructions[cycleStartIndex - 1] instanceof GotoInstruction) {
+          GotoInstruction gotoInstruction = (GotoInstruction) instructions[cycleStartIndex - 1];
           // The jump target must definitively in between the loop begin and end.
           if (!controlFlow.inSameCycle(gotoInstruction.getLabel(), cycleStartIndex)) {
             // Coming here means there is a Goto-Instruction directly in front of the loop,
@@ -528,6 +534,7 @@ public class Slicer {
               argumentDependency,
               dataDependency,
               initializerDependency,
+              conditionalDependency,
               dependentInstructions,
               cycleStartIndex - 1);
         }
@@ -544,8 +551,26 @@ public class Slicer {
             argumentDependency,
             dataDependency,
             initializerDependency,
+            conditionalDependency,
             dependentInstructions,
             highestIndex);
+      }
+    }
+
+    // Consider conditional dependencies
+    for (Integer conditionalDependentIndex :
+        conditionalDependency.getConditionalDependencyInstructions(index)) {
+      if (instructions[conditionalDependentIndex] instanceof GotoInstruction) {
+        slice(
+            controlFlow,
+            controlDependency,
+            blockDependency,
+            argumentDependency,
+            dataDependency,
+            initializerDependency,
+            conditionalDependency,
+            dependentInstructions,
+            conditionalDependentIndex);
       }
     }
 
@@ -563,32 +588,9 @@ public class Slicer {
           argumentDependency,
           dataDependency,
           initializerDependency,
+          conditionalDependency,
           dependentInstructions,
           dataDependentIndex);
-      //
-      //      // Check transitive data dependency for example thought this (-1)
-      //      // This can be the cast if a class in inherited and the constructor <init> is called
-      // on the
-      //      // parent class
-      //      for (Integer transitiveDataDependentIndex :
-      //          dataDependency.getAffectedDataDependencyInstructions(dataDependentIndex)) {
-      //        if (transitiveDataDependentIndex < 0
-      //            || transitiveDataDependentIndex > index
-      //            || initializerDependency
-      //                .getClassInitializerDependencyInstructions(transitiveDataDependentIndex)
-      //                .isEmpty()) {
-      //          continue;
-      //        }
-      //        slice(
-      //            controlFlow,
-      //            controlDependency,
-      //            blockDependency,
-      //            argumentDependency,
-      //            dataDependency,
-      //            initializerDependency,
-      //            dependentInstructions,
-      //            transitiveDataDependentIndex);
-      //      }
     }
 
     // TODO Why do we not need to consider control dependencies? Implied by the
@@ -599,10 +601,11 @@ public class Slicer {
       if (controlDependentIndex == ControlDependency.ROOT_INDEX) {
         continue;
       }
-//      if ((controlFlow.getMethodData().getInstructions()[index] instanceof ConstantInstruction)) {
-//        // Constant-Instructions are independent of any control dependency
-//        continue;
-//      }
+      //      if ((controlFlow.getMethodData().getInstructions()[index] instanceof
+      // ConstantInstruction)) {
+      //        // Constant-Instructions are independent of any control dependency
+      //        continue;
+      //      }
       slice(
           controlFlow,
           controlDependency,
@@ -610,12 +613,13 @@ public class Slicer {
           argumentDependency,
           dataDependency,
           initializerDependency,
+          conditionalDependency,
           dependentInstructions,
           controlDependentIndex);
     }
 
     // Class Object Dependencies
-    for (Integer classObjectDependentIndex :
+    for (Integer initializerDependentIndex :
         initializerDependency.getClassInitializerDependencyInstructions(index)) {
       slice(
           controlFlow,
@@ -624,8 +628,9 @@ public class Slicer {
           argumentDependency,
           dataDependency,
           initializerDependency,
+          conditionalDependency,
           dependentInstructions,
-          classObjectDependentIndex);
+          initializerDependentIndex);
     }
   }
 
@@ -676,6 +681,15 @@ public class Slicer {
     }
     initializerDependency = new InitializerDependency(getBlockDependency());
     return initializerDependency;
+  }
+
+  public ConditionalDependency getConditionalDependency()
+      throws IOException, InvalidClassFileException {
+    if (conditionalDependency != null) {
+      return conditionalDependency;
+    }
+    conditionalDependency = new ConditionalDependency(getControlFlow());
+    return conditionalDependency;
   }
 
   public Dominance getDominance() throws IOException, InvalidClassFileException {

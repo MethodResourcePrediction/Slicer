@@ -10,6 +10,9 @@ import de.uniks.vs.methodresourceprediction.utils.InstrumenterComparator;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
 import org.jgrapht.Graph;
 import org.jgrapht.alg.cycle.JohnsonSimpleCycles;
 import org.jgrapht.graph.DefaultDirectedGraph;
@@ -24,7 +27,7 @@ public class ControlFlow extends SlicerGraph<Integer> {
 
   private MethodData methodData;
 
-  private Graph<Integer, DefaultEdge> graph;
+  private DefaultDirectedGraph<Integer, DefaultEdge> graph;
   private List<List<Integer>> simpleCycles;
   private StackTrace stackTrace;
   private List<Pair<Integer, Integer>> loopPairs;
@@ -49,7 +52,7 @@ public class ControlFlow extends SlicerGraph<Integer> {
   }
 
   @Override
-  public Graph<Integer, DefaultEdge> getGraph() throws IOException, InvalidClassFileException {
+  public DefaultDirectedGraph<Integer, DefaultEdge> getGraph() throws IOException, InvalidClassFileException {
     if (graph != null) {
       return graph;
     }
@@ -126,6 +129,13 @@ public class ControlFlow extends SlicerGraph<Integer> {
       }
     }
     return false;
+  }
+
+  public Map<Integer, IInstruction> getInstructionMap() throws IOException, InvalidClassFileException {
+    final IInstruction[] instructions = getMethodData().getInstructions();
+    final Map<Integer, IInstruction> instructionMap = new LinkedHashMap<>();
+    IntStream.range(0, instructions.length).forEach(i -> instructionMap.put(i, instructions[i]));
+    return instructionMap;
   }
 
   public Set<Integer> getInstructionsInCycles() throws IOException, InvalidClassFileException {

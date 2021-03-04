@@ -24,16 +24,21 @@ public class AnalyzerTest {
   public boolean randomBoolean() {
     Random random = new Random();
     double d = random.nextDouble();
-    return d > 0.5;
+    if (d < 0.5) {
+      d += 0.1;
+    }
+    double e = random.nextDouble();
+    return e > 0.5;
   }
 
   @Test
-  public void testRandomSlice() throws IOException, InvalidClassFileException {
+  public void testRandomSlice()
+      throws IOException, InvalidClassFileException, ExportException, InterruptedException {
     Slicer slicer = new Slicer();
     slicer.setInputJar("build/libs/slicer-1.0.0-SNAPSHOT-tests.jar");
     slicer.setMethodSignature(
         "Lde/uniks/vs/methodresourceprediction/slicer/test/AnalyzerTest;.randomBoolean()Z");
-    slicer.setInstructionIndexes(Set.of(5));
+    slicer.setInstructionIndexes(Set.of(21));
     SliceResult sliceResult = slicer.getSliceResult();
     System.out.println(sliceResult);
   }

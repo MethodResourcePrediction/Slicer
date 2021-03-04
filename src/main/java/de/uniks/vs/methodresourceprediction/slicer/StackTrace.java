@@ -13,21 +13,44 @@ import java.util.function.BiConsumer;
 import java.util.stream.IntStream;
 
 public class StackTrace implements Iterable<Entry<Integer, List<Stack<Integer>>>> {
-  private final IInstruction[] instructions;
+  private final Map<Integer, IInstruction> instructionMap;
   private final ExceptionHandler[][] exceptionHandlers;
-  private final ControlFlow controlFlow;
+  private final Graph<Integer, DefaultEdge> cfg;
 
   private Map<Integer, List<Stack<Integer>>> stackTrace;
   private Map<Integer, List<Stack<Integer>>> exceptionStackTrace;
   private Map<Integer, List<Stack<Integer>>> poppedStackTrace;
   private Map<Integer, List<Stack<Integer>>> pushedStackTrace;
 
-  public StackTrace(MethodData methodData) throws IOException, InvalidClassFileException {
-    this.instructions = methodData.getInstructions();
-    this.exceptionHandlers = methodData.getHandlers();
-    this.controlFlow = new ControlFlow(methodData);
+  public StackTrace(ControlFlow controlFlow) throws IOException, InvalidClassFileException {
+    this.instructionMap = controlFlow.getInstructionMap();
+    this.exceptionHandlers = controlFlow.getMethodData().getHandlers();
+    this.cfg = controlFlow.getGraph();
 
-    createStackTraces();
+    createStackTraces(controlFlow.getStartNode());
+  }
+
+  public StackTrace(MethodData methodData) throws IOException, InvalidClassFileException {
+    this.exceptionHandlers = methodData.getHandlers();
+
+    ControlFlow controlFlow = new ControlFlow(methodData);
+    this.cfg = controlFlow.getGraph();
+    this.instructionMap = controlFlow.getInstructionMap();
+
+    createStackTraces(controlFlow.getStartNode());
+  }
+
+  public StackTrace(
+      Map<Integer, IInstruction> instructionMap,
+      ExceptionHandler[][] exceptionHandlers,
+      Graph<Integer, DefaultEdge> cfg,
+      int startNode)
+      throws IOException, InvalidClassFileException {
+    this.instructionMap = instructionMap;
+    this.exceptionHandlers = exceptionHandlers;
+    this.cfg = cfg;
+
+    createStackTraces(startNode);
   }
 
   public List<Stack<Integer>> getStackAtInstructionIndex(int instructionIndex) {
@@ -82,7 +105,7 @@ public class StackTrace implements Iterable<Entry<Integer, List<Stack<Integer>>>
   private void createStackTraceFor(
       Map<Integer, Set<String>> instructionExceptions, Stack<Integer> stack, Integer index)
       throws IOException, InvalidClassFileException {
-    IInstruction instruction = instructions[index];
+    IInstruction instruction = instructionMap.get(index);
 
     // Exception handling
     Set<String> instructionException =
@@ -105,7 +128,7 @@ public class StackTrace implements Iterable<Entry<Integer, List<Stack<Integer>>>
     // TODO That is maybe error-prone handling dup(2,0) is pain as hell
     if (instruction instanceof DupInstruction) {
       int topmostStackInstructionIndex = stack.elementAt(stack.size() - 1);
-      IInstruction lastPushedInstruction = instructions[topmostStackInstructionIndex];
+      IInstruction lastPushedInstruction = instructionMap.get(topmostStackInstructionIndex);
       String pushedType = lastPushedInstruction.getPushedType(null);
       int wordSize;
       if (lastPushedInstruction instanceof DupInstruction) {
@@ -143,26 +166,43 @@ public class StackTrace implements Iterable<Entry<Integer, List<Stack<Integer>>>
     instructionPushedStack.add(pushedStack);
     pushedStackTrace.putIfAbsent(index, instructionPushedStack);
 
-    Graph<Integer, DefaultEdge> cfg = controlFlow.getGraph();
+    // Fill combined stack trace
+    List<Stack<Integer>> instructionStack = stackTrace.getOrDefault(index, new ArrayList<>());
+    instructionStack.add(copyStack(stack));
+    stackTrace.putIfAbsent(index, instructionStack);
+
     for (DefaultEdge edge : cfg.outgoingEdgesOf(index)) {
       createStackTraceFor(instructionExceptions, stack, cfg.getEdgeTarget(edge));
     }
   }
 
-  private void createStackTraces() throws IOException, InvalidClassFileException {
+  private void createStackTraces(int startIndex) throws IOException, InvalidClassFileException {
     stackTrace = new HashMap<>();
     exceptionStackTrace = new HashMap<>();
     poppedStackTrace = new HashMap<>();
     pushedStackTrace = new HashMap<>();
 
+    final IInstruction[] instructions = instructionMap.values().toArray(new IInstruction[0]);
     Map<Integer, Set<String>> instructionExceptions =
         Utilities.getInstructionExceptions(instructions, exceptionHandlers);
 
-    createStackTraceFor(instructionExceptions, new Stack<>(), 0);
+    createStackTraceFor(instructionExceptions, new Stack<>(), startIndex);
 
-    assert pushedStackTrace.keySet().size() == instructions.length;
-    assert poppedStackTrace.keySet().size() == instructions.length;
-    assert exceptionStackTrace.keySet().size() == instructions.length;
+    // TODO Add stack traces for all non called instructions (no edge target). This can happen if a
+    //  block is processed which is the body of a conditional instruction (if). The else-case could
+    //  be a jump target even if it is outside the current block
+    Set<Integer> processedVertices = pushedStackTrace.keySet();
+
+    Set<Integer> cfgVertexSet = new HashSet<>(cfg.vertexSet());
+    cfgVertexSet.removeAll(processedVertices);
+
+    for (Integer remainingVertex : cfgVertexSet) {
+      createStackTraceFor(instructionExceptions, new Stack<>(), remainingVertex);
+    }
+
+//    assert pushedStackTrace.keySet().size() == instructions.length;
+//    assert poppedStackTrace.keySet().size() == instructions.length;
+//    assert exceptionStackTrace.keySet().size() == instructions.length;
   }
 
   public static List<Stack<Integer>> copyStacks(List<Stack<Integer>> stacks) {

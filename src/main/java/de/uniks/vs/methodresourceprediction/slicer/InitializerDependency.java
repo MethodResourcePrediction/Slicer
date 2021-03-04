@@ -12,7 +12,6 @@ import org.jgrapht.io.ExportException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Stack;
 
 public class InitializerDependency extends SlicerGraph<Integer> {
@@ -32,43 +31,36 @@ public class InitializerDependency extends SlicerGraph<Integer> {
 
     StackTrace stackTrace = new StackTrace(blockDependency.getControlFlow().getMethodData());
 
-    // At first iterate all blocks since the constructor to any new object is
-    // usually encapsulated
-    // TODO always?
-    for (Block block : blockDependency.getBlocks()) {
-      // Iterate all instructions inside the block to find an InvokeInstruction
-      for (Entry<Integer, IInstruction> entry : block.getInstructions().entrySet()) {
-        final Integer instructionIndex = entry.getKey();
-        final IInstruction instruction = entry.getValue();
+    // Iterate all instructions to find those calling a constructor
+    IInstruction[] instructions =
+        blockDependency.getControlFlow().getMethodData().getInstructions();
+    for (int instructionIndex = 0; instructionIndex < instructions.length; instructionIndex++) {
+      IInstruction instruction = instructions[instructionIndex];
+      graph.addVertex(instructionIndex);
 
-        graph.addVertex(instructionIndex);
+      if (!(instruction instanceof InvokeInstruction)) {
+        continue;
+      }
+      // Check if the invoke instruction is calling the constructor
+      InvokeInstruction invokeInstruction = (InvokeInstruction) instruction;
+      if (!invokeInstruction.getMethodName().equals("<init>")) {
+        continue;
+      }
 
-        if (!(instruction instanceof InvokeInstruction)) {
-          continue;
-        }
-        // Check if the invoke instruction is calling the constructor
-        InvokeInstruction invokeInstruction = (InvokeInstruction) instruction;
-        if (!invokeInstruction.getMethodName().equals("<init>")) {
-          continue;
-        }
-        // TODO What about static invocations? Can there be a static constructor call which is not
-        //  <clinit>?
+      // Get popped elements stack for InvokeInstruction to figure out on which top stack element
+      // the constructor is called
+      List<Stack<Integer>> poppedStacks =
+          stackTrace.getPoppedStackAtInstructionIndex(instructionIndex);
+      if (poppedStacks.isEmpty()) {
+        throw new RuntimeException(
+            "There must be an object popped by an constructor invoke instruction");
+      }
+      for (Stack<Integer> poppedStack : poppedStacks) {
+        // The last popped element (arguments were popped before) is the object
+        int poppedInstructionIndex = poppedStack.firstElement();
 
-        // Get popped elements stack for InvokeInstruction to figure out on which top stack element
-        // the constructor is called
-        List<Stack<Integer>> poppedStacks =
-            stackTrace.getPoppedStackAtInstructionIndex(instructionIndex);
-        if (poppedStacks.isEmpty()) {
-          throw new RuntimeException(
-              "There must be an object popped by an constructor invoke instruction");
-        }
-        for (Stack<Integer> poppedStack : poppedStacks) {
-          // The last popped element (arguments were popped before) is the object
-          int poppedInstructionIndex = poppedStack.firstElement();
-
-          graph.addVertex(poppedInstructionIndex);
-          graph.addEdge(poppedInstructionIndex, instructionIndex);
-        }
+        graph.addVertex(poppedInstructionIndex);
+        graph.addEdge(poppedInstructionIndex, instructionIndex);
       }
     }
     return graph;
