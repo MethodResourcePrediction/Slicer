@@ -1,7 +1,7 @@
 package de.uniks.vs.methodresourceprediction.slicer;
 
-import com.ibm.wala.shrikeBT.*;
-import com.ibm.wala.shrikeCT.InvalidClassFileException;
+import com.ibm.wala.shrike.shrikeBT.*;
+import com.ibm.wala.shrike.shrikeCT.InvalidClassFileException;
 import de.uniks.vs.methodresourceprediction.slicer.dominance.*;
 import de.uniks.vs.methodresourceprediction.slicer.export.SliceWriter.ExportFormat;
 import de.uniks.vs.methodresourceprediction.utils.Utilities;
@@ -601,11 +601,10 @@ public class Slicer {
       if (controlDependentIndex == ControlDependency.ROOT_INDEX) {
         continue;
       }
-      //      if ((controlFlow.getMethodData().getInstructions()[index] instanceof
-      // ConstantInstruction)) {
-      //        // Constant-Instructions are independent of any control dependency
-      //        continue;
-      //      }
+      if ((controlFlow.getMethodData().getInstructions()[index] instanceof ConstantInstruction)) {
+        // Constant-Instructions are independent of any control dependency
+        continue;
+      }
       slice(
           controlFlow,
           controlDependency,

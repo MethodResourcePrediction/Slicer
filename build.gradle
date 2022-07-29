@@ -1,24 +1,19 @@
 buildscript {
     dependencies {
-        classpath 'com.bmuschko:gradle-nexus-plugin:2.3'
     }
 }
 
 plugins {
     // Apply the java-library plugin to add support for Java Library
     id 'java-library'
-    id 'maven'
+    id 'maven-publish'
     id 'signing'
-    id 'com.github.sherter.google-java-format' version '0.9'
+//    id 'com.github.sherter.google-java-format' version '0.9'
 }
-
-apply plugin: 'com.bmuschko.nexus'
 
 repositories {
     jcenter()
-    maven() {
-        url = 'https://srv202.parsens.uni-kassel.de/repository/maven-snapshots/'
-    }
+    mavenCentral()
 }
 
 group = "de.uniks.vs.methodresourceprediction"
@@ -31,46 +26,43 @@ configurations {
 }
 
 dependencies {
-    compile group: 'de.uniks.vs.methodresourceprediction', name: 'utils', version: '1.0.0-SNAPSHOT'
-    compile group: 'de.uniks.vs.methodresourceprediction', name: 'slicer.export', version: '1.0.0-SNAPSHOT'
+    implementation files(
+            'libs/utils-1.0.0-SNAPSHOT.jar',
+            'libs/slicer.export-1.0.0-SNAPSHOT.jar',
+            'libs/com.ibm.wala.shrike-1.5.9-SNAPSHOT.jar',
+    )
 
-    compile group: 'com.ibm.wala', name: 'core', version: '1.5.7-SNAPSHOT'
-    compile group: 'com.ibm.wala', name: 'util', version: '1.5.7-SNAPSHOT'
-    compile group: 'com.ibm.wala', name: 'shrike', version: '1.5.7-SNAPSHOT'
+    implementation group: 'com.ibm.wala', name: 'com.ibm.wala.core', version: '1.5.8'
+    implementation group: 'com.ibm.wala', name: 'com.ibm.wala.util', version: '1.5.8'
+//    implementation group: 'com.ibm.wala', name: 'com.ibm.wala.shrike', version: '1.5.9'
 
     // https://mvnrepository.com/artifact/commons-io/commons-io
-    compile group: 'commons-io', name: 'commons-io', version: '2.6'
+    implementation group: 'commons-io', name: 'commons-io', version: '2.7'
 
     // https://mvnrepository.com/artifact/commons-cli/commons-cli
-    compile group: 'commons-cli', name: 'commons-cli', version: '1.4'
+    implementation group: 'commons-cli', name: 'commons-cli', version: '1.4'
 
     // https://mvnrepository.com/artifact/commons-codec/commons-codec
-    compile group: 'commons-codec', name: 'commons-codec', version: '1.12'
+    implementation group: 'commons-codec', name: 'commons-codec', version: '1.13'
 
     // https://mvnrepository.com/artifact/org.jgrapht/jgrapht-core
-    compile group: 'org.jgrapht', name: 'jgrapht-core', version: '1.3.1'
+    implementation group: 'org.jgrapht', name: 'jgrapht-core', version: '1.3.1'
 
     // https://mvnrepository.com/artifact/org.jgrapht/jgrapht-io
-    compile group: 'org.jgrapht', name: 'jgrapht-io', version: '1.3.1'
+    implementation group: 'org.jgrapht', name: 'jgrapht-io', version: '1.3.1'
 
-    compile group: 'org.apache.commons', name: 'commons-math3', version: '3.6.1'
+    // https://mvnrepository.com/artifact/org.apache.commons/commons-math3
+    implementation group: 'org.apache.commons', name: 'commons-math3', version: '3.6.1'
 
     // Use JUnit test framework
-    testImplementation('org.junit.jupiter:junit-jupiter-api:5.6.2')
-    testRuntime('org.junit.jupiter:junit-jupiter-engine:5.6.2')
+    testImplementation 'junit:junit:4.13.2'
 }
 
 test {
-    useJUnitPlatform()
+    useJUnit()
 }
 
 jar {
-    // from {
-    // 	configurations.compile.collect {
-    // 		it.isDirectory() ? it : zipTree(it)
-    // 	}
-    // }
-
     manifest {
         attributes('Main-Class': 'de.uniks.vs.methodresourceprediction.slicer.Slicer')
     }
@@ -79,77 +71,12 @@ jar {
 sourceSets {
     main {
         java {
-            srcDirs 'src/main/java', 'src/test/main'
-        }
-    }
-}
-
-// TODO Define this variables in ~/.gradle/gradle.properties
-//  See: https://help.sonatype.com/repomanager2/maven-and-other-build-tools/gradle
-
-uploadArchives {
-    repositories {
-        mavenDeployer {
-//            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
-            repository(url: "${nexusUrl}/repository/maven-releases/") {
-                authentication(userName: nexusUsername, password: nexusPassword)
-            }
-
-            snapshotRepository(url: "${nexusUrl}/repository/maven-snapshots/") {
-                authentication(userName: nexusUsername, password: nexusPassword)
-            }
-
-            pom.project {
-                name 'MethodResourcePrediction - Slicer'
-                packaging 'jar'
-                // optionally artifactId can be defined here
-                description 'Slicer used to create executable java slices and method instrumentation'
-                url 'https://github.com/RalfHerzog'
-
-                scm {
-                    connection 'git@github.com:MethodResourcePrediction/Slicer.git'
-                    developerConnection 'git@github.com:MethodResourcePrediction/Slicer.git'
-                    url 'https://github.com/MethodResourcePrediction/Slicer'
-                }
-
-                licenses {
-                    license {
-                        name 'MIT License'
-                        url 'https://opensource.org/licenses/MIT'
-                    }
-                }
-
-                developers {
-                    developer {
-                        id 'ralfherzog'
-                        name 'Ralf Herzog'
-                        email 'ralf@rherzog.de'
-                    }
-                }
-            }
-        }
-    }
-}
-
-extraArchive {
-    sources = true
-    tests = true
-    javadoc = false
-}
-
-nexus {
-    sign = false
-    repositoryUrl = "${nexusUrl}/repository/maven-releases/"
-    snapshotRepositoryUrl = "${nexusUrl}/repository/maven-snapshots/"
-}
-
-jar {
-}
-
-sourceSets {
-    main {
-        java {
             srcDirs 'src/main/java'
+        }
+    }
+    test {
+        java {
+            srcDirs 'src/test/java'
         }
     }
 }

@@ -1,6 +1,6 @@
 package de.uniks.vs.methodresourceprediction.slicer.test;
 
-import com.ibm.wala.shrikeCT.InvalidClassFileException;
+import com.ibm.wala.shrike.shrikeCT.InvalidClassFileException;
 import de.uniks.vs.methodresourceprediction.slicer.Slicer;
 import java.io.IOException;
 import org.apache.commons.cli.ParseException;

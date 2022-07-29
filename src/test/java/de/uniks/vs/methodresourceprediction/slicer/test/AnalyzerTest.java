@@ -1,17 +1,15 @@
 package de.uniks.vs.methodresourceprediction.slicer.test;
 
-import com.ibm.wala.shrikeBT.IInstruction;
-import com.ibm.wala.shrikeBT.MethodData;
-import com.ibm.wala.shrikeBT.ReturnInstruction;
-import com.ibm.wala.shrikeBT.ThrowInstruction;
-import com.ibm.wala.shrikeBT.shrikeCT.ClassInstrumenter;
-import com.ibm.wala.shrikeCT.InvalidClassFileException;
+import com.ibm.wala.shrike.shrikeBT.IInstruction;
+import com.ibm.wala.shrike.shrikeBT.MethodData;
+import com.ibm.wala.shrike.shrikeBT.ReturnInstruction;
+import com.ibm.wala.shrike.shrikeBT.ThrowInstruction;
+import com.ibm.wala.shrike.shrikeBT.shrikeCT.ClassInstrumenter;
+import com.ibm.wala.shrike.shrikeCT.InvalidClassFileException;
 import de.uniks.vs.methodresourceprediction.slicer.Analyzer;
 import de.uniks.vs.methodresourceprediction.slicer.SliceResult;
 import de.uniks.vs.methodresourceprediction.slicer.Slicer;
-import org.jgrapht.io.ExportException;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,7 +17,6 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.IntStream;
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class AnalyzerTest {
   public boolean randomBoolean() {
     Random random = new Random();
@@ -31,9 +28,9 @@ public class AnalyzerTest {
     return e > 0.5;
   }
 
-  @Test
+//  @Test
   public void testRandomSlice()
-      throws IOException, InvalidClassFileException, ExportException, InterruptedException {
+      throws IOException, InvalidClassFileException {
     Slicer slicer = new Slicer();
     slicer.setInputJar("build/libs/slicer-1.0.0-SNAPSHOT-tests.jar");
     slicer.setMethodSignature(
@@ -43,9 +40,9 @@ public class AnalyzerTest {
     System.out.println(sliceResult);
   }
 
-  @Test
+//  @Test
   public void testAnalyzer()
-      throws IOException, InvalidClassFileException, ExportException, InterruptedException {
+      throws IOException, InvalidClassFileException, InterruptedException {
     final String jar = "src/test/resources/mariadb-java-client-2.7.2.jar";
     Set<String> skippedPrefixes =
         Set.of(

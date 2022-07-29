@@ -1,7 +1,7 @@
 package de.uniks.vs.methodresourceprediction.slicer;
 
-import com.ibm.wala.shrikeBT.*;
-import com.ibm.wala.shrikeCT.InvalidClassFileException;
+import com.ibm.wala.shrike.shrikeBT.*;
+import com.ibm.wala.shrike.shrikeCT.InvalidClassFileException;
 import de.uniks.vs.methodresourceprediction.utils.Utilities;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultEdge;
@@ -172,7 +172,9 @@ public class StackTrace implements Iterable<Entry<Integer, List<Stack<Integer>>>
     stackTrace.putIfAbsent(index, instructionStack);
 
     for (DefaultEdge edge : cfg.outgoingEdgesOf(index)) {
-      createStackTraceFor(instructionExceptions, stack, cfg.getEdgeTarget(edge));
+      if (!this.stackTrace.containsKey(cfg.getEdgeTarget(edge))) {
+        createStackTraceFor(instructionExceptions, stack, cfg.getEdgeTarget(edge));
+      }
     }
   }
 

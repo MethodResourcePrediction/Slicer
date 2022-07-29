@@ -1,7 +1,7 @@
 package de.uniks.vs.methodresourceprediction.slicer.dominance;
 
-import com.ibm.wala.shrikeBT.IInstruction;
-import com.ibm.wala.shrikeCT.InvalidClassFileException;
+import com.ibm.wala.shrike.shrikeBT.IInstruction;
+import com.ibm.wala.shrike.shrikeCT.InvalidClassFileException;
 import de.uniks.vs.methodresourceprediction.slicer.ControlFlow;
 import de.uniks.vs.methodresourceprediction.slicer.SlicerGraph;
 import java.io.IOException;

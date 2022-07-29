@@ -1,6 +1,6 @@
 package de.uniks.vs.methodresourceprediction.slicer;
 
-import com.ibm.wala.shrikeBT.IInstruction;
+import com.ibm.wala.shrike.shrikeBT.IInstruction;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;

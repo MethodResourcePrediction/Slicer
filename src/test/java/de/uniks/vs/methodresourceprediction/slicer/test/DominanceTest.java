@@ -1,9 +1,6 @@
 package de.uniks.vs.methodresourceprediction.slicer.test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import com.ibm.wala.shrikeCT.InvalidClassFileException;
+import com.ibm.wala.shrike.shrikeCT.InvalidClassFileException;
 import de.uniks.vs.methodresourceprediction.slicer.ControlDependency;
 import de.uniks.vs.methodresourceprediction.slicer.SlicerGraph;
 import de.uniks.vs.methodresourceprediction.slicer.dominance.Dominance;
@@ -27,14 +24,12 @@ import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.io.ComponentNameProvider;
 import org.jgrapht.io.DOTExporter;
 import org.jgrapht.io.ExportException;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.TestInstance.Lifecycle;
+import org.junit.Test;
 
-@TestInstance(Lifecycle.PER_CLASS)
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 public class DominanceTest {
-  @BeforeEach
   public void setup() throws IOException, InterruptedException, InvalidClassFileException {}
 
   @Test

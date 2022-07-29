@@ -1,6 +1,6 @@
 package de.uniks.vs.methodresourceprediction.slicer.test;
 
-import com.ibm.wala.shrikeCT.InvalidClassFileException;
+import com.ibm.wala.shrike.shrikeCT.InvalidClassFileException;
 import de.uniks.vs.methodresourceprediction.slicer.Slicer;
 import java.io.File;
 import java.io.IOException;
@@ -10,16 +10,13 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.TestInstance.Lifecycle;
+import org.junit.Before;
+import org.junit.Test;
 
-@TestInstance(Lifecycle.PER_CLASS)
 public class DependencyTest {
   private Slicer slicer;
 
-  @BeforeEach
+  @Before
   public void setUp() throws Exception {
     // Get path to java class
     String classFilePath =

@@ -1,10 +1,10 @@
 package de.uniks.vs.methodresourceprediction.slicer;
 
-import com.ibm.wala.shrikeBT.IInstruction;
-import com.ibm.wala.shrikeBT.ILoadInstruction;
-import com.ibm.wala.shrikeBT.IStoreInstruction;
-import com.ibm.wala.shrikeBT.MethodData;
-import com.ibm.wala.shrikeCT.InvalidClassFileException;
+import com.ibm.wala.shrike.shrikeBT.IInstruction;
+import com.ibm.wala.shrike.shrikeBT.ILoadInstruction;
+import com.ibm.wala.shrike.shrikeBT.IStoreInstruction;
+import com.ibm.wala.shrike.shrikeBT.MethodData;
+import com.ibm.wala.shrike.shrikeCT.InvalidClassFileException;
 import de.uniks.vs.methodresourceprediction.utils.Utilities;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;

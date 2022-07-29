@@ -1,6 +1,6 @@
 package de.uniks.vs.methodresourceprediction.slicer;
 
-import com.ibm.wala.shrikeBT.MethodEditor;
+import com.ibm.wala.shrike.shrikeBT.MethodEditor;
 
 public class InstrumentedMethod {
   private MethodEditor methodEditor;

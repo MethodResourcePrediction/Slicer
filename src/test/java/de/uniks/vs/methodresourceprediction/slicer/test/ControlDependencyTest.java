@@ -1,6 +1,6 @@
 package de.uniks.vs.methodresourceprediction.slicer.test;
 
-import com.ibm.wala.shrikeCT.InvalidClassFileException;
+import com.ibm.wala.shrike.shrikeCT.InvalidClassFileException;
 import de.uniks.vs.methodresourceprediction.slicer.ControlDependency;
 import de.uniks.vs.methodresourceprediction.slicer.dominance.ImmediateDominance;
 import de.uniks.vs.methodresourceprediction.slicer.dominance.ImmediatePostDominance;
@@ -16,18 +16,13 @@ import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.io.ComponentNameProvider;
 import org.jgrapht.io.DOTExporter;
 import org.jgrapht.io.ExportException;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.TestInstance.Lifecycle;
+import org.junit.Test;
 
-@TestInstance(Lifecycle.PER_CLASS)
 public class ControlDependencyTest {
   private Graph<Integer, DefaultEdge> cfg;
   private ImmediateDominance immediateDominance;
   private ImmediatePostDominance immediatePostDominance;
 
-  @BeforeEach
   public void setup() throws IOException, InterruptedException, InvalidClassFileException {
     cfg = TestControlFlowGraph.getControlFlowGraph();
 
@@ -63,6 +58,7 @@ public class ControlDependencyTest {
   @Test
   public void cd()
       throws IOException, InterruptedException, InvalidClassFileException, ExportException {
+    setup();
     ControlDependency controlDependency = new ControlDependency(cfg, immediatePostDominance);
     controlDependency.writePlot(Path.of("/tmp/slicer"), "ControlDependency.png");
   }

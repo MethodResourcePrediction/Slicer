@@ -1,17 +1,17 @@
 package de.uniks.vs.methodresourceprediction.slicer;
 
-import com.ibm.wala.shrikeBT.*;
-import com.ibm.wala.shrikeBT.MethodEditor.Output;
-import com.ibm.wala.shrikeBT.MethodEditor.Patch;
-import com.ibm.wala.shrikeBT.shrikeCT.ClassInstrumenter;
-import com.ibm.wala.shrikeBT.shrikeCT.OfflineInstrumenter;
-import com.ibm.wala.shrikeCT.ClassReader;
-import com.ibm.wala.shrikeCT.ClassWriter;
-import com.ibm.wala.shrikeCT.InvalidClassFileException;
+import com.ibm.wala.core.util.strings.StringStuff;
+import com.ibm.wala.shrike.shrikeBT.*;
+import com.ibm.wala.shrike.shrikeBT.MethodEditor.Output;
+import com.ibm.wala.shrike.shrikeBT.MethodEditor.Patch;
+import com.ibm.wala.shrike.shrikeBT.shrikeCT.ClassInstrumenter;
+import com.ibm.wala.shrike.shrikeBT.shrikeCT.OfflineInstrumenter;
+import com.ibm.wala.shrike.shrikeCT.ClassReader;
+import com.ibm.wala.shrike.shrikeCT.ClassWriter;
+import com.ibm.wala.shrike.shrikeCT.InvalidClassFileException;
 import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.generics.TypeSignature;
 import com.ibm.wala.util.collections.Iterator2Iterable;
-import com.ibm.wala.util.strings.StringStuff;
 import de.uniks.vs.methodresourceprediction.slicer.export.FeatureLogger;
 import de.uniks.vs.methodresourceprediction.slicer.export.FeatureLoggerExecution;
 import de.uniks.vs.methodresourceprediction.slicer.export.SliceWriter;
